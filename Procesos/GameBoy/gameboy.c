@@ -7,8 +7,8 @@
 
 
 #include <utils.h>
-
+#include <commons/log.h>
 int main(){
-	hola();
+	t_log* log = log_create("gameboy.log","gameboy.c",1 ,LOG_LEVEL_INFO);
 	return 0;
 }
