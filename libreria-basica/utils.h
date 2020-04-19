@@ -33,12 +33,12 @@ typedef struct
 	t_buffer* buffer;
 } t_paquete;
 
+void hola();
+
 int crear_conexion(char* ip, char* puerto);
 void enviar_mensaje(char* mensaje, int socket_cliente);
 char* recibir_mensaje(int socket_cliente);
 void eliminar_paquete(t_paquete* paquete);
 void liberar_conexion(int socket_cliente);
-
-void hola(char* nombre);
 
 #endif /* UTILS_H_ */

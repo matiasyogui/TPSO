@@ -3,6 +3,7 @@
 	<name>gameboy</name>
 	<comment></comment>
 	<projects>
+		<project>libreria-basica</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

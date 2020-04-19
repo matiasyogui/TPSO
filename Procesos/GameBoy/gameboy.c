@@ -6,8 +6,9 @@
  */
 
 
-#include <stdio.h>
+#include <utils.h>
+
 int main(){
-	printf("gameboy");
+	hola();
 	return 0;
 }

@@ -13,8 +13,8 @@
  * el tamaño del stream de bytes serializados que devuelve
  */
 
-void saludo(char* nombre){
-	printf("Hola, %s!!!!\n", nombre);
+void hola(){
+	printf("hola");
 }
 
 void* serializar_paquete(t_paquete* paquete, int bytes)
