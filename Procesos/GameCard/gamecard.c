@@ -8,6 +8,6 @@
 
 #include <utils.h>
 int main(){
-	hola();
+	hola("gamecard");
 	return 0;
 }

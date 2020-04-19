@@ -33,7 +33,7 @@ typedef struct
 	t_buffer* buffer;
 } t_paquete;
 
-void hola();
+void hola(char*);
 
 int crear_conexion(char* ip, char* puerto);
 void enviar_mensaje(char* mensaje, int socket_cliente);
