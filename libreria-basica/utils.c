@@ -7,28 +7,27 @@
 
 #include "utils.h"
 
-//TODO
+//Prueba de libreria.
+void hola(char* palabra){
+	printf("\n%s\n",palabra);
+}
+
 /*
  * Recibe un paquete a serializar, y un puntero a un int en el que dejar
  * el tamaño del stream de bytes serializados que devuelve
  */
 
-void hola(char* palabra){
-	printf("\n%s\n",palabra);
-}
-
-void* serializar_paquete(t_paquete* paquete, int bytes)
+void* serializar_paquete(t_paquete* paquete, int *bytes)
 {
-	void* a_enviar = malloc(bytes);
-	int offset = 0;
+	void * a_enviar = malloc(bytes + 2*sizeof(int));
+	int desplazamiento = 0;
 
-	memcpy(a_enviar + offset, &(paquete -> codigo_operacion), sizeof(int));
-	offset += sizeof(int);
-	memcpy(a_enviar + offset, &(paquete->buffer->size), sizeof(int));
-	offset += sizeof(int);
-	memcpy(a_enviar + offset, paquete->buffer->stream, paquete->buffer->size);
-
-	//*bytes = sizeof(uint8_t) + sizeof(uint32_t) + (paquete -> buffer -> size);
+	memcpy(a_enviar + desplazamiento, &(paquete->codigo_operacion), sizeof(int));
+	desplazamiento+= sizeof(int);
+	memcpy(a_enviar + desplazamiento, &(paquete->buffer->size), sizeof(int));
+	desplazamiento+= sizeof(int);
+	memcpy(a_enviar + desplazamiento, paquete->buffer->stream, paquete->buffer->size);
+	desplazamiento+= paquete->buffer->size;
 
 	return a_enviar;
 }
@@ -55,73 +54,44 @@ int crear_conexion(char *ip, char* puerto)
 	return socket_cliente;
 }
 
-
-
-
-//TODO
 void enviar_mensaje(char* mensaje, int socket_cliente)
 {
-	/*t_buffer* buffer = malloc(sizeof(t_buffer));
-
-	buffer -> size = strlen(mensaje) + 1;
-
-	void* stream = malloc(buffer -> size);
-
-	memcpy(stream, mensaje, buffer -> size);
-
-	buffer -> stream = stream;
-*/
 	t_paquete* paquete = malloc(sizeof(t_paquete));
 
-	paquete -> codigo_operacion = MENSAJE;
-	paquete -> buffer = malloc(sizeof(t_buffer));
+	paquete->buffer = malloc(sizeof(t_buffer));
+	paquete->buffer->size = sizeof(mensaje)+1;
+	paquete->buffer->stream = malloc(sizeof(mensaje));
+	memcpy(paquete->buffer->stream,mensaje,paquete->buffer->size);
+	paquete->codigo_operacion = MENSAJE;
 
-	paquete -> buffer -> size = strlen(mensaje) + 1;
+	int bytes = paquete->buffer->size + 2*sizeof(int);
 
-	printf("%i", strlen(mensaje));
-
-	paquete -> buffer -> stream = malloc(paquete -> buffer -> size);
-
-	memcpy(paquete -> buffer -> stream, mensaje, paquete -> buffer -> size);
-
-	int bytes = paquete -> buffer -> size + 2 * sizeof(int);
 	void* a_enviar = serializar_paquete(paquete, bytes);
 
 	send(socket_cliente, a_enviar, bytes, 0);
 
+	free(a_enviar);
 	free(paquete->buffer->stream);
 	free(paquete->buffer);
 	free(paquete);
-	free(a_enviar);
 }
 
-
-
-
-//TODO
 char* recibir_mensaje(int socket_cliente)
 {
 	int tamanio;
 	int codigo;
-	recv(socket_cliente, &codigo, sizeof(int), 0);
-	recv(socket_cliente, &tamanio, sizeof(int), 0);
 
-	printf("%i", codigo);
-	printf("%i", tamanio);
+	recv(socket_cliente, &codigo, sizeof(int), MSG_WAITALL);
+	recv(socket_cliente, &tamanio, sizeof(int), MSG_WAITALL);
 
 	void* stream = malloc(tamanio);
 
-	recv(socket_cliente, stream, tamanio, 0);
+	recv(socket_cliente,stream,tamanio,MSG_WAITALL);
 
-return (char*) stream;
+	return stream;
 }
 
 void liberar_conexion(int socket_cliente)
 {
 	close(socket_cliente);
 }
-
-
-
-
-
