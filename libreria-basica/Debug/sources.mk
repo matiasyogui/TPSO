@@ -15,4 +15,5 @@ C_DEPS :=
 SUBDIRS := \
 commons \
 commons/collections \
+. \
 

@@ -45,11 +45,11 @@ char* obtener_key(char* dato, char* proceso){
 
 n_proceso tipo_proceso(char* tipo){
 
-	if(strcmp("BROKER", tipo)==0)
+	if( string_equals_ignore_case("BROKER", tipo) )
 		return BROKER;
-	if(strcmp("TEAM", tipo)==0)
+	if( string_equals_ignore_case("TEAM", tipo) )
 		return TEAM;
-	if(strcmp("GAMECARD", tipo)==0)
+	if( string_equals_ignore_case("GAMECARD", tipo) )
 		return GAMECARD;
 
 	printf("No se reconocio el tipo de proceso\n");
@@ -58,23 +58,22 @@ n_proceso tipo_proceso(char* tipo){
 
 
 message_code tipo_mensaje(char* tipo_mensaje){
-
-	if(string_equals_ignore_case(tipo_mensaje, "NEW_POKEMON")){
+	
+	if(string_equals_ignore_case(tipo_mensaje, "NEW_POKEMON"))
 		return NEW_POKEMON;
-	}
-	if(string_equals_ignore_case(tipo_mensaje, "GET_POKEMON")){
+	
+	if(string_equals_ignore_case(tipo_mensaje, "GET_POKEMON"))
 		return GET_POKEMON;
-	}
-	if(string_equals_ignore_case(tipo_mensaje, "APPEARED_POKEMON")){
+	
+	if(string_equals_ignore_case(tipo_mensaje, "APPEARED_POKEMON"))
 		return APPEARED_POKEMON;
-	}
-	if(string_equals_ignore_case(tipo_mensaje, "CATCH_POKEMON")){
+	
+	if(string_equals_ignore_case(tipo_mensaje, "CATCH_POKEMON"))
 		return CATCH_POKEMON;
-	}
-	if(string_equals_ignore_case(tipo_mensaje, "CAUGHT_POKEMON")){
+	
+	if(string_equals_ignore_case(tipo_mensaje, "CAUGHT_POKEMON"))
 		return CAUGHT_POKEMON;
-	}
-
+	
 	printf("No se reconocio el tipo de mensaje\n");
 	exit(-1);
 }

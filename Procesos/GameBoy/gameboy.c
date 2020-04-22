@@ -40,7 +40,7 @@ int main(int argc,char** argv){
 
 	//char* ip = config_get_string_value(config, obtener_key("ip", proceso));
 	//char* puerto = config_get_string_value(config, obtener_key("puerto", proceso));
-
+	// obtener_datos(proceso, &ip, &puerto);
 	//printf("ip: %s, puerto: %s\n", ip, puerto); o hacer un log de esto
 
 
