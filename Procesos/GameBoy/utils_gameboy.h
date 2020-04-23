@@ -54,9 +54,13 @@ void liberar_conexion(int socket_cliente);
 
 char* obtener_key(char* dato, char* proceso);
 
-n_proceso tipo_proceso(char* tipo);
 message_code tipo_mensaje(char* tipo_mensaje);
 
-t_paquete* crearPaquete(n_proceso proceso, message_code codMensaje, ...);
+t_paquete* armar_paquete(char *tipo_mensaje, char** datos, int cant_datos);
+
+int obtener_tamanio(char** datos);
+
+void* serializar_paquete(t_paquete* paquete, int *bytes);
+
 
 #endif /* UTILS_GAMEBOY_H_ */

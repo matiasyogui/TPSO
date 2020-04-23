@@ -24,7 +24,6 @@ int crear_conexion(char *ip, char* puerto){
 	return socket_cliente;
 }
 
-
 void liberar_conexion(int socket_cliente){
 	
 	close(socket_cliente);
@@ -40,20 +39,6 @@ char* obtener_key(char* dato, char* proceso){
 	string_to_upper(key);
 
 	return key;
-}
-
-
-n_proceso tipo_proceso(char* tipo){
-
-	if( string_equals_ignore_case("BROKER", tipo) )
-		return BROKER;
-	if( string_equals_ignore_case("TEAM", tipo) )
-		return TEAM;
-	if( string_equals_ignore_case("GAMECARD", tipo) )
-		return GAMECARD;
-
-	printf("No se reconocio el tipo de proceso\n");
-	exit(-1);
 }
 
 
@@ -79,119 +64,66 @@ message_code tipo_mensaje(char* tipo_mensaje){
 }
 
 
-t_paquete* crearPaquete(n_proceso proceso, message_code codMensaje, ...){
+t_paquete* armar_paquete(char *t_mensaje, char** datos, int cant_datos){
 
-	char* pokemon = malloc(50); // mas de 50 no puede ser nombre de un pokemon
-	int id_mensaje = 0, ok_fail = 0, posX = 0, posY = 0,  cantidad = 0, lengthPokemon = 0;
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+	buffer -> size = obtener_tamanio(datos);
+	printf("[armar_paquete] tamaño de todos los datos: %d\n", buffer -> size);
 
-	va_list args;
-	va_start(args, codMensaje);
-
-	if( codMensaje == GET_POKEMON ) {														//
-		pokemon = va_arg(args, char*);														//
-	}																						//
-	if( codMensaje == CAUGHT_POKEMON ) { 													//
-		id_mensaje = atoi(va_arg(args, char*));												//
-		ok_fail = atoi(va_arg(args, char*));												//
-	} 																						//
-	if( codMensaje == CATCH_POKEMON ) {														//
-		pokemon = va_arg(args, char*);														//
-		posX = atoi(va_arg(args, char*));													//
-		posY = atoi(va_arg(args, char*));													// dependiendo la cantidad de argumentos que le enviemos
-	} 																						//
-	if( codMensaje == APPEARED_POKEMON ) {													// esto va a crear las variables necesarias
-		pokemon = va_arg(args, char*);														//
-		posX = atoi(va_arg(args, char*));													//
-		posY = atoi(va_arg(args, char*));													//
-		if( proceso == BROKER )					// necesario para el broker					//
-		id_mensaje = atoi(va_arg(args, char*)); 	// el team no lo necesita 				//
-	} 																						//
-	if( codMensaje == NEW_POKEMON ) {														//
-		pokemon = va_arg(args, char*);														//
-		posX = atoi(va_arg(args, char*));													//
-		posY = atoi(va_arg(args, char*));													//
-		cantidad = atoi(va_arg(args, char*));												//
-	}																						//
-
-	va_end(args);
-
-	t_paquete* paquete = malloc(sizeof(t_paquete));											//
-	paquete -> codigo_operacion = codMensaje;												//
-	paquete -> buffer = malloc(sizeof(t_buffer));											//
-
-	if( codMensaje == NEW_POKEMON ) {														//
-		lengthPokemon = strlen(pokemon) + 1;												//
-		paquete->buffer->size = lengthPokemon + 4 * sizeof(int);							//
-	} 																						//
-	if( codMensaje == APPEARED_POKEMON ) {													//
-		lengthPokemon = strlen(pokemon) + 1;												//
-		if( proceso == TEAM )																//
-			paquete->buffer->size = lengthPokemon + 3 * sizeof(int);						//
-		if( proceso == BROKER )																//
-			paquete->buffer->size = lengthPokemon + 4 * sizeof(int);						// se designa el tamaño de buffer
-	} 																						//
-	if( codMensaje == CATCH_POKEMON ) {														//
-		lengthPokemon = strlen(pokemon) + 1;												//
-		paquete->buffer->size = strlen(pokemon) + 3 * sizeof(int);							//
-	} 																						//
-	if( codMensaje == CAUGHT_POKEMON ) {													//
-		paquete->buffer->size = 2 * sizeof(int);											//
-	} 																						//
-	if( codMensaje == GET_POKEMON) {														//
-		lengthPokemon = strlen(pokemon) + 1;												//
-		paquete->buffer->size = lengthPokemon + sizeof(int);								//
-	}																						//
-
-	void* stream = malloc(paquete->buffer->size);
+	void* stream = malloc(buffer -> size + cant_datos * sizeof(uint32_t));
 	int offset = 0;
-	// empezamos cone este por que es DIFERENTE a los demas
-	if( codMensaje == CAUGHT_POKEMON ) { 							//
-		memcpy( stream + offset, &id_mensaje, sizeof(int) );		//
-		offset += sizeof(int);										// caught pokemon
-		memcpy( stream + offset, &ok_fail , sizeof(int) );			//
-		offset += sizeof(int);										//
-	} else {
-		memcpy( stream + offset, &lengthPokemon, sizeof(int) );						//					//						//				//
-		offset += sizeof(int);														// get_pokemon		//						//				//
-		memcpy( stream + offset, pokemon, lengthPokemon );							//					//						//				//
-		offset += lengthPokemon;													//					// catch_pokemon		//				//
-		// seria mejor poner ( codMensaje != GET_POKEMON ) pero se entiende mejor el de abajo			//		o				//				//
-		if( codMensaje == NEW_POKEMON || codMensaje == APPEARED_POKEMON || codMensaje == CATCH_POKEMON ) { 	// appeared_pokemon	//				// appaered_ṕokemon
-			memcpy( stream + offset, &posX, sizeof(int) );												// pero para el team	// new_pokemon	//
-			offset += sizeof(int);																		// 						//				//
-			memcpy( stream + offset, &posY, sizeof(int) );												//						//				//
-			offset += sizeof(int);																		//						//				//
-			if( codMensaje == NEW_POKEMON ) {																					//
-				memcpy( stream + offset, &cantidad, sizeof(int) );																//
-				offset += sizeof(int);																							//
-			}																													//
-			if( codMensaje == APPEARED_POKEMON && proceso == BROKER ) {																			//
-				memcpy( stream + offset, &id_mensaje, sizeof(int) );    																		// pero para el broker
-				offset += sizeof(int);																											//
-			}																																	//
-		}
 
+	while(*datos != NULL){
+
+		int longitud_string = strlen(*datos) + 1;  // incluimos el '\0'
+
+		printf("[armar_paquete] dato: %s, tamanio: %i\n", *datos, longitud_string);
+		
+		memcpy(stream, &longitud_string, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+		memcpy(stream, *datos, longitud_string);
+		offset += longitud_string;
+
+		datos++;
 	}
+	buffer -> stream = stream;
 
-	paquete->buffer->stream = stream;
-
+	t_paquete* paquete = malloc(sizeof(t_paquete));
+	paquete -> codigo_operacion = tipo_mensaje(t_mensaje);
+	paquete -> buffer = buffer;
+	
 	return paquete;
 }
 
+int obtener_tamanio(char** datos){
 
+	int size = 0;
+
+	while(*datos != NULL){
+		size += strlen(*(datos)) + 1; // incluimos el '\0'
+		datos++;
+	}
+	return size;
+}
+
+
+//TODO revisar la estructura del stream que armamos codigo_msj + tamaño_stream + [tamaño_string + string]*
 void *serializar_paquete(t_paquete* paquete, int *bytes){
 
-	void* stream = malloc(sizeof(2 * sizeof(uint32_t) + paquete -> buffer -> size));
+	*bytes = sizeof(uint32_t) * 2 + paquete -> buffer -> size;
 
-	uint32_t offset=0;
+	void* stream = malloc( *bytes );
+
+	int offset=0;
 
 	memcpy(stream + offset , &(paquete -> codigo_operacion), sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 	memcpy(stream + offset, &(paquete -> buffer -> size), sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 	memcpy(stream + offset, paquete -> buffer -> stream, paquete -> buffer -> size);
+	offset += paquete -> buffer -> size;
 
-	*bytes = 2 * sizeof(uint32_t) + paquete -> buffer -> size;
+	printf("[serializar_paquete] tamaño del stream al serializar paquete = %d\n", offset);
 
 	free(paquete -> buffer -> stream);
 	free(paquete -> buffer);
@@ -200,38 +132,3 @@ void *serializar_paquete(t_paquete* paquete, int *bytes){
 	return stream;
 }
 
-
-void mostrarPaquete(t_paquete* my_paquete)
-{
-	int largoNombre = 0;
-	memcpy(&largoNombre, my_paquete->buffer->stream, sizeof(int));
-	char* nombre  = malloc(largoNombre);
-	memcpy(nombre, my_paquete->buffer->stream + 4, largoNombre);
-	int posX = 0;
-	memcpy(&posX, my_paquete->buffer->stream + 4 + largoNombre, sizeof(int));
-	int posY = 0;
-	memcpy(&posY, my_paquete->buffer->stream + 4 + largoNombre + 4, sizeof(int));
-	int cant = 0;
-	memcpy(&cant, my_paquete->buffer->stream + 4 + largoNombre + 4 + 4, sizeof(int));
-	int cant2 = 0;
-	memcpy(&cant2, my_paquete->buffer->stream + 4 + largoNombre + 4 + 4 + 4, sizeof(int));
-
-	printf("codigo de mensaje %d \n", my_paquete->codigo_operacion);
-	//printf("size: %d \n", my_paquete->buffer->size);
-	printf("largo del nombre: %d \n", largoNombre);
-	printf("nombre: %s \n", nombre);
-	printf("posX: %d \n", posX);
-	printf("posY: %d \n", posY);
-	printf("cant: %d \n", cant);
-	printf("cant2: %d \n", cant2); /*
-	int posX = 0;
-	memcpy(&posX, my_paquete->buffer->stream, sizeof(int));
-	int posY = 0;
-	memcpy(&posY, my_paquete->buffer->stream + 4, sizeof(int));
-	int cant = 7;
-	memcpy(&cant, my_paquete->buffer->stream + 4 + 4, sizeof(int));
-	printf("codigo de operacion %d \n", my_paquete->codigo_operacion);
-	printf("posX: %d \n", posX);
-	printf("posY: %d \n", posY);
-	printf("cant: %d \n", cant);*/
-}

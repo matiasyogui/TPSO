@@ -9,18 +9,15 @@
 
 int main(int argc,char** argv){
 
-	t_paquete* my_paquete;
+	char* proceso = *(argv + 1);
+	char* tipo_mensaje = *(argv + 2);
+	char** datos = argv + 3;
+	int cant_datos = argc - 3;
+	int bytes;
 
-
-	//my_paquete = crearPaquete(tipo_proceso(argv[1]), tipo_mensaje(argv[2]), argv[3], argv[4], argv[5], argv[6]);
-	my_paquete = crearPaquete(tipo_proceso(argv[1]), tipo_mensaje(argv[2]), argv[3], argv[4], argv[5]);
-	mostrarPaquete(my_paquete);
-
-
-
-	//char* proceso = *(argv+1);
-	//char* tipo_mensaje = *(argv+2);
-	//char** datos = argv+3;
+	t_paquete* paquete = armar_paquete(tipo_mensaje, datos, cant_datos);
+	void * mensaje = serializar_paquete(paquete, &bytes);
+	printf("[main] bytes = %d\n", bytes);
 
 	//printf("argc = %d\n", argc);
 	//while(--argc > 0){
