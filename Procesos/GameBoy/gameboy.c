@@ -19,6 +19,8 @@ int main(int argc,char** argv){
 	void * mensaje = serializar_paquete(paquete, &bytes);
 	printf("[main] bytes = %d\n", bytes);
 
+	leer_mensaje(mensaje);
+
 	//printf("argc = %d\n", argc);
 	//while(--argc > 0){
 	//	printf("argv = %s\n",*(++argv));

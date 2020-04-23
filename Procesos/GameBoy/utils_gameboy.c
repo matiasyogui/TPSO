@@ -67,10 +67,10 @@ message_code tipo_mensaje(char* tipo_mensaje){
 t_paquete* armar_paquete(char *t_mensaje, char** datos, int cant_datos){
 
 	t_buffer* buffer = malloc(sizeof(t_buffer));
-	buffer -> size = obtener_tamanio(datos);
-	printf("[armar_paquete] tamaño de todos los datos: %d\n", buffer -> size);
+	buffer -> size = obtener_tamanio(datos) + cant_datos * sizeof(uint32_t) ;
+	printf("[armarpaquete] tamanio de todos los datos: %d\n", buffer -> size);
 
-	void* stream = malloc(buffer -> size + cant_datos * sizeof(uint32_t));
+	void* stream = malloc(buffer -> size);
 	int offset = 0;
 
 	while(*datos != NULL){
@@ -79,9 +79,9 @@ t_paquete* armar_paquete(char *t_mensaje, char** datos, int cant_datos){
 
 		printf("[armar_paquete] dato: %s, tamanio: %i\n", *datos, longitud_string);
 		
-		memcpy(stream, &longitud_string, sizeof(uint32_t));
+		memcpy(stream + offset, &longitud_string, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
-		memcpy(stream, *datos, longitud_string);
+		memcpy(stream + offset , *datos, longitud_string);
 		offset += longitud_string;
 
 		datos++;
@@ -107,10 +107,10 @@ int obtener_tamanio(char** datos){
 }
 
 
-//TODO revisar la estructura del stream que armamos codigo_msj + tamaño_stream + [tamaño_string + string]*
+//TODO //revisar la estructura del stream que armamos codigo_msj + tamaño_stream + [tamaño_string + string]*
 void *serializar_paquete(t_paquete* paquete, int *bytes){
 
-	*bytes = sizeof(uint32_t) * 2 + paquete -> buffer -> size;
+	*bytes = sizeof(uint32_t) * 4 + paquete -> buffer -> size;
 
 	void* stream = malloc( *bytes );
 
@@ -132,3 +132,31 @@ void *serializar_paquete(t_paquete* paquete, int *bytes){
 	return stream;
 }
 
+
+void leer_mensaje(void *stream){
+	int t_mensaje;
+	int offset = 0;
+	memcpy(&t_mensaje, stream + offset, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	printf("[leer_mensaje] t_mensaje = %d\n", t_mensaje);
+
+	int size;
+	memcpy(&size, stream + offset, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	printf("[leer_mensaje] size = %d\n", size);
+
+	while(offset < size + 2 * sizeof(uint32_t) ){
+		char* palabra;
+		int tamanio=0;
+
+		memcpy(&tamanio, stream + offset, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+		memcpy(palabra, stream + offset, tamanio);
+		offset += tamanio;
+
+		printf("[leer_mensaje] palabra: %s, tamanño = %d, offset = %d\n", palabra, tamanio, offset);
+
+	}
+}
