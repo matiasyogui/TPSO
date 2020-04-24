@@ -49,8 +49,8 @@ typedef struct
 } t_paquete;
 
 
-int crear_conexion(char* ip, char* puerto);
-void liberar_conexion(int socket_cliente);
+/*int crear_conexion(char* ip, char* puerto);
+void liberar_conexion(int socket_cliente);*/
 
 char* obtener_key(char* dato, char* proceso);
 

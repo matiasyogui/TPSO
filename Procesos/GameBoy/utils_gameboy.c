@@ -2,7 +2,7 @@
 #include "utils_gameboy.h"
 
 
-int crear_conexion(char *ip, char* puerto){
+/*int crear_conexion(char *ip, char* puerto){			YA ESTA EN UTILS.H
 
 	struct addrinfo hints;
 	struct addrinfo *server_info;
@@ -27,10 +27,10 @@ int crear_conexion(char *ip, char* puerto){
 void liberar_conexion(int socket_cliente){
 	
 	close(socket_cliente);
-}
+}*/
 
 
-char* obtener_key(char* dato, char* proceso){
+/*char* obtener_key(char* dato, char* proceso){
 
 	char* key = string_new();
 
@@ -39,10 +39,10 @@ char* obtener_key(char* dato, char* proceso){
 	string_to_upper(key);
 
 	return key;
-}
+}*/
 
 
-message_code tipo_mensaje(char* tipo_mensaje){
+/*message_code tipo_mensaje(char* tipo_mensaje){
 	
 	if(string_equals_ignore_case(tipo_mensaje, "NEW_POKEMON"))
 		return NEW_POKEMON;
@@ -61,7 +61,7 @@ message_code tipo_mensaje(char* tipo_mensaje){
 	
 	printf("No se reconocio el tipo de mensaje\n");
 	exit(-1);
-}
+}*/ //LO PASE A UTILS.H PORUQE ES COMUN PARA TODOS
 
 
 t_paquete* armar_paquete(char *t_mensaje, char** datos, int cant_datos){

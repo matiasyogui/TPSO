@@ -8,7 +8,8 @@
 #ifndef GAMEBOY_H_
 #define GAMEBOY_H_
 
-#include "utils_gameboy.h"
+
+#include <utils.h>
 
 #include <commons/config.h>
 #include <string.h>
@@ -16,11 +17,6 @@
 #include <commons/log.h>
 
 
-t_config* leer_config();
-t_log* iniciar_logger(void);
-
-
-void terminar_programa(int conexion, t_log* logger, t_config* config);
 
 
 #endif /* GAMEBOY_H_ */

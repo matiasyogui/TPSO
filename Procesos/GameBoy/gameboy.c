@@ -54,7 +54,7 @@ int main(int argc,char** argv){
 	return 0;
 }
 
-
+/*  ///AGREGUE ESTOS TRES METODOS A UTILS.C ASI SE PUEDEN USAR EN TODOS LOS PROYECTOS Y NO HAY QUE VOLVER A ESCRIBIRLAS ;)
 t_log* iniciar_logger(void){
 
 	t_log* logger = log_create("gameboy.log","gameboy.c",1 ,LOG_LEVEL_INFO);
@@ -88,3 +88,4 @@ void terminar_programa(int conexion, t_log* logger, t_config* config){
 	liberar_conexion(conexion);
 }
 
+*/
