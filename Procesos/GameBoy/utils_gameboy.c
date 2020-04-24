@@ -110,7 +110,7 @@ int obtener_tamanio(char** datos){
 //TODO //revisar la estructura del stream que armamos codigo_msj + tamaño_stream + [tamaño_string + string]*
 void *serializar_paquete(t_paquete* paquete, int *bytes){
 
-	*bytes = sizeof(uint32_t) * 4 + paquete -> buffer -> size;
+	*bytes = sizeof(uint32_t) * 2 + paquete -> buffer -> size;
 
 	void* stream = malloc( *bytes );
 
@@ -156,7 +156,10 @@ void leer_mensaje(void *stream){
 		memcpy(palabra, stream + offset, tamanio);
 		offset += tamanio;
 
+		printf("[leer_mensaje pointer = %p", stream);
 		printf("[leer_mensaje] palabra: %s, tamanño = %d, offset = %d\n", palabra, tamanio, offset);
 
 	}
 }
+
+

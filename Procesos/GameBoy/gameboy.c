@@ -34,22 +34,25 @@ int main(int argc,char** argv){
 
 
 
-	//t_config* config = leer_config();
+	t_config* config = leer_config();
 	//t_log* logger = iniciar_logger();
 
-	//char* ip = config_get_string_value(config, obtener_key("ip", proceso));
-	//char* puerto = config_get_string_value(config, obtener_key("puerto", proceso));
+	char* ip = config_get_string_value(config, obtener_key("ip", proceso));
+	char* puerto = config_get_string_value(config, obtener_key("puerto", proceso));
 	// obtener_datos(proceso, &ip, &puerto);
-	//printf("ip: %s, puerto: %s\n", ip, puerto); o hacer un log de esto
+	printf("ip: %s, puerto: %s\n", ip, puerto); //o hacer un log de esto
 
 
-	//int conexion = crear_conexion(ip, puerto);
-	//enviar_mensaje(argv[2], conexion);
+	int conexion = crear_conexion(ip, puerto);
+	if(send(conexion, mensaje, bytes, 0) == -1){
+		printf("[gameboy] error");
+	}
+	free(mensaje);
 
 
 	//terminar_programa(conexion, logger, config);
-	//config_destroy(config);
-	//close(conexion);
+	config_destroy(config);
+	close(conexion);
 
 	return 0;
 }

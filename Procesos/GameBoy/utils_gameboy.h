@@ -62,5 +62,7 @@ int obtener_tamanio(char** datos);
 
 void* serializar_paquete(t_paquete* paquete, int *bytes);
 
+void enviar_mensaje(void* mensaje, int conexion);
+
 
 #endif /* UTILS_GAMEBOY_H_ */
