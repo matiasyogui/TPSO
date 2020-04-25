@@ -17,28 +17,17 @@ int crear_conexion(char *ip, char* puerto){
 	int socket_cliente = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
 
 	if(connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen) == -1)
-		printf("No se pudo realizar la conexion");
+		printf("No se pudo realizar la conexion\n");
 
 	freeaddrinfo(server_info);
 
 	return socket_cliente;
 }
 
+
 void liberar_conexion(int socket_cliente){
 	
 	close(socket_cliente);
-}
-
-
-char* obtener_key(char* dato, char* proceso){
-
-	char* key = string_new();
-
-	string_append(&key, dato);
-	string_append_with_format(&key, "_%s", proceso);
-	string_to_upper(key);
-
-	return key;
 }
 
 
@@ -64,46 +53,38 @@ message_code tipo_mensaje(char* tipo_mensaje){
 }
 
 
-t_paquete* armar_paquete(char *t_mensaje, char** datos, int cant_datos){
+t_paquete* armar_paquete(char** datos){
 
-	t_buffer* buffer = malloc(sizeof(t_buffer));
-	buffer -> size = obtener_tamanio(datos) + cant_datos * sizeof(uint32_t) ;
-	printf("[armarpaquete] tamanio de todos los datos: %d\n", buffer -> size);
+	int t_mensaje = tipo_mensaje(*datos);
+	char** datos_serializar = datos + 1;
 
-	void* stream = malloc(buffer -> size);
+	t_paquete* paquete = malloc(sizeof(t_paquete));
+	paquete -> codigo_operacion = t_mensaje;
+	paquete -> buffer = malloc(sizeof(t_buffer));
+	paquete -> buffer -> size = obtener_tamanio(datos_serializar) + cant_elementos(datos_serializar) * sizeof(uint32_t);
+	
+	printf("[armarpaquete] tamanio de todos los datos: %d\n", paquete -> buffer -> size);
+	void* stream = malloc(paquete -> buffer -> size);
 	int offset = 0;
 
-	while(*datos != NULL){
+	while(*(datos_serializar) != NULL){
 
-		int longitud_string = strlen(*datos) + 1;  // incluimos el '\0'
+		int longitud_string = strlen(*datos_serializar) + 1;  // incluimos el '\0'
 
 		printf("[armar_paquete] dato: %s, tamanio: %i\n", *datos, longitud_string);
 		
 		memcpy(stream + offset, &longitud_string, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
-		memcpy(stream + offset , *datos, longitud_string);
+
+		memcpy(stream + offset , *datos_serializar, longitud_string);
 		offset += longitud_string;
 
-		datos++;
+		datos_serializar++;
 	}
-	buffer -> stream = stream;
 
-	t_paquete* paquete = malloc(sizeof(t_paquete));
-	paquete -> codigo_operacion = tipo_mensaje(t_mensaje);
-	paquete -> buffer = buffer;
+	paquete -> buffer -> stream = stream;
 	
 	return paquete;
-}
-
-int obtener_tamanio(char** datos){
-
-	int size = 0;
-
-	while(*datos != NULL){
-		size += strlen(*(datos)) + 1; // incluimos el '\0'
-		datos++;
-	}
-	return size;
 }
 
 
@@ -118,8 +99,10 @@ void *serializar_paquete(t_paquete* paquete, int *bytes){
 
 	memcpy(stream + offset , &(paquete -> codigo_operacion), sizeof(uint32_t));
 	offset += sizeof(uint32_t);
+
 	memcpy(stream + offset, &(paquete -> buffer -> size), sizeof(uint32_t));
 	offset += sizeof(uint32_t);
+
 	memcpy(stream + offset, paquete -> buffer -> stream, paquete -> buffer -> size);
 	offset += paquete -> buffer -> size;
 
@@ -130,6 +113,64 @@ void *serializar_paquete(t_paquete* paquete, int *bytes){
 	free(paquete);
 
 	return stream;
+}
+
+
+void* algo(char** argumentos, int* bytes){
+
+	if(string_equals_ignore_case(*(argumentos + 1), "SUSCRIPTOR")){
+		//ver que pasa en este caso
+		
+
+	} else{
+		//t_paquete* paquete = armar_paquete(argumentos+2);
+		//return = serializar_paquete(paquete, bytes);
+
+	}
+}
+
+
+void enviar_mensaje(t_paquete* paquete_enviar, int socket_cliente){
+	int bytes;
+
+	void* stream_enviar = serializar_paquete(paquete_enviar, &bytes);
+
+	if(send(socket_cliente, stream_enviar, bytes, 0) == -1){
+		printf("Error al enviar el mensaje\n");
+	}
+
+	free(stream_enviar);
+}
+
+
+int obtener_tamanio(char** datos){
+	int size = 0;
+	while(*datos != NULL){
+		size += strlen(*(datos)) + 1; // incluimos el '\0'
+		datos++;
+	}
+	return size;
+}
+
+
+int cant_elementos(char** array){
+	int cant = 0;
+	while(*array != NULL){
+		array++; 
+		cant++;
+	}
+	return cant;
+}
+
+char* obtener_key(char* dato, char* proceso){
+
+	char* key = string_new();
+
+	string_append(&key, dato);
+	string_append_with_format(&key, "_%s", proceso);
+	string_to_upper(key);
+
+	return key;
 }
 
 
@@ -156,10 +197,8 @@ void leer_mensaje(void *stream){
 		memcpy(palabra, stream + offset, tamanio);
 		offset += tamanio;
 
-		printf("[leer_mensaje pointer = %p", stream);
+		//printf("[leer_mensaje] pointer = %p\n", stream);
 		printf("[leer_mensaje] palabra: %s, tamanño = %d, offset = %d\n", palabra, tamanio, offset);
 
 	}
 }
-
-

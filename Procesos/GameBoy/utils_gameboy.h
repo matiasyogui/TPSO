@@ -24,6 +24,7 @@ typedef enum{
 	CATCH_POKEMON = 3,
 	CAUGHT_POKEMON = 4,
 	GET_POKEMON = 5,
+	LOCALIZED_POKEMON = 6,
 
 }message_code;
 
@@ -56,13 +57,15 @@ char* obtener_key(char* dato, char* proceso);
 
 message_code tipo_mensaje(char* tipo_mensaje);
 
-t_paquete* armar_paquete(char *tipo_mensaje, char** datos, int cant_datos);
+t_paquete* armar_paquete(char** datos);
 
 int obtener_tamanio(char** datos);
 
 void* serializar_paquete(t_paquete* paquete, int *bytes);
 
-void enviar_mensaje(void* mensaje, int conexion);
+void enviar_mensaje(t_paquete* paquete_enviar, int conexion);
+
+int cant_elementos(char** array);
 
 
 #endif /* UTILS_GAMEBOY_H_ */

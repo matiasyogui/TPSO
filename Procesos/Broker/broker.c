@@ -93,7 +93,7 @@ void process_request(int cod_op, int cliente_fd) {
         case GET_POKEMON:
 
             break;
-        //case LOCALIZED_POKEMON:
+        case LOCALIZED_POKEMON:
 
 
            // break;
