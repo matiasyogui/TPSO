@@ -1,10 +1,3 @@
-/*
- * broker.c
- *
- *  Created on: 18 abr. 2020
- *      Author: utnso
- */
-
 
 #include "broker.h"
 
@@ -65,7 +58,7 @@ void esperar_cliente(int socket_servidor)
 void serve_client(int* socket)
 {
 	int cod_op;
-
+    int flag=0;
 	if(recv(*socket, &cod_op, sizeof(int), MSG_WAITALL) == -1)
 		cod_op = -1;
 	process_request(cod_op, *socket);
@@ -114,3 +107,19 @@ void* recibir_mensaje(int socket_cliente, int* size)
 	return buffer;
 }
 
+void leer_mensaje(void* stream, int size){
+    int offset = 0, tamanio = 0;
+    while(offset < size){
+        
+        memcpy(&tamanio, stream + offset, sizeof(uint32_t));
+        offset += sizeof(uint32_t);
+
+        char* palabra = malloc(tamanio);
+
+        memcpy(palabra, stream + offset, tamanio);
+        offset += tamanio;
+
+        printf("[broker] palabra : %s, tamañio = %d\n", palabra, tamanio);
+        free(palabra);
+    }
+}
