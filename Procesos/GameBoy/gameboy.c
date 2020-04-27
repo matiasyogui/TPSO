@@ -1,91 +1,36 @@
-/*
- * gameboy.c
- *
- *  Created on: 18 abr. 2020
- *      Author: utnso
- */
+
 #include "gameboy.h"
 
 
 int main(int argc,char** argv){
+	// proceso = argv+1 ,tipo_mensaje = argv+2,datos = arg+3 en adelante 
+	// para ssucripcion ver que sucede con ese caso,
 
-	char* proceso = *(argv + 1);
-	char* tipo_mensaje = *(argv + 2);
-	char** datos = argv + 3;
-	int cant_datos = argc - 3;
+	t_config* config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/GameBoy/gameboy.config");
+	t_log* logger = iniciar_logger("gameboy.log", "gameboy", 0, LOG_LEVEL_INFO);
+
+	char* ip = config_get_string_value(config, obtener_key("ip", *(argv+1)));
+	char* puerto = config_get_string_value(config, obtener_key("puerto", *(argv+1)));
+
+	printf("ip = %s, puerto = %s\n",ip,puerto);
+
 	int bytes;
 
-	t_paquete* paquete = armar_paquete(tipo_mensaje, datos, cant_datos);
+	t_paquete* paquete = armar_paquete(argv + 2);
 	void * mensaje = serializar_paquete(paquete, &bytes);
-	printf("[main] bytes = %d\n", bytes);
 
 	leer_mensaje(mensaje);
 
-	//printf("argc = %d\n", argc);
-	//while(--argc > 0){
-	//	printf("argv = %s\n",*(++argv));
-	//}
+	int conexion = crear_conexion(ip, puerto);
+	log_info(logger,"Se creo la conexion con el proceso ");
 
-	//char **p ;
-	//p = argv+2;
-	//while(*p != NULL){
-	//		printf("p = %s\n",*(++p));
-	//	}
+	enviar_mensaje(paquete, conexion);
 
-
-
-	//t_config* config = leer_config();
-	//t_log* logger = iniciar_logger();
-
-	//char* ip = config_get_string_value(config, obtener_key("ip", proceso));
-	//char* puerto = config_get_string_value(config, obtener_key("puerto", proceso));
-	// obtener_datos(proceso, &ip, &puerto);
-	//printf("ip: %s, puerto: %s\n", ip, puerto); o hacer un log de esto
-
-
-	//int conexion = crear_conexion(ip, puerto);
-	//enviar_mensaje(argv[2], conexion);
-
-
-	//terminar_programa(conexion, logger, config);
-	//config_destroy(config);
-	//close(conexion);
-
+	terminar_programa(conexion, logger, config);
+	
 	return 0;
 }
 
-/*  ///AGREGUE ESTOS TRES METODOS A UTILS.C ASI SE PUEDEN USAR EN TODOS LOS PROYECTOS Y NO HAY QUE VOLVER A ESCRIBIRLAS ;)
-t_log* iniciar_logger(void){
-
-	t_log* logger = log_create("gameboy.log","gameboy.c",1 ,LOG_LEVEL_INFO);
-
-	if(logger == NULL){
-		printf("No se pudo inicializar el logger");
-		exit(-1);
-	}
-
-	return logger;
-}
 
 
-t_config* leer_config(void){
 
-	t_config * config = config_create("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/GameBoy/gameboy.config");
-
-	if(config == NULL ){
-		printf("No se pudo inicializar el config");
-		exit(-1);
-	}
-
-	return config; 
-}
-
-
-void terminar_programa(int conexion, t_log* logger, t_config* config){
-
-	log_destroy(logger);
-	config_destroy(config);
-	liberar_conexion(conexion);
-}
-
-*/

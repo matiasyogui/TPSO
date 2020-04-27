@@ -1,11 +1,6 @@
-/*
- * team.c
- *
- *  Created on: 18 abr. 2020
- *      Author: utnso
- */
 
 
+<<<<<<< HEAD
 #include <utils.h>
 int main(int argc,char** argv){
 	//LEO ARCHIVO DE CONFIGURACION
@@ -27,6 +22,10 @@ int main(int argc,char** argv){
 	PUERTO_BROKER= config_get_int_value(config,"PUERTO_BROKER");
 	LOG_FILE= config_get_string_value(config,"LOG_FILE");
 
+=======
+int main(){
+	
+>>>>>>> b15ac6245468199b790e2dce48beab678ee008b2
 	return 0;
 }
 
