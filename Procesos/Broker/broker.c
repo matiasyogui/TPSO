@@ -1,12 +1,94 @@
 
 #include "broker.h"
 
+typedef struct{
+
+	t_list* suscriptores;
+
+}t_suscriptor;
+
+typedef struct{
+
+	char* proceso;
+
+}t_data;
+
 int main(){
-    printf("hola\n");
-    fflush(stdout);
-	iniciar_servidor(IP, PUERTO);
+
+
+	t_list* lista_subs = crear_lista_subs();
+
+	t_data* suscriptor1 = malloc(sizeof(t_data));
+	suscriptor1 -> proceso = "broker";
+
+	t_data* suscriptor2 = malloc(sizeof(t_data));
+	suscriptor2 -> proceso = "gameboy";
+
+	t_data* suscriptor3 = malloc(sizeof(t_data));
+	suscriptor3 -> proceso = "gamecard";
+
+	agregar_sub(lista_subs, NEW_POKEMON, (void*)suscriptor1);
+	agregar_sub(lista_subs, NEW_POKEMON, (void*)suscriptor2);
+	agregar_sub(lista_subs, CATCH_POKEMON, (void*)suscriptor3);
+
+
+	t_list* puntero_lista_subs = list_get(lista_subs, NEW_POKEMON);
+
+	t_link_element* suscriber = list_get(puntero_lista_subs, 0);
+
+	t_data* algo = (t_data*)suscriber -> data;
+
+	printf("%s", algo->proceso);
+
+
+
+	//parte servidor
+    //fflush(stdout);
+	//iniciar_servidor(IP, PUERTO);
 	return 0;
 }
+
+
+
+
+t_list* crear_lista_subs(){
+
+	t_list* lista_subs = list_create();
+
+		for(int i = 0; i < 6; i++){
+			t_suscriptor* suscriptor = malloc(sizeof(t_suscriptor));
+			suscriptor -> suscriptores = list_create();
+			list_add(lista_subs, suscriptor);
+		}
+
+	return lista_subs;
+}
+
+
+void agregar_sub(t_list* lista, int index, void* suscriptor){
+
+	t_list* puntero_subs = list_get(lista, index);
+
+	t_link_element* elemento = malloc(sizeof(t_link_element));
+	elemento -> data = suscriptor;
+
+	list_add(puntero_subs, elemento);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
 
 
 void iniciar_servidor(char* ip, char* puerto)
@@ -123,3 +205,5 @@ void leer_mensaje(void* stream, int size){
         free(palabra);
     }
 }
+
+*/

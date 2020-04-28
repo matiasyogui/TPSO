@@ -120,14 +120,14 @@ int cant_elementos(char** array){
 }
 
 
-//TODO //revisar la estructura del stream = codigo_msj + tamaño_stream + [tamaño_string + string]*
+//revisar la estructura del stream = codigo_msj + tamaño_stream + [tamaño_string + string]*
 void *serializar_paquete(t_paquete* paquete, int *bytes){
 
 	void* stream = malloc( sizeof(int) * 2 + paquete -> buffer -> size );
 
 	int offset=0;
 
-	memcpy(stream + offset , &(paquete -> codigo_operacion), sizeof(int));
+	memcpy(stream + offset, &(paquete -> codigo_operacion), sizeof(int));
 	offset += sizeof(int);
 	memcpy(stream + offset, &(paquete -> buffer -> size), sizeof(int));
 	offset += sizeof(int);

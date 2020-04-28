@@ -17,6 +17,19 @@
 #define PUERTO "4444"
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 pthread_t thread;
 
 void iniciar_servidor(char* ip, char* puerto);

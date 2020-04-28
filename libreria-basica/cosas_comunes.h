@@ -14,12 +14,12 @@
 
 typedef enum{
 
-	NEW_POKEMON = 1,
-	APPEARED_POKEMON = 2,
-	CATCH_POKEMON = 3,
-	CAUGHT_POKEMON = 4,
-	GET_POKEMON = 5,
-	LOCALIZED_POKEMON = 6,
+	NEW_POKEMON,
+	APPEARED_POKEMON,
+	CATCH_POKEMON,
+	CAUGHT_POKEMON,
+	GET_POKEMON,
+	LOCALIZED_POKEMON,
 
 }message_code;
 
@@ -34,7 +34,6 @@ typedef struct{
 
 	message_code codigo_operacion;
 	t_buffer* buffer;
-
 }t_paquete;
 
 typedef enum{

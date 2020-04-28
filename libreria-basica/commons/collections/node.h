@@ -19,10 +19,15 @@
 
 
 	struct link_element{
+
 		void *data;
 		struct link_element *next;
+
 	};
 	typedef struct link_element t_link_element;
+
+
+
 
 	struct double_link_element{
 		struct double_link_element *previous;

@@ -2,17 +2,17 @@
 #include "utils_gameboy.h"
 
 
-t_paquete* armar_paquete(char** datos){ //datos = tipo_mensaje + [datos_mensaje]*
+t_paquete* armar_paquete(char** datos){
+	//datos = tipo_mensaje + [datos_mensaje]*
 
-	int t_mensaje = tipo_mensaje(*datos);
 	char** datos_serializar = datos + 1;
 
 	t_paquete* paquete = malloc(sizeof(t_paquete));
 
-	paquete -> codigo_operacion = t_mensaje;
+	paquete -> codigo_operacion = tipo_mensaje(*datos);
 	paquete -> buffer = malloc(sizeof(t_buffer));
 	paquete -> buffer -> size = obtener_tamanio(datos_serializar) + cant_elementos(datos_serializar) * sizeof(uint32_t);
-	
+
 	//printf("[armarpaquete] tamanio de todos los datos: %d\n", paquete -> buffer -> size);
 	void* stream = malloc(paquete -> buffer -> size);
 	int offset = 0;
