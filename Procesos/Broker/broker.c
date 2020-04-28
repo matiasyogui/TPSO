@@ -27,8 +27,8 @@ int main(){
 	t_data* suscriptor3 = malloc(sizeof(t_data));
 	suscriptor3 -> proceso = "gamecard";
 
-	agregar_sub(lista_subs, NEW_POKEMON, (void*)suscriptor1);
-	agregar_sub(lista_subs, NEW_POKEMON, (void*)suscriptor2);
+	agregar_sub(lista_subs, NEW_POKEMON,   (void*)suscriptor1);
+	agregar_sub(lista_subs, NEW_POKEMON,   (void*)suscriptor2);
 	agregar_sub(lista_subs, CATCH_POKEMON, (void*)suscriptor3);
 
 
@@ -38,7 +38,7 @@ int main(){
 
 	t_data* algo = (t_data*)suscriber -> data;
 
-	printf("%s", algo->proceso);
+	printf("%s", algo -> proceso);
 
 
 
@@ -59,6 +59,7 @@ t_list* crear_lista_subs(){
 			t_suscriptor* suscriptor = malloc(sizeof(t_suscriptor));
 			suscriptor -> suscriptores = list_create();
 			list_add(lista_subs, suscriptor);
+
 		}
 
 	return lista_subs;
