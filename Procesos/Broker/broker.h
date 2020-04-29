@@ -16,7 +16,7 @@
 t_list* crear_lista_subs(void);
 void destruir_lista(t_list* lista);
 void agregar_sub(t_list* lista, int index, void* suscriptor);
-
+void borrar_suscriptor(void* suscriptor);
 
 
 #define IP "127.0.0.1"

@@ -32,28 +32,24 @@ int main(){
 
 	agregar_sub(lista_subs, NEW_POKEMON,   suscriptor1);
 	agregar_sub(lista_subs, NEW_POKEMON,   suscriptor2);
-	agregar_sub(lista_subs, CATCH_POKEMON, suscriptor3);
+	agregar_sub(lista_subs, NEW_POKEMON, suscriptor3);
+
+	//t_list* lista = lista_subs -> head -> data;
+
+	//printf("%d\n", lista->elements_count);
 
 
-	int *p ;
-	p = NULL;
-	printf("%p\n", p);
-
-	t_list* lista = lista_subs -> head -> data;
-
-	printf("%d\n", lista->elements_count);
-
-
-	destruir_lista(lista);
+	//destruir_lista(lista);
 
 
 	//t_list* puntero_lista_subs = list_get(lista_subs, NEW_POKEMON);
 
-	//t_link_element* suscriber = list_get(puntero_lista_subs, 1);
+	//t_subscriptor* suscriber = list_get(puntero_lista_subs, 2);
 
-	//t_data* algo = suscriber -> data;
+	//list_iterate(puntero_lista_subs, &borrar_suscriptor);
 
-	//printf("%s", algo -> proceso);
+
+	destruir_lista(lista_subs);
 
 
 	//parte servidor
@@ -103,9 +99,8 @@ void eliminar_elemento(void* elemento){
 void destruir_lista(t_list* lista){
 
 	for(int i = 0; i < 6; i++){
-		t_link_element* elemento = list_get(lista, i);
-		list_destroy_and_destroy_elements(elemento -> data, &borrar_suscriptor);
-		//list_iterate(elemento->data, borrar_suscriptor);
+		t_list* elemento = list_get(lista, i);
+		list_destroy_and_destroy_elements(elemento, &borrar_suscriptor);
 	}
 	list_destroy(lista);
 }

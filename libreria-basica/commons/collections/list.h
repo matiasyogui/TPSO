@@ -21,8 +21,10 @@
 	#include <stdbool.h>
 
 	typedef struct {
+
 		t_link_element *head;
 		int elements_count;
+
 	} t_list;
 
 	/**
