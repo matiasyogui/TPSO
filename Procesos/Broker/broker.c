@@ -1,45 +1,59 @@
-
 #include "broker.h"
-
-typedef struct{
-
-	t_list* suscriptores;
-
-}t_suscriptor;
 
 typedef struct{
 
 	char* proceso;
 
-}t_data;
+}t_subscriptor;
 
 int main(){
 
 
 	t_list* lista_subs = crear_lista_subs();
 
-	t_data* suscriptor1 = malloc(sizeof(t_data));
+	t_subscriptor* suscriptor1 = malloc(sizeof(t_subscriptor));
 	suscriptor1 -> proceso = "broker";
+	//suscriptor1 -> proceso = malloc(strlen("broker") + 1);
+	//memcpy(suscriptor1 -> proceso, "broker", strlen("broker") + 1);
 
-	t_data* suscriptor2 = malloc(sizeof(t_data));
+
+	t_subscriptor* suscriptor2 = malloc(sizeof(t_subscriptor));
 	suscriptor2 -> proceso = "gameboy";
+	//suscriptor2 -> proceso = malloc(strlen("gameboy") + 1);
+	//memcpy(suscriptor2 -> proceso, "gameboy", strlen("gameboy") + 1);
 
-	t_data* suscriptor3 = malloc(sizeof(t_data));
+
+	t_subscriptor* suscriptor3 = malloc(sizeof(t_subscriptor));
 	suscriptor3 -> proceso = "gamecard";
-
-	agregar_sub(lista_subs, NEW_POKEMON,   (void*)suscriptor1);
-	agregar_sub(lista_subs, NEW_POKEMON,   (void*)suscriptor2);
-	agregar_sub(lista_subs, CATCH_POKEMON, (void*)suscriptor3);
+	//suscriptor3 -> proceso = malloc(strlen("gamecard") + 1);
+	//memcpy(suscriptor3 -> proceso, "gamecard", strlen("gamecard") + 1);
 
 
-	t_list* puntero_lista_subs = list_get(lista_subs, NEW_POKEMON);
 
-	t_link_element* suscriber = list_get(puntero_lista_subs, 0);
+	agregar_sub(lista_subs, NEW_POKEMON,   suscriptor1);
+	agregar_sub(lista_subs, NEW_POKEMON,   suscriptor2);
+	agregar_sub(lista_subs, CATCH_POKEMON, suscriptor3);
 
-	t_data* algo = (t_data*)suscriber -> data;
 
-	printf("%s", algo -> proceso);
+	int *p ;
+	p = NULL;
+	printf("%p\n", p);
 
+	t_list* lista = lista_subs -> head -> data;
+
+	printf("%d\n", lista->elements_count);
+
+
+	destruir_lista(lista);
+
+
+	//t_list* puntero_lista_subs = list_get(lista_subs, NEW_POKEMON);
+
+	//t_link_element* suscriber = list_get(puntero_lista_subs, 1);
+
+	//t_data* algo = suscriber -> data;
+
+	//printf("%s", algo -> proceso);
 
 
 	//parte servidor
@@ -49,17 +63,13 @@ int main(){
 }
 
 
-
-
-t_list* crear_lista_subs(){
+t_list* crear_lista_subs(void){
 
 	t_list* lista_subs = list_create();
 
 		for(int i = 0; i < 6; i++){
-			t_suscriptor* suscriptor = malloc(sizeof(t_suscriptor));
-			suscriptor -> suscriptores = list_create();
-			list_add(lista_subs, suscriptor);
-
+			t_list* new_list = list_create();
+			list_add(lista_subs, new_list);
 		}
 
 	return lista_subs;
@@ -69,13 +79,37 @@ t_list* crear_lista_subs(){
 void agregar_sub(t_list* lista, int index, void* suscriptor){
 
 	t_list* puntero_subs = list_get(lista, index);
-
-	t_link_element* elemento = malloc(sizeof(t_link_element));
-	elemento -> data = suscriptor;
-
-	list_add(puntero_subs, elemento);
+	list_add(puntero_subs, suscriptor);
 
 }
+
+void borrar_suscriptor(void* suscriptor){
+	t_subscriptor* aux = suscriptor;
+	//free(aux -> proceso);
+	// hacer un free por cada malloc que hayamos hecho para crear la estrcutura con la info de subscriptor
+	free(aux);
+}
+
+
+void eliminar_elemento(void* elemento){
+	t_link_element* element = elemento;
+	t_subscriptor* data = element -> data;
+	free(data -> proceso);
+	free(data);
+	free(element);
+
+}
+
+void destruir_lista(t_list* lista){
+
+	for(int i = 0; i < 6; i++){
+		t_link_element* elemento = list_get(lista, i);
+		list_destroy_and_destroy_elements(elemento -> data, &borrar_suscriptor);
+		//list_iterate(elemento->data, borrar_suscriptor);
+	}
+	list_destroy(lista);
+}
+
 
 
 

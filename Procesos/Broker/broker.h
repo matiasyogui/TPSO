@@ -13,6 +13,12 @@
 
 #include<cosas_comunes.h>
 
+t_list* crear_lista_subs(void);
+void destruir_lista(t_list* lista);
+void agregar_sub(t_list* lista, int index, void* suscriptor);
+
+
+
 #define IP "127.0.0.1"
 #define PUERTO "4444"
 
