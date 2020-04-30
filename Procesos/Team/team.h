@@ -22,18 +22,8 @@ typedef struct{
 	char** pokemones;
 }entrenador;
 
-char** OBJETIVO_GLOBAL;
-int TIEMPO_RECONEXION;
-int RETARDO_CICLO_CPU;
-char* ALGORITMO_PLANIFICACION;
-int QUANTUM;
-char* IP_BROKER;
-int ESTIMACION_INICIAL;
-int PUERTO_BROKER;
-char LOG_FILE;
 
-
-
+void leer_archivo_configuracion(char* direccion);
 
 
 
