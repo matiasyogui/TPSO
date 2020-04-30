@@ -9,11 +9,11 @@
 #define TEAM_H_
 typedef enum
 {
-	NEW = 0,
-	READY = 1,
-	BLOCK = 3,
-	EXEC=2,
-	EXIT=-1
+	NEW,
+	READY,
+	BLOCK,
+	EXEC,
+	EXIT
 }estado;
 
 typedef struct{
