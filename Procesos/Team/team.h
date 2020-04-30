@@ -23,7 +23,7 @@ typedef struct{
 }entrenador;
 
 
-void leer_archivo_configuracion(char* direccion);
+void leer_archivo_configuracion();
 
 
 
