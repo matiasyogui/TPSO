@@ -17,13 +17,19 @@ typedef enum
 }estado;
 
 typedef struct{
-	int int posicion[][];
+	t_posicion* posicion;
 	char** objetivo;
 	char** pokemones;
-}entrenador;
+}t_entrenador;
+
+typedef struct{
+	int posx;
+	int posy;
+}t_posicion;
 
 
 void leer_archivo_configuracion();
+void liberar_memoria();
 
 
 
