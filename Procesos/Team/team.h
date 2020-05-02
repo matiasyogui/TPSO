@@ -7,14 +7,6 @@
 
 #ifndef TEAM_H_
 #define TEAM_H_
-typedef enum
-{
-	NEW,
-	READY,
-	BLOCK,
-	EXEC,
-	EXIT
-}estado;
 
 typedef struct{
 	t_posicion* posicion;
