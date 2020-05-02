@@ -1,5 +1,7 @@
 
 #include <cosas_comunes.h>
+#include <pthread.h>
+#include "team.h"
 
 
 char** POSICIONES_ENTRENADORES;
@@ -13,7 +15,6 @@ char* IP_BROKER;
 int ESTIMACION_INICIAL;
 int PUERTO_BROKER;
 char LOG_FILE;
-int cantEntrenadores;
 int i;
 
 
@@ -21,14 +22,32 @@ int i;
 int main(int argc,char** argv){
 	//LEO ARCHIVO DE CONFIGURACION
 	leer_archivo_configuracion();
-	cantEntrenadores = cant_elementos(POSICIONES_ENTRENADORES);
-	t_entrenador* entrenadores [cantEntrenadores] = malloc(sizeof(t_entrenador) * 3);
+	int cantEntrenadores = cant_elementos(POSICIONES_ENTRENADORES);
+	t_entrenador* entrenadores[cantEntrenadores];
+	pthread_t* hilos[cantEntrenadores];
 	for(i=0;i<cantEntrenadores;i++){
-	entrenadores[i]-> posicion = malloc(sizeof(t_posicion));
-	entrenadores[i]->posicion
-	entrenadores[i]->objetivo = malloc(sizeof(string_split(OBJETIVOS_ENTRENADORES[i],'|')));
+		entrenadores[i] = malloc(sizeof(t_entrenador));
+		entrenadores[i]-> posicion = malloc(sizeof(t_posicion));
+
+		char** posiciones = malloc(sizeof(char**));
+		posiciones = string_split(POSICIONES_ENTRENADORES[i],'|');
+		entrenadores[i]->posicion->posx = atoi(posiciones[0]);
+		entrenadores[i]->posicion->posy = atoi(posiciones[1]);
+		entrenadores[i]->objetivo = malloc(sizeof(string_split(OBJETIVOS_ENTRENADORES[i],'|')));
+		entrenadores[i]->objetivo = string_split(OBJETIVOS_ENTRENADORES[i],'|');
+		entrenadores[i]->pokemones = string_split(POKEMON_ENTRENADORES[i],'|');
+		pthread_create(&hilos[i],NULL,printf("soy el hilo %d",i+1),NULL);
+	}
+	for(i=0;i<cantEntrenadores;i++){
+		pthread_join(hilos[i],NULL);
 	}
 	liberar_memoria();
+	for(i=0;i<cantEntrenadores;i++){
+		free(entrenadores[i]-> posicion);
+		free(entrenadores[i]-> objetivo);
+		free(entrenadores[i]-> pokemones);
+		free(entrenadores[i]);
+	}
 	return EXIT_SUCCESS;
 }
 

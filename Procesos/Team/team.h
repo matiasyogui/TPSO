@@ -9,15 +9,17 @@
 #define TEAM_H_
 
 typedef struct{
+	int posx;
+	int posy;
+}t_posicion;
+
+typedef struct{
 	t_posicion* posicion;
 	char** objetivo;
 	char** pokemones;
 }t_entrenador;
 
-typedef struct{
-	int posx;
-	int posy;
-}t_posicion;
+
 
 
 void leer_archivo_configuracion();
