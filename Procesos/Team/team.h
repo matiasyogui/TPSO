@@ -7,23 +7,23 @@
 
 #ifndef TEAM_H_
 #define TEAM_H_
-typedef enum
-{
-	NEW,
-	READY,
-	BLOCK,
-	EXEC,
-	EXIT
-}estado;
 
 typedef struct{
-	int int posicion[][];
+	int posx;
+	int posy;
+}t_posicion;
+
+typedef struct{
+	t_posicion* posicion;
 	char** objetivo;
 	char** pokemones;
-}entrenador;
+}t_entrenador;
+
+
 
 
 void leer_archivo_configuracion();
+void liberar_memoria();
 
 
 
