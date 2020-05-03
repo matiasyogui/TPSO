@@ -1,8 +1,5 @@
 #include "envio_recepcion.h"
 
-/*
-
-
 
 void iniciar_servidor(char* ip, char* puerto)
 {
@@ -45,6 +42,10 @@ void esperar_cliente(int socket_servidor)
 
 	int socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion);
 
+	if(socket_cliente !=-1)
+		printf("puerto: %d\nid: %d\n", dir_cliente.sin_port, dir_cliente.sin_addr);
+
+
 	pthread_create(&thread,NULL,(void*)serve_client,&socket_cliente);
 	pthread_detach(thread);
 
@@ -53,9 +54,10 @@ void esperar_cliente(int socket_servidor)
 void serve_client(int* socket)
 {
 	int cod_op;
-    int flag=0;
+
 	if(recv(*socket, &cod_op, sizeof(int), MSG_WAITALL) == -1)
 		cod_op = -1;
+
 	process_request(cod_op, *socket);
 }
 
@@ -66,27 +68,53 @@ void process_request(int cod_op, int cliente_fd) {
 		case NEW_POKEMON:
 			msg = recibir_mensaje(cliente_fd, &size);
 			leer_mensaje(msg, size);
-			//devolver_mensaje(msg, size, cliente_fd);
+			//DEFINIR COMO ENVIAR EL MENSAJE A LA COLA CORRESPONDIENTE
 			free(msg);
+
 			break;
         case APPEARED_POKEMON:
+        	msg = recibir_mensaje(cliente_fd, &size);
+        	leer_mensaje(msg, size);
+        	//DEFINIR COMO ENVIAR EL MENSAJE A LA COLA CORRESPONDIENTE
+        	free(msg);
 
             break;
         case CATCH_POKEMON:
+        	msg = recibir_mensaje(cliente_fd, &size);
+        	leer_mensaje(msg, size);
+        	//DEFINIR COMO ENVIAR EL MENSAJE A LA COLA CORRESPONDIENTE
+        	free(msg);
 
             break;
         case CAUGHT_POKEMON:
+        	msg = recibir_mensaje(cliente_fd, &size);
+        	leer_mensaje(msg, size);
+        	//DEFINIR COMO ENVIAR EL MENSAJE A LA COLA CORRESPONDIENTE
+        	free(msg);
 
             break;
         case GET_POKEMON:
+        	msg = recibir_mensaje(cliente_fd, &size);
+        	leer_mensaje(msg, size);
+        	//DEFINIR COMO ENVIAR EL MENSAJE A LA COLA CORRESPONDIENTE
+        	free(msg);
 
             break;
         case LOCALIZED_POKEMON:
+        	msg = recibir_mensaje(cliente_fd, &size);
+        	leer_mensaje(msg, size);
+        	//DEFINIR COMO ENVIAR EL MENSAJE A LA COLA CORRESPONDIENTE
+        	free(msg);
 
-
-           // break;
-		case 0:
-			pthread_exit(NULL);
+            break;
+        case SUSCRIPTOR:
+        	msg = recibir_mensaje(cliente_fd, &size);
+        	leer_mensaje(msg, size);
+        	//DEFINIR COMO ENVIAR EL MENSAJE A LA COLA CORRESPONDIENTE
+        	free(msg);
+        	break;
+		//case 0:
+			//pthread_exit(NULL);
 		case -1:
 			pthread_exit(NULL);
 		}
@@ -101,6 +129,8 @@ void* recibir_mensaje(int socket_cliente, int* size)
 
 	return buffer;
 }
+
+
 
 void leer_mensaje(void* stream, int size){
     int offset = 0, tamanio = 0;
@@ -119,4 +149,4 @@ void leer_mensaje(void* stream, int size){
     }
 }
 
-*/
+

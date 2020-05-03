@@ -1,8 +1,8 @@
 #ifndef BROKER_H_
 #define BROKER_H_
 
-#define IP "127.0.0.1"
-#define PUERTO "4444"
+#include <commons/config.h>
+#include <cosas_comunes.h>
 
 #include "envio_recepcion.h"
 #include "admin_mensajes.h"
