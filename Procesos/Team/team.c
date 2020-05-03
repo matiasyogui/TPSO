@@ -28,7 +28,6 @@ int main(int argc,char** argv){
 	for(i=0;i<cantEntrenadores;i++){
 		entrenadores[i] = malloc(sizeof(t_entrenador));
 		entrenadores[i]-> posicion = malloc(sizeof(t_posicion));
-
 		char** posiciones = malloc(sizeof(char**));
 		posiciones = string_split(POSICIONES_ENTRENADORES[i],'|');
 		entrenadores[i]->posicion->posx = atoi(posiciones[0]);
