@@ -15,9 +15,10 @@
 
 t_paquete* armar_paquete(char** datos);
 
-void enviar_mensaje(t_paquete* paquete_enviar, int conexion);
+void enviar_mensaje(t_paquete* paquete, int conexion);
 
 void leer_mensaje(void* stream);
 
+t_paquete* paquete_enviar(char** argumentos, char**key);
 
 #endif /* UTILS_GAMEBOY_H_ */

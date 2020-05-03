@@ -36,19 +36,20 @@ t_paquete* armar_paquete(char** datos){
 }
 
 
-void enviar_mensaje(t_paquete* paquete_enviar, int socket_cliente){
-	int bytes;
+void enviar_mensaje(t_paquete* paquete, int socket_cliente){
+	int bytes=0;
 
-	void* stream_enviar = serializar_paquete(paquete_enviar, &bytes);
+	void* mensaje = serializar_paquete(paquete, &bytes);
+	leer_mensaje(mensaje);
 
-	if(send(socket_cliente, stream_enviar, bytes, 0) == -1){
+	if(send(socket_cliente, mensaje, bytes, 0) == -1){
 		printf("Error al enviar el mensaje\n");
 	}
 
-	free(paquete_enviar -> buffer -> stream);
-	free(paquete_enviar -> buffer);
-	free(paquete_enviar);
-	free(stream_enviar);
+	free(paquete -> buffer -> stream);
+	free(paquete -> buffer);
+	free(paquete);
+	free(mensaje);
 }
 
 
@@ -83,18 +84,17 @@ void leer_mensaje(void *stream){
 	printf("fin\n");
 }
 
-/*
-void* algo(char** argumentos, int* bytes){
+
+t_paquete* paquete_enviar(char** argumentos, char** key){
 
 	if(string_equals_ignore_case(*(argumentos + 1), "SUSCRIPTOR")){
-		//ver que pasa en este caso
-		
-
-	} else{
-		//t_paquete* paquete = armar_paquete(argumentos+2);
-		//return = serializar_paquete(paquete, bytes);
-
+		*key = "broker";
+		return armar_paquete(argumentos + 1);
 	}
-}*/
+
+	*key = *(argumentos + 1);
+	return armar_paquete(argumentos + 2);
+}
+
 
 
