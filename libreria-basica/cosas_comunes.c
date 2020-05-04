@@ -14,19 +14,20 @@ int crear_conexion(char *ip, char* puerto){
 
 	int socket_cliente = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
 
-	if(connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen) == -1){
-		printf("No se pudo realizar la conexion");
-	}
+	if(connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen) == -1)
+		perror("[FALLO EL CONNECT()]");
 
 	freeaddrinfo(server_info);
 
 	return socket_cliente;
 }
 
-void liberar_conexion(int socket_cliente){
 
+
+void liberar_conexion(int socket_cliente){
 	close(socket_cliente);
 }
+
 
 
 
@@ -35,7 +36,7 @@ t_log* iniciar_logger(char* archivo, char *nombre_programa, int es_consola_activ
 	t_log* logger = log_create(archivo, nombre_programa, es_consola_activa, detalle);
 
 	if(logger == NULL){
-		printf("No se pudo inicializar el logger");
+		printf("No se pudo inicializar el logger\n");
 		exit(-1);
 	}
 
@@ -47,7 +48,7 @@ t_config* leer_config(char* ruta){
 	t_config * config = config_create(ruta);
 
 	if(config == NULL ){
-		printf("No se pudo inicializar el config");
+		printf("No se pudo inicializar el config\n");
 		exit(-1);
 	}
 
@@ -64,25 +65,29 @@ void terminar_programa(int conexion, t_log* logger, t_config* config){
 
 
 
-message_code tipo_mensaje(char* tipo_mensaje){
 
-	if(string_equals_ignore_case(tipo_mensaje, "NEW_POKEMON"))
+int tipo_mensaje(char* tipo_mensaje){
+
+	if(string_equals_ignore_case(tipo_mensaje, "NEW_POKEMON") == 1)
 		return NEW_POKEMON;
 
-	if(string_equals_ignore_case(tipo_mensaje, "GET_POKEMON"))
+	if(string_equals_ignore_case(tipo_mensaje, "GET_POKEMON") == 1)
 		return GET_POKEMON;
 
-	if(string_equals_ignore_case(tipo_mensaje, "APPEARED_POKEMON"))
+	if(string_equals_ignore_case(tipo_mensaje, "APPEARED_POKEMON") == 1)
 		return APPEARED_POKEMON;
 
-	if(string_equals_ignore_case(tipo_mensaje, "CATCH_POKEMON"))
+	if(string_equals_ignore_case(tipo_mensaje, "CATCH_POKEMON") == 1)
 		return CATCH_POKEMON;
 
-	if(string_equals_ignore_case(tipo_mensaje, "CAUGHT_POKEMON"))
+	if(string_equals_ignore_case(tipo_mensaje, "CAUGHT_POKEMON") == 1)
 		return CAUGHT_POKEMON;
 	
-	if(string_equals_ignore_case(tipo_mensaje, "LOCALIZED_POKEMON"))
+	if(string_equals_ignore_case(tipo_mensaje, "LOCALIZED_POKEMON") == 1)
 		return LOCALIZED_POKEMON;
+	
+	if(string_equals_ignore_case(tipo_mensaje, "SUSCRIPTOR") == 1)
+		return SUSCRIPTOR;
 
 	printf("No se reconocio el tipo de mensaje\n");
 	exit(-1);
@@ -120,6 +125,8 @@ int cant_elementos(char** array){
 }
 
 
+
+
 //revisar la estructura del stream = codigo_msj + tamaño_stream + [tamaño_string + string]*
 void *serializar_paquete(t_paquete* paquete, int *bytes){
 
@@ -129,12 +136,16 @@ void *serializar_paquete(t_paquete* paquete, int *bytes){
 
 	memcpy(stream + offset, &(paquete -> codigo_operacion), sizeof(int));
 	offset += sizeof(int);
+
 	memcpy(stream + offset, &(paquete -> buffer -> size), sizeof(int));
 	offset += sizeof(int);
+
 	memcpy(stream + offset, paquete -> buffer -> stream, paquete -> buffer -> size);
 	offset += paquete -> buffer -> size;
+
 	*bytes = offset;
-	printf("[serializar_paquete] tamaño del stream al serializar paquete = %d\n", *bytes);
+
+	printf("[serializar_paquete] tamaño del stream a enviar = %d\n", *bytes);
 
 	return stream;
 }

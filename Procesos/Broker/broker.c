@@ -1,35 +1,46 @@
 #include "broker.h"
 
-int id=0;
+void datos_servidor();
+void finalizar_servidor();
 
 int main(){
-	//t_config* config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Broker/broker.config");
+	datos_servidor();
 
-	//char* ip = config_get_string_value(config, "IP_BROKER");
-	//char* puerto = config_get_string_value(config, "PUERTO_BROKER");
+	signal(SIGINT, finalizar_servidor);
 
-	//t_list* lista_subs = crear_lista_subs();
-	t_list* lista_mensajes = crear_lista_subs();
+	fflush(stdout);
+	iniciar_servidor();
 
-	t_mensaje* nodo = nodo_mensaje("hola", obtener_id());
-
-	agregar_elemento(lista_mensajes, NEW_POKEMON, nodo);
-	informe_lista_mensajes(lista_mensajes);
-
-	//fflush(stdout);
-	//iniciar_servidor(ip, puerto);
-
-	//destruir_lista(lista_subs);
-	//destruir_lista(lista_mensajes);
-
-	//config_destroy(config);
 	return 0;
 }
 
 
+void datos_servidor(){
 
-int obtener_id(void){
-	return id = id + 1;
+	CONFIG = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Broker/broker.config");
+
+	LISTA_SUBS = crear_lista_subs();
+	LISTA_MENSAJES = crear_lista_subs();
+
+	IP_SERVER = config_get_string_value(CONFIG, "IP_BROKER");
+	PUERTO_SERVER = config_get_string_value(CONFIG, "PUERTO_BROKER");
+}
+
+
+void finalizar_servidor(){
+
+	destruir_lista_suscriptores(LISTA_SUBS);
+	destruir_lista_mensajes(LISTA_MENSAJES);
+
+	pthread_mutex_destroy(&mutex);
+
+	config_destroy(CONFIG);
+
+
+
+	close(*socket_server);
+
+	raise(SIGTERM);
 }
 
 

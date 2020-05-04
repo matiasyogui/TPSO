@@ -8,6 +8,7 @@
 #include<sys/socket.h>
 #include<netdb.h>
 #include<string.h>
+#include <commons/string.h>
 #include <commons/config.h>
 #include <commons/log.h>
 #include <inttypes.h>
@@ -15,11 +16,12 @@
 typedef enum{
 
 	NEW_POKEMON,
+	GET_POKEMON,
 	APPEARED_POKEMON,
 	CATCH_POKEMON,
 	CAUGHT_POKEMON,
-	GET_POKEMON,
 	LOCALIZED_POKEMON,
+	SUSCRIPTOR
 
 }message_code;
 
@@ -34,6 +36,7 @@ typedef struct{
 
 	message_code codigo_operacion;
 	t_buffer* buffer;
+
 }t_paquete;
 
 typedef enum{
@@ -46,6 +49,7 @@ typedef enum{
 
 
 #endif /* COSAS_COMUNES_H_ */
+
 
 
 // PARA CREAR UNA CONEXION CON UN SERVIDOR
@@ -64,7 +68,7 @@ t_config* leer_config(char* ruta);
 void terminar_programa(int conexion, t_log* logger, t_config* config);
 
 //DEVULVE EL TIPO DE MENSAJE APARTIR DE UN STRING
-message_code tipo_mensaje(char* tipo_mensaje);
+int tipo_mensaje(char* tipo_mensaje);
 
 //ME DEVUELVE UN STRING PARA USARLO EN UN CONFIG
 char* obtener_key(char* dato, char* proceso);

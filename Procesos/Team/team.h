@@ -8,6 +8,8 @@
 #ifndef TEAM_H_
 #define TEAM_H_
 
+#include"utils_team.h"
+
 typedef struct{
 	int posx;
 	int posy;
@@ -22,16 +24,15 @@ typedef struct{
 typedef struct{
 	t_posicion* posicion;
 	t_semaforo* semaforo;
+	char* mensaje; //temporal
+	char* algoritmo_de_planificacion;
 	char** objetivo;
 	char** pokemones;
 }t_entrenador;
 
-
-
+void planificacion();
 
 void leer_archivo_configuracion();
-void liberar_memoria();
-
 
 
 #endif /* BROKER_H_ */
