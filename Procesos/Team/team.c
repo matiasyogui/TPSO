@@ -17,11 +17,27 @@ int PUERTO_BROKER;
 char LOG_FILE;
 int i;
 
+//pthread_mutex_t queueMutex;
+//pthread_cond_t queueCond;
 
+void * Producer(void * entrenador) {
+
+	t_entrenador* ent = entrenador;
+
+    pthread_mutex_lock(ent->semaforo->queueMutex);
+
+    pthread_cond_wait(ent->semaforo->queueCond, ent->semaforo->queueMutex);
+    printf("Entrenador pos x=%d y=%d \n",ent->posicion->posx,ent->posicion->posy);
+
+    pthread_mutex_unlock(ent->semaforo->queueMutex);
+
+}
 
 int main(int argc,char** argv){
 	//LEO ARCHIVO DE CONFIGURACION
 	leer_archivo_configuracion();
+
+
 	int cantEntrenadores = cant_elementos(POSICIONES_ENTRENADORES);
 	t_entrenador* entrenadores[cantEntrenadores];
 	pthread_t* hilos[cantEntrenadores];
@@ -29,17 +45,37 @@ int main(int argc,char** argv){
 		entrenadores[i] = malloc(sizeof(t_entrenador));
 		entrenadores[i]-> posicion = malloc(sizeof(t_posicion));
 		char** posiciones = malloc(sizeof(char**));
-		posiciones = string_split(POSICIONES_ENTRENADORES[i],'|');
-		entrenadores[i]->posicion->posx = atoi(posiciones[0]);
-		entrenadores[i]->posicion->posy = atoi(posiciones[1]);
-		entrenadores[i]->objetivo = malloc(sizeof(string_split(OBJETIVOS_ENTRENADORES[i],'|')));
-		entrenadores[i]->objetivo = string_split(OBJETIVOS_ENTRENADORES[i],'|');
-		entrenadores[i]->pokemones = string_split(POKEMON_ENTRENADORES[i],'|');
-		pthread_create(&hilos[i],NULL,printf("soy el hilo %d",i+1),NULL);
+		//posiciones = string_split(POSICIONES_ENTRENADORES[i],"|");
+		entrenadores[i]->posicion->posx = atoi(strtok(POSICIONES_ENTRENADORES[i],"|"));
+		entrenadores[i]->posicion->posy = atoi(strtok(NULL,"|"));
+				//entrenadores[i]->posicion->posx = atoi(posiciones[0]);
+		//entrenadores[i]->posicion->posy = atoi(posiciones[1]);
+//		entrenadores[i]->objetivo = malloc(sizeof(string_split(OBJETIVOS_ENTRENADORES[i],'|')));
+//		entrenadores[i]->objetivo = string_split(OBJETIVOS_ENTRENADORES[i],'|');
+//		entrenadores[i]->pokemones = string_split(POKEMON_ENTRENADORES[i],'|');
+
+		entrenadores[i]->semaforo = malloc(sizeof(t_semaforo));
+		entrenadores[i]->semaforo->queueMutex = malloc(sizeof(pthread_mutex_t));
+		entrenadores[i]->semaforo->queueCond = malloc(sizeof(pthread_cond_t));
+		pthread_mutex_init(entrenadores[i]->semaforo->queueMutex, NULL);
+		pthread_cond_init(entrenadores[i]->semaforo->queueCond, NULL);
+
+		pthread_create(&hilos[i],NULL,Producer,entrenadores[i]);
 	}
-	for(i=0;i<cantEntrenadores;i++){
-		pthread_join(hilos[i],NULL);
+
+	while(1){
+		for(i=0;i<cantEntrenadores;i++){
+			pthread_mutex_lock(entrenadores[i]->semaforo->queueMutex);
+			pthread_cond_signal(entrenadores[i]->semaforo->queueCond);
+			pthread_mutex_unlock(entrenadores[i]->semaforo->queueMutex);
+			fflush(stdin);
+		}
 	}
+
+//	for(i=0;i<cantEntrenadores;i++){
+//		pthread_join(hilos[i],NULL);
+//	}
+
 	liberar_memoria();
 	for(i=0;i<cantEntrenadores;i++){
 		free(entrenadores[i]-> posicion);
