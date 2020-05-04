@@ -24,6 +24,7 @@ void * Producer(void * entrenador) {
 
 	t_entrenador* ent = entrenador;
 
+	while(1){
     pthread_mutex_lock(ent->semaforo->queueMutex);
 
     pthread_cond_wait(ent->semaforo->queueCond, ent->semaforo->queueMutex);
@@ -31,6 +32,7 @@ void * Producer(void * entrenador) {
 
     pthread_mutex_unlock(ent->semaforo->queueMutex);
 
+	}
 }
 
 int main(int argc,char** argv){
@@ -48,8 +50,6 @@ int main(int argc,char** argv){
 		//posiciones = string_split(POSICIONES_ENTRENADORES[i],"|");
 		entrenadores[i]->posicion->posx = atoi(strtok(POSICIONES_ENTRENADORES[i],"|"));
 		entrenadores[i]->posicion->posy = atoi(strtok(NULL,"|"));
-				//entrenadores[i]->posicion->posx = atoi(posiciones[0]);
-		//entrenadores[i]->posicion->posy = atoi(posiciones[1]);
 //		entrenadores[i]->objetivo = malloc(sizeof(string_split(OBJETIVOS_ENTRENADORES[i],'|')));
 //		entrenadores[i]->objetivo = string_split(OBJETIVOS_ENTRENADORES[i],'|');
 //		entrenadores[i]->pokemones = string_split(POKEMON_ENTRENADORES[i],'|');
