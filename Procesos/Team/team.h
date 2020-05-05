@@ -26,12 +26,9 @@ typedef struct{
 	char** pokemones;
 }t_entrenador;
 
-
-
+void planificacion();
 
 void leer_archivo_configuracion();
-void liberar_memoria();
-
 
 
 #endif /* BROKER_H_ */
