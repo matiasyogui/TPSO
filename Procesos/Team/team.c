@@ -35,29 +35,31 @@ void pasajeFIFO(t_list* lista1, t_list* lista2){
 }
 
 //TODO
-void planificacion(t_entrenador* entrenador){
-	if(string_equals_ignore_case(entrenador -> algoritmo_de_planificacion,"FIFO")){
-		if(string_equals_ignore_case(entrenador -> mensaje, "CATCH_POKEMON")){
+void planificacion(t_entrenador* entrenador)
+{
+	if(string_equals_ignore_case(entrenador -> algoritmo_de_planificacion,"FIFO"))
+	{
+		if(string_equals_ignore_case(entrenador -> mensaje, "CATCH_POKEMON"))
+		{
 			pasajeFIFO(listaNew, listaReady);
 			printf("\nElementos en lista NEW: %d\n", listaNew->elements_count);
 			printf("\nElementos en lista READY: %d\n", listaReady->elements_count);
+		}else if(string_equals_ignore_case(entrenador -> algoritmo_de_planificacion,"RR"))
+		{
+			printf("TODO");
 		}
-	}else if(string_equals_ignore_case(entrenador -> algoritmo_de_planificacion,"RR")){
-		printf("TODO");
 	}
 }
 
-void Producer(t_entrenador* ent) {
-
+void Producer(t_entrenador* ent)
+{
 	//t_entrenador* ent = entrenador;
 	pthread_mutex_lock(ent->semaforo->queueMutex);
     pthread_cond_wait(ent->semaforo->queueCond, ent->semaforo->queueMutex);
     printf("Entrenador pos x=%d y=%d \n",ent->posicion->posx,ent->posicion->posy);
-    planificacion(&ent);
-    //printf("Entrenador pos x=%d y=%d \n",ent->posicion->posx,ent->posicion->posy); //saber la posicion luego de la ejecucion
+    //planificacion(&ent);
     pthread_mutex_unlock(ent->semaforo->queueMutex);
 
-	}
 }
 
 int main(int argc,char** argv){
@@ -104,7 +106,7 @@ int main(int argc,char** argv){
 		pthread_mutex_init(entrenadores[i]->semaforo->queueMutex, NULL);
 		pthread_cond_init(entrenadores[i]->semaforo->queueCond, NULL);
 
-		pthread_create(&hilos[i],NULL, (void*) Producer,&entrenadores[i]);
+		pthread_create(hilos[i],NULL, (void*) Producer,&entrenadores[i]);
 
 		list_add(listaNew, &entrenadores[i]);
 	}
@@ -131,7 +133,7 @@ int main(int argc,char** argv){
 	}
 
 	for(i=0;i<cantEntrenadores;i++){
-		pthread_join(hilos[i],NULL);
+//		pthread_join(hilos[i],NULL);
 	}
 
 	//DEFINIR como destruir elementos
