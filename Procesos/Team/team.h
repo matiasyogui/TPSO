@@ -15,15 +15,10 @@ typedef struct{
 	int posy;
 }t_posicion;
 
-typedef struct{
-	pthread_mutex_t *queueMutex;
-	pthread_cond_t *queueCond;
-}t_semaforo;
-
 
 typedef struct{
 	t_posicion* posicion;
-	t_semaforo* semaforo;
+	pthread_mutex_t* semaforo;
 	char* mensaje; //temporal
 	char* algoritmo_de_planificacion;
 	char** objetivo;
