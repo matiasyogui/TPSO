@@ -12,16 +12,25 @@
 #include<pthread.h>
 
 #include <cosas_comunes.h>
-
+#include "admin_mensajes.h"
+#include "broker.h"
 
 pthread_t thread;
 
-void iniciar_servidor(char* ip, char* puerto);
+void iniciar_servidor();
 void esperar_cliente(int socket_servidor);
 void serve_client(int* socket);
 void process_request(int cod_op, int cliente_fd);
-void* recibir_mensaje(int socket_cliente, int* size);
-void leer_mensaje(void* mensaje, int size);
 
+
+
+t_buffer* recibir_mensaje(int socket_cliente);
+void leer_mensaje(t_buffer* buffer);
+
+
+
+int obtener_id();
+void enviar_subs(t_list* lista_mensajes, t_mensaje* nodo_mensaje, t_list* lista_subs);
+void* serializar_nodo_mensaje(t_mensaje* nodo_mensaje, int* bytes);
 
 #endif /* ENVIO_RECEPCION_H_ */

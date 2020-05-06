@@ -20,6 +20,7 @@ typedef enum{
 	CAUGHT_POKEMON,
 	GET_POKEMON,
 	LOCALIZED_POKEMON,
+	SUSCRIPTOR,
 
 }message_code;
 
@@ -34,6 +35,7 @@ typedef struct{
 
 	message_code codigo_operacion;
 	t_buffer* buffer;
+
 }t_paquete;
 
 typedef enum{
@@ -46,6 +48,7 @@ typedef enum{
 
 
 #endif /* COSAS_COMUNES_H_ */
+
 
 
 // PARA CREAR UNA CONEXION CON UN SERVIDOR
