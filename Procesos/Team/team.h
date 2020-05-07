@@ -22,6 +22,8 @@ typedef struct{
 typedef struct{
 	t_posicion* posicion;
 	t_semaforo* semaforo;
+	char* mensaje; //temporal
+	char* algoritmo_de_planificacion;
 	char** objetivo;
 	char** pokemones;
 }t_entrenador;

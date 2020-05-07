@@ -26,7 +26,6 @@ t_list* listaBlocked;
 t_list* listaExit;
 
 
-
 //pthread_mutex_t queueMutex;
 //pthread_cond_t queueCond;
 
@@ -36,20 +35,28 @@ void pasajeFIFO(t_list* lista1, t_list* lista2){
 }
 
 //TODO
-void planificacion(t_entrenador* entrenador, char* mensaje){
-
+void planificacion(t_entrenador* entrenador){
+	if(entrenador -> algoritmo_de_planificacion == "FIFO"){
+		if(string_equals_ignore_case(entrenador -> mensaje, "CATCH_POKEMON")){
+			pasajeFIFO(listaNew, listaReady);
+			printf("\nElementos en lista NEW: %d\n", listaNew->elements_count);
+			printf("\nElementos en lista READY: %d\n", listaReady->elements_count);
+		}
+	}else if(entrenador -> algoritmo_de_planificacion=="RR"){
+		printf("TODO");
+	}
 }
 
-void Producer(void * entrenador, char* mensaje) {
+void Producer(t_entrenador* ent) {
 
-	t_entrenador* ent = entrenador;
+	//t_entrenador* ent = entrenador;
 
     pthread_mutex_lock(ent->semaforo->queueMutex);
 
     pthread_cond_wait(ent->semaforo->queueCond, ent->semaforo->queueMutex);
     printf("Entrenador pos x=%d y=%d \n",ent->posicion->posx,ent->posicion->posy);
-    //planificacion(&entrenador, &mensaje);
-
+    planificacion(&ent);
+    //printf("Entrenador pos x=%d y=%d \n",ent->posicion->posx,ent->posicion->posy); //saber la posicion luego de la ejecucion
     pthread_mutex_unlock(ent->semaforo->queueMutex);
 
 }
@@ -61,6 +68,17 @@ int main(int argc,char** argv){
 	int cantEntrenadores = cant_elementos(POSICIONES_ENTRENADORES);
 	t_entrenador* entrenadores[cantEntrenadores];
 	pthread_t* hilos[cantEntrenadores];
+
+	//TEMPORAL hasta poder mandar mensajes entre procesos
+	char* mensajeBroker = string_new();
+	string_append(&mensajeBroker, argv[1]);
+
+	//creo el diagrama de estados
+	listaNew = list_create();
+	listaReady = list_create();
+	listaExecute = list_create();
+	listaBlocked = list_create();
+	listaExit = list_create();
 
 	//setteo entrenadores y asigno hilo a c/entrenador
 	for(i=0;i<cantEntrenadores;i++){
@@ -76,6 +94,9 @@ int main(int argc,char** argv){
 		entrenadores[i]->objetivo = string_split(OBJETIVOS_ENTRENADORES[i],'|');
 		entrenadores[i]->pokemones = string_split(POKEMON_ENTRENADORES[i],'|'); */
 
+		entrenadores[i]->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
+		entrenadores[i]->mensaje = mensajeBroker;
+
 		entrenadores[i]->semaforo = malloc(sizeof(t_semaforo));
 		entrenadores[i]->semaforo->queueMutex = malloc(sizeof(pthread_mutex_t));
 		entrenadores[i]->semaforo->queueCond = malloc(sizeof(pthread_cond_t));
@@ -83,34 +104,21 @@ int main(int argc,char** argv){
 		pthread_cond_init(entrenadores[i]->semaforo->queueCond, NULL);
 
 		pthread_create(&hilos[i],NULL, (void*) Producer,entrenadores[i]);
-	}
 
-	//TEMPORAL hasta poder mandar mensajes entre procesos
-	char* mensaje = string_new();
-	string_append(&mensaje, argv[1]);
-
-	//creo el diagrama de estados
-	listaNew = list_create();
-	listaReady = list_create();
-	listaExecute = list_create();
-	listaBlocked = list_create();
-	listaExit = list_create();
-
-	//agrego los entrenadores
-	for(int i = 0; i < cantEntrenadores; i++){
 		list_add(listaNew, &entrenadores[i]);
 	}
 
-	if(listaNew->elements_count == cantEntrenadores)
-		printf("\nTodos los entrenadores cargados en NEW.\n\n");
+	if(listaNew->elements_count != cantEntrenadores)
+		printf("\nEntrenadores mal cargados.\n\n");
 
-	if(string_equals_ignore_case(mensaje, "NEW_POKEMON")){
+	printf("\nTodos los entrenadores cargados exitosamente.\n\n");
+
+	/*if(string_equals_ignore_case(mensaje, "NEW_POKEMON")){
 		pasajeFIFO(listaNew, listaReady);
 	}
 
 	printf("\nElementos en listaNew: %d\n", listaNew->elements_count);
-	printf("\nElementos en listaReady: %d\n", listaReady->elements_count);
-
+	printf("\nElementos en listaReady: %d\n", listaReady->elements_count); */
 
 	while(1){
 		for(i=0;i<cantEntrenadores;i++){
@@ -121,9 +129,9 @@ int main(int argc,char** argv){
 		}
 	}
 
-//	for(i=0;i<cantEntrenadores;i++){
-//		pthread_join(hilos[i],NULL);
-//	}
+	for(i=0;i<cantEntrenadores;i++){
+		pthread_join(hilos[i],NULL);
+	}
 
 	//DEFINIR como destruir elementos
 /*	list_destroy_and_destroy_elements(listaNew, );
@@ -132,6 +140,7 @@ int main(int argc,char** argv){
 	list_destroy_and_destroy_elements(listaBlocked, );
 	list_destroy_and_destroy_elements(listaExit, ); */
 
+	//free(mensaje);
 
 	for(i=0;i<cantEntrenadores;i++){
 		free(entrenadores[i]-> posicion);
