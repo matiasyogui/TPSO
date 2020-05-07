@@ -62,6 +62,8 @@ void Producer(t_entrenador* ent) {
 }
 
 int main(int argc,char** argv){
+
+	iniciar_servidor();
 	//LEO ARCHIVO DE CONFIGURACION
 	leer_archivo_configuracion();
 

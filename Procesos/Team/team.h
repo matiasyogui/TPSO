@@ -8,6 +8,8 @@
 #ifndef TEAM_H_
 #define TEAM_H_
 
+#include"utils_team.h"
+
 typedef struct{
 	int posx;
 	int posy;
