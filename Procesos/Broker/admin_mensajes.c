@@ -1,5 +1,6 @@
 #include "admin_mensajes.h"
 
+
 t_list* crear_lista_subs(void){
 
 	t_list* lista_subs = list_create();
@@ -12,12 +13,6 @@ t_list* crear_lista_subs(void){
 }
 
 
-void agregar_elemento(t_list* lista, int index, void* elemento){
-
-	t_list* puntero_sub_lista = list_get(lista, index);
-	list_add(puntero_sub_lista, elemento);
-}
-
 
 void borrar_elemento(void* elemento){
 	t_suscriptor* aux = elemento;
@@ -26,6 +21,10 @@ void borrar_elemento(void* elemento){
 	free(aux);
 }
 
+void agregar_elemento(t_list* lista, int index, void* data){
+	t_list* sub_lista = list_get(lista, index);
+	list_add(sub_lista, data);
+}
 
 void destruir_lista(t_list* lista){
 
@@ -94,14 +93,14 @@ void agregar_sub_mensaje(t_list* list, int id_mensaje, t_suscriptor* suscriptor,
 
 
 // imprimir lista de mensajes
-void informe_lista_mensajes(t_list* list_mensajes){
+void informe_lista_mensajes(t_list* lista){
 	printf("\n");
 
-	for(int i=0; i < list_size(list_mensajes); i++){
+	for(int i=0; i < list_size(lista); i++){
 
 		printf("Mensajes del tipo: %d\n", i);
 
-		t_list* list_tipo_mensaje = list_get(list_mensajes, i);
+		t_list* list_tipo_mensaje = list_get(lista, i);
 
 		printf(" | Cantidad de mensajes = %d\n", list_tipo_mensaje -> elements_count);
 

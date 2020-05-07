@@ -9,7 +9,7 @@ int main(int argc,char** argv){
 
 	t_paquete* paquete;
 
-	if(string_equals_ignore_case(*(argv+1), "suscriptor")){
+	if(string_equals_ignore_case(*(argv+1), "suscriptor") == 1){
 
 		obtener_direcciones_envio("broker");
 
@@ -27,6 +27,7 @@ int main(int argc,char** argv){
 	enviar_mensaje(paquete, conexion);
 
 	terminar_programa(conexion, LOGGER, CONFIG);
+
 	return 0;
 }
 
@@ -77,7 +78,7 @@ t_paquete* paquete_suscriptor(char** datos){
 void inicializar_archivos(){
 
 	CONFIG = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/GameBoy/gameboy.config");
-	LOGGER = iniciar_logger("gameboy.log", "gameboy", 0, LOG_LEVEL_INFO);
+	LOGGER = iniciar_logger("gameboy.log", "gameboy", 1, LOG_LEVEL_INFO);
 }
 
 void obtener_direcciones_envio(char* proceso){

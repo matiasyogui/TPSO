@@ -1,7 +1,5 @@
 #include "envio_recepcion.h"
 
-int id_basico=0;
-
 int obtener_id(void){
 
 	return id_basico = id_basico + 1;
@@ -37,6 +35,8 @@ void iniciar_servidor(){
 
     freeaddrinfo(servinfo);
 
+    pthread_mutex_init(&mutex, NULL);
+
     while(1)
     	esperar_cliente(socket_servidor);
 }
@@ -46,7 +46,7 @@ void esperar_cliente(int socket_servidor){
 
 	struct sockaddr_in dir_cliente;
 
-	int tam_direccion = sizeof(struct sockaddr_in);
+	socklen_t tam_direccion = sizeof(struct sockaddr_in);
 
 	int socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion);
 
@@ -62,19 +62,22 @@ void serve_client(int* socket){
 	if(recv( *socket, &cod_op, sizeof(int), MSG_WAITALL) == -1)
 		cod_op = -1;
 
+	pthread_mutex_lock(&mutex);
 	process_request(cod_op, *socket);
+	pthread_mutex_unlock(&mutex);
 }
 
 
 void process_request(int cod_op, int cliente_fd) {
 
     t_buffer* msg = recibir_mensaje(cliente_fd);
-    leer_mensaje(msg);
+
     t_mensaje* mensaje_guardar;
 
 	switch (cod_op) {
 
 		case NEW_POKEMON...LOCALIZED_POKEMON:
+		 	leer_mensaje(msg);
 
 			mensaje_guardar = nodo_mensaje(cod_op, msg, obtener_id());
 
@@ -91,6 +94,7 @@ void process_request(int cod_op, int cliente_fd) {
 		case -1:
 			pthread_exit(NULL);
 		}
+
 }
 
 
@@ -100,11 +104,9 @@ t_buffer* recibir_mensaje(int socket_cliente){
 
 	recv(socket_cliente, &(buffer->size), sizeof(uint32_t), MSG_WAITALL);
 
-	void* stream = malloc(buffer->size);
+	buffer->stream = malloc(buffer->size);
 
-	recv(socket_cliente, stream, buffer->size, MSG_WAITALL);
-
-	buffer->stream = stream;
+	recv(socket_cliente, buffer->stream, buffer->size, MSG_WAITALL);
 
 	return buffer;
 }
@@ -125,6 +127,8 @@ void leer_mensaje(t_buffer* buffer){
         offset += tamanio;
 
         printf("[broker] palabra : %s, tamañio = %d\n", palabra, tamanio);
+
+        free(palabra);
     }
 }
 
@@ -133,6 +137,7 @@ void leer_mensaje(t_buffer* buffer){
 void enviar_subs(t_list* lista_mensajes, t_mensaje* nodo_mensaje, t_list* lista_subs){
 
 	int size_mensaje = 0;
+
 	void* mensaje_enviar = serializar_nodo_mensaje(nodo_mensaje, &size_mensaje);
 
 	t_list* lista_subs_enviar = list_get(lista_subs, nodo_mensaje->cod_op);
@@ -145,15 +150,15 @@ void enviar_subs(t_list* lista_mensajes, t_mensaje* nodo_mensaje, t_list* lista_
 
 		if(send(socket, mensaje_enviar, size_mensaje, 0) != -1){
 			list_add(nodo_mensaje->subs_envie_msg, sub);
-		}else{
+		}
+		else{
 			printf("No se pudo enviar el mensaje a la direccion ip = %s, puerto = %s", sub->ip, sub->puerto);
 		}
 	}
-	free(mensaje_enviar);
-	agregar_elemento(lista_mensajes, nodo_mensaje->cod_op, nodo_mensaje);
-	printf("....%d",nodo_mensaje->cod_op);
 
-	//send(socket, mensaje, offset);
+	agregar_elemento(lista_mensajes, nodo_mensaje->cod_op, nodo_mensaje);
+
+	free(mensaje_enviar);
 }
 
 

@@ -15,7 +15,10 @@
 #include "admin_mensajes.h"
 #include "broker.h"
 
+int id_basico;
+
 pthread_t thread;
+pthread_mutex_t mutex;
 
 void iniciar_servidor();
 void esperar_cliente(int socket_servidor);
