@@ -65,27 +65,27 @@ void terminar_programa(int conexion, t_log* logger, t_config* config){
 
 
 
-message_code tipo_mensaje(char* tipo_mensaje){
+int tipo_mensaje(char* tipo_mensaje){
 
-	if(string_equals_ignore_case(tipo_mensaje, "NEW_POKEMON"))
+	if(string_equals_ignore_case(tipo_mensaje, "NEW_POKEMON") == 1)
 		return NEW_POKEMON;
 
-	if(string_equals_ignore_case(tipo_mensaje, "GET_POKEMON"))
+	if(string_equals_ignore_case(tipo_mensaje, "GET_POKEMON") == 1)
 		return GET_POKEMON;
 
-	if(string_equals_ignore_case(tipo_mensaje, "APPEARED_POKEMON"))
+	if(string_equals_ignore_case(tipo_mensaje, "APPEARED_POKEMON") == 1)
 		return APPEARED_POKEMON;
 
-	if(string_equals_ignore_case(tipo_mensaje, "CATCH_POKEMON"))
+	if(string_equals_ignore_case(tipo_mensaje, "CATCH_POKEMON") == 1)
 		return CATCH_POKEMON;
 
-	if(string_equals_ignore_case(tipo_mensaje, "CAUGHT_POKEMON"))
+	if(string_equals_ignore_case(tipo_mensaje, "CAUGHT_POKEMON") == 1)
 		return CAUGHT_POKEMON;
 	
-	if(string_equals_ignore_case(tipo_mensaje, "LOCALIZED_POKEMON"))
+	if(string_equals_ignore_case(tipo_mensaje, "LOCALIZED_POKEMON") == 1)
 		return LOCALIZED_POKEMON;
 	
-	if(string_equals_ignore_case(tipo_mensaje, "SUSCRIPTOR"))
+	if(string_equals_ignore_case(tipo_mensaje, "SUSCRIPTOR") == 1)
 		return SUSCRIPTOR;
 
 	printf("No se reconocio el tipo de mensaje\n");

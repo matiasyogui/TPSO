@@ -151,6 +151,7 @@ void enviar_subs(t_list* lista_mensajes, t_mensaje* nodo_mensaje, t_list* lista_
 	}
 	free(mensaje_enviar);
 	agregar_elemento(lista_mensajes, nodo_mensaje->cod_op, nodo_mensaje);
+	printf("....%d",nodo_mensaje->cod_op);
 
 	//send(socket, mensaje, offset);
 }
