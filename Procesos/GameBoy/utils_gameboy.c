@@ -14,6 +14,7 @@ t_paquete* armar_paquete(char** datos){
 	paquete -> buffer -> size = obtener_tamanio(datos_serializar) + cant_elementos(datos_serializar) * sizeof(uint32_t);
 
 	//printf("[armarpaquete] tamanio de todos los datos: %d\n", paquete -> buffer -> size);
+
 	void* stream = malloc(paquete -> buffer -> size);
 	int offset = 0;
 
@@ -37,14 +38,16 @@ t_paquete* armar_paquete(char** datos){
 
 
 void enviar_mensaje(t_paquete* paquete, int socket_cliente){
-	int bytes=0;
 
-	void* mensaje = serializar_paquete(paquete, &bytes);
+	int bytes_enviar;
+	void* mensaje = serializar_paquete(paquete, &bytes_enviar);
+
 	leer_mensaje(mensaje);
 
-	if(send(socket_cliente, mensaje, bytes, 0) == -1){
+	if(send(socket_cliente, mensaje, bytes_enviar, 0) == -1){
 		printf("Error al enviar el mensaje\n");
 	}
+	log_info(LOGGER, "Se creo la conexion con el proceso IP = %s, PUERTO = %s\n", IP_SERVER, PUERTO_SERVER);
 
 	free(paquete -> buffer -> stream);
 	free(paquete -> buffer);
@@ -54,6 +57,7 @@ void enviar_mensaje(t_paquete* paquete, int socket_cliente){
 
 
 void leer_mensaje(void *stream){
+
 	int t_mensaje;
 	int offset = 0;
 	memcpy(&t_mensaje, stream + offset, sizeof(uint32_t));
@@ -68,6 +72,7 @@ void leer_mensaje(void *stream){
 	printf("[leer_mensaje] size = %d\n", size);
 
 	while(offset < size + 2 * sizeof(uint32_t) ){
+
 		int tamanio=0;
 
 		memcpy(&tamanio, stream + offset, sizeof(uint32_t));
@@ -85,16 +90,6 @@ void leer_mensaje(void *stream){
 }
 
 
-t_paquete* paquete_enviar(char** argumentos, char** key){
-
-	if(string_equals_ignore_case(*(argumentos + 1), "SUSCRIPTOR")){
-		*key = "broker";
-		return armar_paquete(argumentos + 1);
-	}
-
-	*key = *(argumentos + 1);
-	return armar_paquete(argumentos + 2);
-}
 
 
 

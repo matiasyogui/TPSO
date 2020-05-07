@@ -11,7 +11,9 @@
 #include <stdarg.h>
 #include <cosas_comunes.h>
 
-
+#include "gameboy.h"
+#define IP "123455"
+#define PUERTO "3333"
 
 t_paquete* armar_paquete(char** datos);
 
@@ -20,5 +22,10 @@ void enviar_mensaje(t_paquete* paquete, int conexion);
 void leer_mensaje(void* stream);
 
 t_paquete* paquete_enviar(char** argumentos, char**key);
+
+t_paquete* paquete_suscriptor(char** datos);
+
+void inicializar_archivos();
+void obtener_direcciones_envio(char* proceso);
 
 #endif /* UTILS_GAMEBOY_H_ */

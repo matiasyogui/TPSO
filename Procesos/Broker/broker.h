@@ -7,26 +7,17 @@
 #include "envio_recepcion.h"
 #include "admin_mensajes.h"
 
+t_list* LISTA_SUBS;
+t_list* LISTA_MENSAJES;
+
+t_config* CONFIG;
+t_log* LOGGER;
+
+char* IP_SERVER;
+char* PUERTO_SERVER;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+void datos_servidor();
 
 
 #endif /* BROKER_H_ */
