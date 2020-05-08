@@ -36,10 +36,7 @@ typedef struct{
 
 
 t_list* crear_lista_subs(void);
-void destruir_lista(t_list* lista);
 void agregar_elemento(t_list* lista, int index, void* data);
-void borrar_suscriptor(void* suscriptor);
-void borrar_elemento(void* elemento);
 
 
 t_mensaje* nodo_mensaje(int cod_op, t_buffer* buffer, int id);
@@ -52,4 +49,17 @@ int obtener_tipo_mensaje(t_mensaje* mensaje_buscado, t_list* lista_mensajes);
 bool existe_sub(t_suscriptor* sub_buscado, t_list* lista_subs);
 bool comparar_mensajes(t_mensaje* mensaje1, t_mensaje* mensaje2);
 bool comparar_suscriptores(t_suscriptor* sub1, t_suscriptor* sub2);
+
+
+/// funciones para eliminar listas y elementos
+
+//mensajes
+void borrar_mensaje(void* mensaje);
+void limpiar_sublista_mensajes(void* sublista);
+void destruir_lista_mensajes(t_list* lista_mensajes);
+
+//suscritores
+void borrar_suscriptor(void* suscriptor);
+void destruir_lista_suscriptores(t_list* lista_suscriptores);
+
 #endif /* ADMIN_MENSAJES_H_ */

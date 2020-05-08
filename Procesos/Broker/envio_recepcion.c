@@ -68,53 +68,6 @@ void serve_client(int* socket){
 }
 
 
-void process_request(int cod_op, int cliente_fd) {
-
-    t_buffer* msg = recibir_mensaje(cliente_fd);
-
-    //t_mensaje* mensaje_guardar;
-
-	int cola_a_suscribirse;
-
-    t_paquete* el_paquete;
-
-	switch (cod_op) {
-
-		case NEW_POKEMON...LOCALIZED_POKEMON:
-		 	//leer_mensaje(msg);
-
-			//mensaje_guardar = nodo_mensaje(cod_op, msg, obtener_id());
-
-			//enviar_subs(LISTA_MENSAJES, mensaje_guardar, LISTA_SUBS);
-
-			//informe_lista_mensajes(LISTA_MENSAJES);
-
-			el_paquete = crear_paquetee(cod_op, msg);
-
-			enviar_a_suscriptores(LISTA_SUBS, el_paquete);
-			//guardar_mensaje(LISTA_MENSAJES, mensaje_guardar, LISTA_SUBS);   <------   una funcion para guaradar el mensaje
-
-			//free(el_paquete);
-
-			break;
-
-        case SUSCRIPTOR:
-
-        	printf("\n");
-        	cola_a_suscribirse = obtencion_de_cola(msg);
-        	//printf("se va ah suscribir a la cola %d", cola_a_suscribirse);
-
-        	agregar_suscribers(LISTA_SUBS, cola_a_suscribirse, cliente_fd);
-
-        	break;
-
-		case -1:
-			pthread_exit(NULL);
-		}
-
-}
-
-
 t_buffer* recibir_mensaje(int socket_cliente){
 
 	t_buffer* buffer = malloc(sizeof(t_buffer));
@@ -129,8 +82,49 @@ t_buffer* recibir_mensaje(int socket_cliente){
 }
 
 
+void process_request(int cod_op, int cliente_fd) {
+
+    t_buffer* msg = recibir_mensaje(cliente_fd);
+
+    t_mensaje* mensaje_guardar;
+
+    //t_paquete* el_paquete;
+
+	switch (cod_op) {
+
+		case NEW_POKEMON...LOCALIZED_POKEMON:
+		 	leer_mensaje(msg);
+
+			mensaje_guardar = nodo_mensaje(cod_op, msg, obtener_id());
+
+			enviar_subs(LISTA_MENSAJES, mensaje_guardar, LISTA_SUBS);
+
+			informe_lista_mensajes(LISTA_MENSAJES);
+
+			//el_paquete = crear_paquete(cod_op, msg);
+
+			//enviar_a_suscriptores(LISTA_SUBS, el_paquete);
+
+			//guardar_mensaje(LISTA_MENSAJES, mensaje_guardar, LISTA_SUBS);
+
+			//free(el_paquete);
+
+			break;
+
+        case SUSCRIPTOR:
+
+        	//agregar_suscriber(LISTA_SUBS, cod_op, cliente_fd);
+
+        	break;
+
+		case -1:
+			pthread_exit(NULL);
+		}
+}
+
 
 void leer_mensaje(t_buffer* buffer){
+
     int offset = 0, tamanio = 0;
 
     while(offset < buffer->size){
@@ -147,35 +141,6 @@ void leer_mensaje(t_buffer* buffer){
 
         free(palabra);
     }
-}
-
-
-
-void enviar_subs(t_list* lista_mensajes, t_mensaje* nodo_mensaje, t_list* lista_subs){
-
-	int size_mensaje = 0;
-
-	void* mensaje_enviar = serializar_nodo_mensaje(nodo_mensaje, &size_mensaje);
-
-	t_list* lista_subs_enviar = list_get(lista_subs, nodo_mensaje->cod_op);
-
-	for(int i=0; i< list_size(lista_subs_enviar); i++){
-
-		t_suscriptor* sub = list_get(lista_subs_enviar, i);
-
-		int socket = crear_conexion(sub->ip, sub->puerto);
-
-		if(send(socket, mensaje_enviar, size_mensaje, 0) != -1){
-			list_add(nodo_mensaje->subs_envie_msg, sub);
-		}
-		else{
-			printf("No se pudo enviar el mensaje a la direccion ip = %s, puerto = %s", sub->ip, sub->puerto);
-		}
-	}
-
-	agregar_elemento(lista_mensajes, nodo_mensaje->cod_op, nodo_mensaje);
-
-	free(mensaje_enviar);
 }
 
 
@@ -207,17 +172,35 @@ void* serializar_nodo_mensaje(t_mensaje* nodo_mensaje, int* bytes){
 }
 
 
+void enviar_subs(t_list* lista_mensajes, t_mensaje* nodo_mensaje, t_list* lista_subs){
 
-int obtencion_de_cola(t_buffer* payload)
-{
-	int cola;
+	int size_mensaje = 0;
 
-	memcpy(&cola, payload->stream, sizeof(int));
+	void* mensaje_enviar = serializar_nodo_mensaje(nodo_mensaje, &size_mensaje);
 
-	return cola;
+	t_list* lista_subs_enviar = list_get(lista_subs, nodo_mensaje->cod_op);
+
+	for(int i=0; i< list_size(lista_subs_enviar); i++){
+
+		t_suscriptor* sub = list_get(lista_subs_enviar, i);
+
+		int socket = crear_conexion(sub->ip, sub->puerto);
+
+		if(send(socket, mensaje_enviar, size_mensaje, 0) != -1){
+			list_add(nodo_mensaje->subs_envie_msg, sub);
+		}
+		else{
+			printf("No se pudo enviar el mensaje a la direccion ip = %s, puerto = %s", sub->ip, sub->puerto);
+		}
+	}
+
+	agregar_elemento(lista_mensajes, nodo_mensaje->cod_op, nodo_mensaje);
+
+	free(mensaje_enviar);
 }
 
-void agregar_suscribers(t_list* lista_subs, int cola_a_suscribirse, int socket)
+
+void agregar_suscriber(t_list* lista_subs, int cola_a_suscribirse, int socket)
 {
 	t_suscriptor* suscriptor = malloc(sizeof(t_suscriptor));
 
@@ -227,7 +210,7 @@ void agregar_suscribers(t_list* lista_subs, int cola_a_suscribirse, int socket)
 
 }
 
-t_paquete* crear_paquetee(int cod_op, t_buffer* payload)
+t_paquete* crear_paquete(int cod_op, t_buffer* payload)
 {
 	t_paquete* paquete = malloc(sizeof(t_paquete));
 	paquete->codigo_operacion = cod_op;
@@ -247,13 +230,12 @@ void enviar_a_suscriptores(t_list* lista_subs, t_paquete* paquete)
 
 		int socket = suscriptor->socket;
 
-		int size_mensaje = paquete->buffer->size;
+		int size_mensaje;
 
 		void* mensaje = serializar_paquete(paquete, &size_mensaje);
 
-		if(send(socket, mensaje, size_mensaje, 0) == -1){
+		if(send(socket, mensaje, size_mensaje, 0) == -1)
 			printf("no se pudo enviar\n");
-		}
 	}
 }
 

@@ -26,10 +26,8 @@ void serve_client(int* socket);
 void process_request(int cod_op, int cliente_fd);
 
 
-
 t_buffer* recibir_mensaje(int socket_cliente);
 void leer_mensaje(t_buffer* buffer);
-
 
 
 int obtener_id();
@@ -37,10 +35,8 @@ void enviar_subs(t_list* lista_mensajes, t_mensaje* nodo_mensaje, t_list* lista_
 void* serializar_nodo_mensaje(t_mensaje* nodo_mensaje, int* bytes);
 
 
-
-int obtencion_de_cola(t_buffer* payload);
-void agregar_suscribers(t_list* lista_subs, int cola_a_suscribirse, int socket);
-t_paquete* crear_paquetee(int cod_op, t_buffer* payload);
+void agregar_suscriber(t_list* lista_subs, int cola_a_suscribirse, int socket);
+t_paquete* crear_paquete(int cod_op, t_buffer* payload);
 void enviar_a_suscriptores(t_list* lista_subs, t_paquete* paquete);
 
 

@@ -17,7 +17,4 @@ char* IP_SERVER;
 char* PUERTO_SERVER;
 
 
-void datos_servidor();
-
-
 #endif /* BROKER_H_ */
