@@ -19,6 +19,7 @@ typedef struct{
 
 	char* ip;
 	char* puerto;
+	int socket;
 
 }t_suscriptor;
 

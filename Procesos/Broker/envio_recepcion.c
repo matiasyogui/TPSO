@@ -72,22 +72,39 @@ void process_request(int cod_op, int cliente_fd) {
 
     t_buffer* msg = recibir_mensaje(cliente_fd);
 
-    t_mensaje* mensaje_guardar;
+    //t_mensaje* mensaje_guardar;
+
+	int cola_a_suscribirse;
+
+    t_paquete* el_paquete;
 
 	switch (cod_op) {
 
 		case NEW_POKEMON...LOCALIZED_POKEMON:
-		 	leer_mensaje(msg);
+		 	//leer_mensaje(msg);
 
-			mensaje_guardar = nodo_mensaje(cod_op, msg, obtener_id());
+			//mensaje_guardar = nodo_mensaje(cod_op, msg, obtener_id());
 
-			enviar_subs(LISTA_MENSAJES, mensaje_guardar, LISTA_SUBS);
+			//enviar_subs(LISTA_MENSAJES, mensaje_guardar, LISTA_SUBS);
 
-			informe_lista_mensajes(LISTA_MENSAJES);
+			//informe_lista_mensajes(LISTA_MENSAJES);
+
+			el_paquete = crear_paquetee(cod_op, msg);
+
+			enviar_a_suscriptores(LISTA_SUBS, el_paquete);
+			//guardar_mensaje(LISTA_MENSAJES, mensaje_guardar, LISTA_SUBS);   <------   una funcion para guaradar el mensaje
+
+			//free(el_paquete);
 
 			break;
 
         case SUSCRIPTOR:
+
+        	printf("\n");
+        	cola_a_suscribirse = obtencion_de_cola(msg);
+        	//printf("se va ah suscribir a la cola %d", cola_a_suscribirse);
+
+        	agregar_suscribers(LISTA_SUBS, cola_a_suscribirse, cliente_fd);
 
         	break;
 
@@ -191,31 +208,52 @@ void* serializar_nodo_mensaje(t_mensaje* nodo_mensaje, int* bytes){
 
 
 
+int obtencion_de_cola(t_buffer* payload)
+{
+	int cola;
+
+	memcpy(&cola, payload->stream, sizeof(int));
+
+	return cola;
+}
+
+void agregar_suscribers(t_list* lista_subs, int cola_a_suscribirse, int socket)
+{
+	t_suscriptor* suscriptor = malloc(sizeof(t_suscriptor));
+
+	suscriptor->socket = socket;
+
+	agregar_elemento(lista_subs, cola_a_suscribirse, suscriptor);
+
+}
+
+t_paquete* crear_paquetee(int cod_op, t_buffer* payload)
+{
+	t_paquete* paquete = malloc(sizeof(t_paquete));
+	paquete->codigo_operacion = cod_op;
+	paquete->buffer = payload;
+
+	return paquete;
+}
 
 
+void enviar_a_suscriptores(t_list* lista_subs, t_paquete* paquete)
+{
+	t_list* lista_subs_enviar = list_get(lista_subs, paquete->codigo_operacion);
 
+	for(int i=0; i< list_size(lista_subs_enviar); i++)
+	{
+		t_suscriptor* suscriptor = list_get(lista_subs_enviar, i);
 
+		int socket = suscriptor->socket;
 
+		int size_mensaje = paquete->buffer->size;
 
+		void* mensaje = serializar_paquete(paquete, &size_mensaje);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+		if(send(socket, mensaje, size_mensaje, 0) == -1){
+			printf("no se pudo enviar\n");
+		}
+	}
+}
 
