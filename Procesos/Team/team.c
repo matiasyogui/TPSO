@@ -19,14 +19,14 @@ int PUERTO_BROKER;
 char* LOG_FILE;
 int i;
 
-t_list* listaNew;
 t_list* listaReady;
 t_list* listaExecute;
 t_list* listaBlocked;
 t_list* listaExit;
 
 
-//pthread_mutex_t queueMutex;
+pthread_mutex_t semPlanificador;
+t_entrenador* entrenadorActual;
 //pthread_cond_t queueCond;
 
 void pasajeFIFO(t_list* lista1, t_list* lista2){
@@ -34,48 +34,45 @@ void pasajeFIFO(t_list* lista1, t_list* lista2){
 	list_add(lista2, nodoAPasar);
 }
 
-//TODO
-void planificacion(t_entrenador* entrenador){
-	if(string_equals_ignore_case(entrenador -> algoritmo_de_planificacion,"FIFO")){
-		if(string_equals_ignore_case(entrenador -> mensaje, "CATCH_POKEMON")){
-			pasajeFIFO(listaNew, listaReady);
-			printf("\nElementos en lista NEW: %d\n", listaNew->elements_count);
-			printf("\nElementos en lista READY: %d\n", listaReady->elements_count);
-		}
-	}else if(string_equals_ignore_case(entrenador -> algoritmo_de_planificacion,"RR")){
-		printf("TODO");
-	}
-}
-
 void Producer(t_entrenador* ent) {
 
-	//t_entrenador* ent = entrenador;
+	/*t_entrenador* ent = entrenador;
 	pthread_mutex_lock(ent->semaforo->queueMutex);
     pthread_cond_wait(ent->semaforo->queueCond, ent->semaforo->queueMutex);
     printf("Entrenador pos x=%d y=%d \n",ent->posicion->posx,ent->posicion->posy);
     planificacion(&ent);
     //printf("Entrenador pos x=%d y=%d \n",ent->posicion->posx,ent->posicion->posy); //saber la posicion luego de la ejecucion
     pthread_mutex_unlock(ent->semaforo->queueMutex);
-
+    */
+	while(1){
+	pthread_mutex_lock(ent->semaforo);
+	//pthread_mutex_lock(&semPlanificador);
+	printf("bloquea al planificador \n");
+	printf("se ejecuta el entrenador con posicion %d y %d\n",ent->posicion->posx,ent->posicion->posy);
+	//entender el mensaje y ejecutarse
+	//bloquea devuelta
+	printf("desbloquea al planificador\n");
+	pthread_mutex_unlock(&semPlanificador);
 	}
 }
 
-int main(int argc,char** argv){
+int main(){
 
 	//iniciar_servidor();
 	//LEO ARCHIVO DE CONFIGURACION
 	leer_archivo_configuracion();
+
+	pthread_mutex_init(&semPlanificador,NULL);
 
 	int cantEntrenadores = cant_elementos(POSICIONES_ENTRENADORES);
 	t_entrenador* entrenadores[cantEntrenadores];
 	pthread_t* hilos[cantEntrenadores];
 
 	//TEMPORAL hasta poder mandar mensajes entre procesos
-	char* mensajeBroker = string_new();
-	string_append(&mensajeBroker, argv[1]);
+	//char* mensajeBroker = string_new();
+	//string_append(&mensajeBroker, argv[1]);
 
 	//creo el diagrama de estados
-	listaNew = list_create();
 	listaReady = list_create();
 	listaExecute = list_create();
 	listaBlocked = list_create();
@@ -96,39 +93,39 @@ int main(int argc,char** argv){
 		entrenadores[i]->pokemones = string_split(POKEMON_ENTRENADORES[i],'|'); */
 
 		entrenadores[i]->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
-		entrenadores[i]->mensaje = mensajeBroker;
+		//entrenadores[i]->mensaje = mensajeBroker;
 
-		entrenadores[i]->semaforo = malloc(sizeof(t_semaforo));
-		entrenadores[i]->semaforo->queueMutex = malloc(sizeof(pthread_mutex_t));
-		entrenadores[i]->semaforo->queueCond = malloc(sizeof(pthread_cond_t));
-		pthread_mutex_init(entrenadores[i]->semaforo->queueMutex, NULL);
-		pthread_cond_init(entrenadores[i]->semaforo->queueCond, NULL);
+		entrenadores[i]->semaforo = malloc(sizeof(pthread_mutex_t));
+		pthread_mutex_init(entrenadores[i]->semaforo, NULL);
+		pthread_mutex_lock(entrenadores[i]->semaforo);
 
-		pthread_create(&hilos[i],NULL, (void*) Producer,&entrenadores[i]);
+		hilos[i] = malloc(sizeof(pthread_t));
+		pthread_create(&hilos[i],NULL, (void*) Producer,entrenadores[i]);
 
-		list_add(listaNew, &entrenadores[i]);
+		list_add(listaBlocked, &entrenadores[i]);
 	}
+	t_link_element* nodo = malloc(sizeof(t_link_element*));
 
-	if(listaNew->elements_count != cantEntrenadores)
-		printf("\nEntrenadores mal cargados.\n\n");
+	//planificador
+	pthread_mutex_lock(&semPlanificador);
+	for(int i=0;i<3;i++){
+		//espera un mensaje
+		//saca a un entrenador de blocked segun cercania
+		//pasajeFIFO(listaBlocked,listaReady);
+		//pasa al entrenador de ready a execute segun Algoritmo
+		//nodo = list_take(listaReady,1);
+		//entrenadorActual = (t_entrenador*) nodo;
+		//printf("se saca de blocked el entrenador con posicion %d y %d\n",entrenadores[0]->posicion->posx,entrenadores[0]->posicion->posy);
 
-	printf("\nTodos los entrenadores cargados exitosamente.\n\n");
-
-	/*if(string_equals_ignore_case(mensaje, "NEW_POKEMON")){
-		pasajeFIFO(listaNew, listaReady);
-	}
-
-	printf("\nElementos en listaNew: %d\n", listaNew->elements_count);
-	printf("\nElementos en listaReady: %d\n", listaReady->elements_count); */
-
-	while(1){
-		for(i=0;i<cantEntrenadores;i++){
-			pthread_mutex_lock(entrenadores[i]->semaforo->queueMutex);
-			pthread_cond_signal(entrenadores[i]->semaforo->queueCond);
-			pthread_mutex_unlock(entrenadores[i]->semaforo->queueMutex);
-			fflush(stdin);
+		//lo desbloquea y se ejecuta
+		printf("Se desbloquea el hilo %d\n",i);
+		pthread_mutex_unlock(entrenadores[i]->semaforo);
+		pthread_mutex_lock(&semPlanificador);
+		printf("termina hilo %d\n",i);
+		//printf("se bloquea el entrenador con posicion %d y %d\n",entrenadores[0]->posicion->posx,entrenadores[0]->posicion->posy);
+		//printf("se pone en blocked el entrenador con posicion %d y %d\n",entrenadores[0]->posicion->posx,entrenadores[0]->posicion->posy);
+		//pasajeFIFO(listaReady,listaBlocked);
 		}
-	}
 
 	for(i=0;i<cantEntrenadores;i++){
 		pthread_join(hilos[i],NULL);
@@ -148,7 +145,9 @@ int main(int argc,char** argv){
 		free(entrenadores[i]-> objetivo);
 		free(entrenadores[i]-> pokemones);
 		free(entrenadores[i]);
+
 	}
+	free(nodo);
 	return EXIT_SUCCESS;
 }
 
