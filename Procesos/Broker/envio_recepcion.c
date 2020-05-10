@@ -1,4 +1,5 @@
 #include "envio_recepcion.h"
+#include <errno.h>
 
 int obtener_id(void){
 
@@ -21,22 +22,28 @@ void iniciar_servidor(){
 
     for (p=servinfo; p != NULL; p = p->ai_next)
     {
-        if ((socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
-            continue;
+        if ((socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1){
+        	perror("[FALLO SOCKET()]");
+        	continue;
+        }
 
-        if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1) {
+        if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1){
             close(socket_servidor);
+            perror("[FALLO BIND()]");
             continue;
         }
         break;
     }
 
-	listen(socket_servidor, SOMAXCONN);
+	if(listen(socket_servidor, SOMAXCONN) == -1){
+		perror("[FALLO LISTEN()]");
+		exit(-1);
+	}
 
     freeaddrinfo(servinfo);
 
     pthread_mutex_init(&mutex, NULL);
-
+    socket_server = &socket_servidor;
     while(1)
     	esperar_cliente(socket_servidor);
 }
@@ -59,7 +66,7 @@ void serve_client(int* socket){
 
 	int cod_op;
 
-	if(recv( *socket, &cod_op, sizeof(int), MSG_WAITALL) == -1)
+	if(recv(*socket, &cod_op, sizeof(int), MSG_WAITALL) == -1)
 		cod_op = -1;
 
 	pthread_mutex_lock(&mutex);
@@ -87,17 +94,19 @@ void process_request(int cod_op, int cliente_fd) {
     t_buffer* msg = recibir_mensaje(cliente_fd);
 
     t_mensaje* mensaje_guardar;
+    t_suscriptor* suscriptor;
 
     //t_paquete* el_paquete;
 
 	switch (cod_op) {
 
 		case NEW_POKEMON...LOCALIZED_POKEMON:
+
 		 	leer_mensaje(msg);
 
 			mensaje_guardar = nodo_mensaje(cod_op, msg, obtener_id());
 
-			enviar_subs(LISTA_MENSAJES, mensaje_guardar, LISTA_SUBS);
+			agregar_elemento(LISTA_MENSAJES, cod_op, mensaje_guardar);
 
 			informe_lista_mensajes(LISTA_MENSAJES);
 
@@ -113,13 +122,33 @@ void process_request(int cod_op, int cliente_fd) {
 
         case SUSCRIPTOR:
 
-        	//agregar_suscriber(LISTA_SUBS, cod_op, cliente_fd);
+        	leer_mensaje(msg);
 
+        	suscriptor = nodo_suscriptor(cliente_fd, obtener_id());
+
+        	enviar_confirmacion(suscriptor);
+
+        	free(suscriptor);
         	break;
 
 		case -1:
+			printf("no se recibio nada\n");
 			pthread_exit(NULL);
 		}
+}
+
+
+void enviar_confirmacion(t_suscriptor* suscriptor){
+
+	void* mensaje_confirmacion = malloc(sizeof(int));
+	memcpy(mensaje_confirmacion, &(suscriptor->id), sizeof(int));
+
+	if(send(suscriptor->socket, mensaje_confirmacion, sizeof(int), 0) == -1)
+		printf("no se puedo enviar la confirmacion");
+
+	close(suscriptor->socket);
+	free(mensaje_confirmacion);
+
 }
 
 
@@ -172,33 +201,6 @@ void* serializar_nodo_mensaje(t_mensaje* nodo_mensaje, int* bytes){
 }
 
 
-void enviar_subs(t_list* lista_mensajes, t_mensaje* nodo_mensaje, t_list* lista_subs){
-
-	int size_mensaje = 0;
-
-	void* mensaje_enviar = serializar_nodo_mensaje(nodo_mensaje, &size_mensaje);
-
-	t_list* lista_subs_enviar = list_get(lista_subs, nodo_mensaje->cod_op);
-
-	for(int i=0; i< list_size(lista_subs_enviar); i++){
-
-		t_suscriptor* sub = list_get(lista_subs_enviar, i);
-
-		int socket = crear_conexion(sub->ip, sub->puerto);
-
-		if(send(socket, mensaje_enviar, size_mensaje, 0) != -1){
-			list_add(nodo_mensaje->subs_envie_msg, sub);
-		}
-		else{
-			printf("No se pudo enviar el mensaje a la direccion ip = %s, puerto = %s", sub->ip, sub->puerto);
-		}
-	}
-
-	agregar_elemento(lista_mensajes, nodo_mensaje->cod_op, nodo_mensaje);
-
-	free(mensaje_enviar);
-}
-
 
 void agregar_suscriber(t_list* lista_subs, int cola_a_suscribirse, int socket)
 {
@@ -210,9 +212,11 @@ void agregar_suscriber(t_list* lista_subs, int cola_a_suscribirse, int socket)
 
 }
 
+
 t_paquete* crear_paquete(int cod_op, t_buffer* payload)
 {
 	t_paquete* paquete = malloc(sizeof(t_paquete));
+
 	paquete->codigo_operacion = cod_op;
 	paquete->buffer = payload;
 
@@ -220,22 +224,5 @@ t_paquete* crear_paquete(int cod_op, t_buffer* payload)
 }
 
 
-void enviar_a_suscriptores(t_list* lista_subs, t_paquete* paquete)
-{
-	t_list* lista_subs_enviar = list_get(lista_subs, paquete->codigo_operacion);
 
-	for(int i=0; i< list_size(lista_subs_enviar); i++)
-	{
-		t_suscriptor* suscriptor = list_get(lista_subs_enviar, i);
-
-		int socket = suscriptor->socket;
-
-		int size_mensaje;
-
-		void* mensaje = serializar_paquete(paquete, &size_mensaje);
-
-		if(send(socket, mensaje, size_mensaje, 0) == -1)
-			printf("no se pudo enviar\n");
-	}
-}
 

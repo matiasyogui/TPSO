@@ -36,6 +36,10 @@ void finalizar_servidor(){
 
 	config_destroy(CONFIG);
 
+
+
+	close(*socket_server);
+
 	raise(SIGTERM);
 }
 

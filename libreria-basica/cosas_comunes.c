@@ -15,15 +15,16 @@ int crear_conexion(char *ip, char* puerto){
 	int socket_cliente = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
 
 	if(connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen) == -1)
-		printf("No se pudo realizar la conexion\n");
+		perror("[FALLO EL CONNECT()]");
 
 	freeaddrinfo(server_info);
 
 	return socket_cliente;
 }
 
-void liberar_conexion(int socket_cliente){
 
+
+void liberar_conexion(int socket_cliente){
 	close(socket_cliente);
 }
 

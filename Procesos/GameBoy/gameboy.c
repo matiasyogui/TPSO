@@ -1,10 +1,10 @@
-
 #include "gameboy.h"
 
 
 int main(int argc,char** argv){
 	// proceso = argv+1 ,tipo_mensaje = argv+2,datos = arg+3 en adelante 
 	// para suscripcion proceso = argv+1, tipo_mensaje = argv+1, datos = argv+2 en adelante
+
 	inicializar_archivos();
 
 	t_paquete* paquete;
@@ -13,7 +13,7 @@ int main(int argc,char** argv){
 
 		obtener_direcciones_envio("broker");
 
-		paquete = paquete_suscriptor(argv+1);
+		paquete = armar_paquete(argv+1);
 
 	}else{
 
@@ -26,53 +26,22 @@ int main(int argc,char** argv){
 
 	enviar_mensaje(paquete, conexion);
 
+
+
+	//recibir mensajes de confirmacion
+
+	int mensaje_confirmacion;
+
+	if(recv(conexion, &mensaje_confirmacion, sizeof(int), MSG_WAITALL) == -1)
+		perror("[FALLO EL RECV()]");
+	else
+		printf("Mensaje_recibido. %d\n", mensaje_confirmacion);
+
 	terminar_programa(conexion, LOGGER, CONFIG);
 
 	return 0;
 }
 
-
-t_paquete* paquete_suscriptor(char** datos){
-
-	t_paquete* paquete = malloc(sizeof(t_paquete));
-	paquete -> buffer = malloc(sizeof(t_buffer));
-
-	paquete -> codigo_operacion = tipo_mensaje(*datos);
-	paquete -> buffer -> size = obtener_tamanio(datos+1) + cant_elementos(datos+1) * sizeof(uint32_t) + (strlen(IP)+1) + (strlen(PUERTO)+1) + 2 * sizeof(uint32_t);
-
-	void* stream = malloc(paquete->buffer->size);
-	int offset = 0;
-	int tamano =0;
-
-
-	tamano = strlen(*(datos+1))+1;
-	memcpy(stream + offset, &tamano, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-	memcpy(stream + offset, *(datos+1), tamano);
-	offset += tamano;
-
-	tamano = strlen(*(datos+2))+1;
-	memcpy(stream + offset, &tamano, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-	memcpy(stream+ offset, *(datos+2), tamano);
-	offset += tamano;
-
-	tamano = strlen(IP) + 1;
-	memcpy(stream + offset, &tamano, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-	memcpy(stream + offset, IP, tamano);
-	offset += tamano;
-
-	tamano = strlen(PUERTO) + 1;
-	memcpy(stream + offset, &tamano, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-	memcpy(stream + offset, PUERTO, tamano);
-	offset += tamano;
-
-	paquete -> buffer -> stream = stream;
-
-	return paquete;
-}
 
 
 void inicializar_archivos(){

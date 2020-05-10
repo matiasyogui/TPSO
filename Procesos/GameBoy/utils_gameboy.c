@@ -1,4 +1,3 @@
-
 #include "utils_gameboy.h"
 
 
@@ -44,10 +43,11 @@ void enviar_mensaje(t_paquete* paquete, int socket_cliente){
 
 	leer_mensaje(mensaje);
 
-	if(send(socket_cliente, mensaje, bytes_enviar, 0) == -1){
-		printf("Error al enviar el mensaje\n");
-	}
-	log_info(LOGGER, "Se creo la conexion con el proceso IP = %s, PUERTO = %s\n", IP_SERVER, PUERTO_SERVER);
+	if(send(socket_cliente, mensaje, bytes_enviar, 0) == -1)
+		perror("FALLO EL SEND()");
+	else
+		log_info(LOGGER, "Se creo la conexion con el proceso IP = %s, PUERTO = %s\n", IP_SERVER, PUERTO_SERVER);
+
 
 	free(paquete -> buffer -> stream);
 	free(paquete -> buffer);

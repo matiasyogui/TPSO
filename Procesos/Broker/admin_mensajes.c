@@ -36,6 +36,16 @@ t_mensaje* nodo_mensaje(int cod_op, t_buffer* buffer, int id){
 	return nodo_mensaje;
 }
 
+t_suscriptor* nodo_suscriptor(int socket, int id){
+
+	t_suscriptor* nodo_suscriptor = malloc(sizeof(t_suscriptor));
+
+	nodo_suscriptor->id = id;
+	nodo_suscriptor->socket = socket;
+
+	return nodo_suscriptor;
+}
+
 
 t_mensaje* buscar_mensaje(t_list* list, int id_mensaje){
 
@@ -121,7 +131,7 @@ bool comparar_mensajes(t_mensaje* mensaje1, t_mensaje* mensaje2){
 
 bool comparar_suscriptores(t_suscriptor* sub1, t_suscriptor* sub2){
 
-	return string_equals_ignore_case(sub1->ip, sub2->ip) && string_equals_ignore_case(sub1->puerto, sub2->puerto);
+	return sub1->id == sub2->id;
 }
 
 

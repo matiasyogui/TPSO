@@ -17,8 +17,7 @@ typedef enum{
 
 typedef struct{
 
-	char* ip;
-	char* puerto;
+	int id;
 	int socket;
 
 }t_suscriptor;
@@ -40,6 +39,7 @@ void agregar_elemento(t_list* lista, int index, void* data);
 
 
 t_mensaje* nodo_mensaje(int cod_op, t_buffer* buffer, int id);
+t_suscriptor* nodo_suscriptor(int socket, int id);
 t_mensaje* buscar_mensaje(t_list* list, int id_mensaje);
 void agregar_sub_mensaje(t_list* list, int id_mensaje, t_suscriptor* subscriptor, tipo_lista tipo);
 void informe_lista_mensajes(t_list* lista);
