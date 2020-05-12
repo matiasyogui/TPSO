@@ -78,8 +78,6 @@ void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i){
 
 int main(){
 
-	iniciar_servidor();
-
 	//LEO ARCHIVO DE CONFIGURACION
 	leer_archivo_configuracion();
 
@@ -103,6 +101,9 @@ int main(){
 	for(i=0;i<cantEntrenadores;i++){
 		setteoEntrenador(entrenadores[i], hilos[i], i);
 	}
+
+	iniciar_servidor();
+
 	printf("/////////////////////////////////////////////////////////");
 	fflush(stdout);
 	pthread_mutex_lock(&semPlanificador);

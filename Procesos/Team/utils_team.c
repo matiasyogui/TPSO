@@ -74,7 +74,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 	switch (cod_op) {
 
-		case LOCALIZED_POKEMON:
+		case NEW_POKEMON...LOCALIZED_POKEMON:
 		 	leer_mensaje(msg);
 
 			break;
@@ -116,7 +116,7 @@ void leer_mensaje(t_buffer* buffer){
         memcpy(palabra, buffer->stream + offset, tamanio);
         offset += tamanio;
 
-        printf("[broker] palabra : %s, tamañio = %d\n", palabra, tamanio);
+        printf("[TEAM] palabra : %s, tamañio = %d\n", palabra, tamanio);
 
         free(palabra);
     }
