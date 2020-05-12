@@ -70,6 +70,7 @@ void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i){
 	pthread_mutex_init(entrenador->semaforo, NULL);
 
 	hilo = malloc(sizeof(pthread_t));
+	pthread_mutex_lock(entrenador->semaforo);
 	pthread_create(hilo, NULL, (void*) Producer, entrenador);
 
 	list_add(listaBlocked, entrenador);
@@ -77,7 +78,7 @@ void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i){
 
 int main(){
 
-	//iniciar_servidor();
+	iniciar_servidor();
 
 	//LEO ARCHIVO DE CONFIGURACION
 	leer_archivo_configuracion();
@@ -102,7 +103,9 @@ int main(){
 	for(i=0;i<cantEntrenadores;i++){
 		setteoEntrenador(entrenadores[i], hilos[i], i);
 	}
-
+	printf("/////////////////////////////////////////////////////////");
+	fflush(stdout);
+	pthread_mutex_lock(&semPlanificador);
 	//planificador
 	while(1){
 		//espera un mensaje
@@ -119,7 +122,7 @@ int main(){
 		printf("termina hilo\n");
 		//printf("se bloquea el entrenador con posicion %d y %d\n",entrenadores[0]->posicion->posx,entrenadores[0]->posicion->posy);
 		//printf("se pone en blocked el entrenador con posicion %d y %d\n",entrenadores[0]->posicion->posx,entrenadores[0]->posicion->posy);
-		pasajeFIFO(listaReady,listaBlocked);
+		list_add(listaBlocked,entrenadorActual);
 
 	}
 
