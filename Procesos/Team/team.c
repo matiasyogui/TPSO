@@ -27,38 +27,58 @@ t_list* listaExit;
 
 pthread_mutex_t semPlanificador;
 t_entrenador* entrenadorActual;
-//pthread_cond_t queueCond;
+
+void element_destroyer(void* elemento){
+	t_entrenador* ent = elemento;
+	free(ent->objetivo);
+	free(ent->pokemones);
+	free(ent->posicion);
+	free(ent->semaforo);
+}
 
 void pasajeFIFO(t_list* lista1, t_list* lista2){
-	t_link_element* nodoAPasar = list_remove(lista1, 1);
+	t_entrenador* nodoAPasar = list_remove(lista1, 0);
 	list_add(lista2, nodoAPasar);
 }
 
 void Producer(t_entrenador* ent) {
-
-	/*t_entrenador* ent = entrenador;
-	pthread_mutex_lock(ent->semaforo->queueMutex);
-    pthread_cond_wait(ent->semaforo->queueCond, ent->semaforo->queueMutex);
-    printf("Entrenador pos x=%d y=%d \n",ent->posicion->posx,ent->posicion->posy);
-    planificacion(&ent);
-    //printf("Entrenador pos x=%d y=%d \n",ent->posicion->posx,ent->posicion->posy); //saber la posicion luego de la ejecucion
-    pthread_mutex_unlock(ent->semaforo->queueMutex);
-    */
 	while(1){
 	pthread_mutex_lock(ent->semaforo);
-	//pthread_mutex_lock(&semPlanificador);
 	printf("bloquea al planificador \n");
 	printf("se ejecuta el entrenador con posicion %d y %d\n",ent->posicion->posx,ent->posicion->posy);
 	//entender el mensaje y ejecutarse
+
 	//bloquea devuelta
 	printf("desbloquea al planificador\n");
 	pthread_mutex_unlock(&semPlanificador);
 	}
 }
 
+void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i){
+	entrenador = malloc(sizeof(t_entrenador));
+	entrenador-> posicion = malloc(sizeof(t_posicion));
+	entrenador->posicion->posx = atoi(strtok(POSICIONES_ENTRENADORES[i],"|"));
+	entrenador->posicion->posy = atoi(strtok(NULL,"|"));
+	entrenador->objetivo = malloc(sizeof(string_split(OBJETIVOS_ENTRENADORES[i],"|")));
+	entrenador->objetivo = string_split(OBJETIVOS_ENTRENADORES[i], "|");
+	entrenador->pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
+
+	entrenador->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
+	//entrenadores[i]->mensaje = mensajeBroker;
+
+	entrenador->semaforo = malloc(sizeof(pthread_mutex_t));
+	pthread_mutex_init(entrenador->semaforo, NULL);
+
+	hilo = malloc(sizeof(pthread_t));
+	pthread_create(hilo, NULL, (void*) Producer, entrenador);
+
+	list_add(listaBlocked, entrenador);
+}
+
 int main(){
 
 	//iniciar_servidor();
+
 	//LEO ARCHIVO DE CONFIGURACION
 	leer_archivo_configuracion();
 
@@ -75,79 +95,52 @@ int main(){
 	//creo el diagrama de estados
 	listaReady = list_create();
 	listaExecute = list_create();
-	listaBlocked = list_create();
+	listaBlocked = list_create(); //sin NEW, inicializamos los entrenadores en BLOCKED
 	listaExit = list_create();
 
 	//setteo entrenadores y asigno hilo a c/entrenador
 	for(i=0;i<cantEntrenadores;i++){
-		entrenadores[i] = malloc(sizeof(t_entrenador));
-		entrenadores[i]-> posicion = malloc(sizeof(t_posicion));
-		//char** posiciones = malloc(sizeof(char**)); //NO lo usamos
-		//posiciones = string_split(POSICIONES_ENTRENADORES[i],"|");
-		entrenadores[i]->posicion->posx = atoi(strtok(POSICIONES_ENTRENADORES[i],"|"));
-		entrenadores[i]->posicion->posy = atoi(strtok(NULL,"|"));
-/*		entrenadores[i]->posicion->posx = atoi(posiciones[0]);
-		entrenadores[i]->posicion->posy = atoi(posiciones[1]);
-		entrenadores[i]->objetivo = malloc(sizeof(string_split(OBJETIVOS_ENTRENADORES[i],'|')));
-		entrenadores[i]->objetivo = string_split(OBJETIVOS_ENTRENADORES[i],'|');
-		entrenadores[i]->pokemones = string_split(POKEMON_ENTRENADORES[i],'|'); */
-
-		entrenadores[i]->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
-		//entrenadores[i]->mensaje = mensajeBroker;
-
-		entrenadores[i]->semaforo = malloc(sizeof(pthread_mutex_t));
-		pthread_mutex_init(entrenadores[i]->semaforo, NULL);
-		pthread_mutex_lock(entrenadores[i]->semaforo);
-
-		hilos[i] = malloc(sizeof(pthread_t));
-		pthread_create(&hilos[i],NULL, (void*) Producer,entrenadores[i]);
-
-		list_add(listaBlocked, &entrenadores[i]);
+		setteoEntrenador(entrenadores[i], hilos[i], i);
 	}
-	t_link_element* nodo = malloc(sizeof(t_link_element*));
 
 	//planificador
-	pthread_mutex_lock(&semPlanificador);
-	for(int i=0;i<3;i++){
+	while(1){
 		//espera un mensaje
 		//saca a un entrenador de blocked segun cercania
-		//pasajeFIFO(listaBlocked,listaReady);
+		pasajeFIFO(listaBlocked,listaReady);
 		//pasa al entrenador de ready a execute segun Algoritmo
-		//nodo = list_take(listaReady,1);
-		//entrenadorActual = (t_entrenador*) nodo;
-		//printf("se saca de blocked el entrenador con posicion %d y %d\n",entrenadores[0]->posicion->posx,entrenadores[0]->posicion->posy);
+		entrenadorActual = list_remove(listaReady, 0);
+		printf("se saca de blocked el entrenador con posicion %d y %d\n", entrenadorActual->posicion->posx, entrenadorActual->posicion->posy);
 
 		//lo desbloquea y se ejecuta
-		printf("Se desbloquea el hilo %d\n",i);
-		pthread_mutex_unlock(entrenadores[i]->semaforo);
+		printf("Se desbloquea el hilo\n");
+		pthread_mutex_unlock(entrenadorActual->semaforo);
 		pthread_mutex_lock(&semPlanificador);
-		printf("termina hilo %d\n",i);
+		printf("termina hilo\n");
 		//printf("se bloquea el entrenador con posicion %d y %d\n",entrenadores[0]->posicion->posx,entrenadores[0]->posicion->posy);
 		//printf("se pone en blocked el entrenador con posicion %d y %d\n",entrenadores[0]->posicion->posx,entrenadores[0]->posicion->posy);
-		//pasajeFIFO(listaReady,listaBlocked);
-		}
+		pasajeFIFO(listaReady,listaBlocked);
+
+	}
 
 	for(i=0;i<cantEntrenadores;i++){
-		pthread_join(hilos[i],NULL);
+		pthread_join(*hilos[i],NULL);
 	}
 
 	//DEFINIR como destruir elementos
-/*	list_destroy_and_destroy_elements(listaNew, );
+/*	list_destroy_and_destroy_elements(listaNew, element_destroyer);
 	list_destroy_and_destroy_elements(listaReady, );
 	list_destroy_and_destroy_elements(listaExecute, );
 	list_destroy_and_destroy_elements(listaBlocked, );
 	list_destroy_and_destroy_elements(listaExit, ); */
 
-	//free(mensaje);
 
 	for(i=0;i<cantEntrenadores;i++){
 		free(entrenadores[i]-> posicion);
 		free(entrenadores[i]-> objetivo);
 		free(entrenadores[i]-> pokemones);
 		free(entrenadores[i]);
-
 	}
-	free(nodo);
 	return EXIT_SUCCESS;
 }
 
