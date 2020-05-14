@@ -19,16 +19,53 @@
 #include<pthread.h>
 #include <cosas_comunes.h>
 
-#define IP "127.0.0.1"
-#define PUERTO "4444"
+
+#define IP "127.0.0.2"
+#define PUERTO "5002"
 
 typedef enum
 {
 	MENSAJE=1
 }op_code;
 
+typedef struct{
+	int posx;
+	int posy;
+}t_posicion;
+
+typedef struct{
+	t_posicion* posicion;
+	pthread_mutex_t* semaforo;
+	int cercania;
+	char* algoritmo_de_planificacion;
+	char** objetivo;
+	char** pokemones;
+}t_entrenador;
+
 pthread_t thread;
 pthread_mutex_t mutex;
+
+pthread_mutex_t semPlanificador;
+t_entrenador* entrenadorActual;
+
+t_list* listaReady;
+t_list* listaExecute;
+t_list* listaBlocked;
+t_list* listaExit;
+
+char** POSICIONES_ENTRENADORES;
+char** POKEMON_ENTRENADORES;
+char** OBJETIVOS_ENTRENADORES;
+int TIEMPO_RECONEXION;
+int RETARDO_CICLO_CPU;
+char* ALGORITMO_PLANIFICACION;
+int QUANTUM;
+char* IP_BROKER;
+int ESTIMACION_INICIAL;
+int PUERTO_BROKER;
+char* LOG_FILE;
+int i;
+int mensajeActual;
 
 void* recibir_buffer(int*, int);
 
@@ -41,6 +78,9 @@ void process_request(int cod_op, int cliente_fd);
 
 void leer_mensaje(t_buffer* buffer);
 
+void pasajeFIFO(t_list* lista1, t_list* lista2);
+void Producer(t_entrenador* ent);
+void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i);
 
 
 #endif /* UTILS_TEAM_H_ */
