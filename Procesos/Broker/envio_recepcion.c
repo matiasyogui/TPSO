@@ -3,11 +3,12 @@
 
 int obtener_id(void){
 
-	return id_basico = id_basico + 1;
+		id_basico++;
+
+	return id_basico;
 }
 
-
-void iniciar_servidor(){
+void* iniciar_servidor(){
 
 	int socket_servidor;
 
@@ -22,30 +23,32 @@ void iniciar_servidor(){
 
     for (p=servinfo; p != NULL; p = p->ai_next)
     {
-        if ((socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1){
-        	perror("[FALLO SOCKET()]");
+        if ((socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0){
+        	perror("SOCKET ERROR");
         	continue;
         }
 
-        if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1){
+        if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) < 0){
             close(socket_servidor);
-            perror("[FALLO BIND()]");
+            perror("BIND ERROR");
             continue;
         }
         break;
     }
 
-	if(listen(socket_servidor, SOMAXCONN) == -1){
-		perror("[FALLO LISTEN()]");
-		exit(-1);
+	if(listen(socket_servidor, SOMAXCONN) < 0){
+		perror("LISTEN ERROR");
+		raise(SIGINT);
 	}
 
     freeaddrinfo(servinfo);
 
-    pthread_mutex_init(&mutex, NULL);
-    socket_server = &socket_servidor;
+    SOCKET_SERVER = &socket_servidor;
+
     while(1)
     	esperar_cliente(socket_servidor);
+
+    return NULL;
 }
 
 
@@ -55,87 +58,110 @@ void esperar_cliente(int socket_servidor){
 
 	socklen_t tam_direccion = sizeof(struct sockaddr_in);
 
-	int socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion);
+	int socket_cliente;
 
-	pthread_create(&thread, NULL, (void*)serve_client, &socket_cliente);
+	if((socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion)) < 0){
+		perror("ACCEPT ERROR");
+		return;
+	}
+	pthread_create(&thread, NULL, (void*)server_client, &socket_cliente);
 	pthread_detach(thread);
 }
 
 
-void serve_client(int* socket){
+void server_client(int* socket){
 
-	int cod_op;
+	void* buffer = malloc(BUFFER_SIZE);
+	void* stream = NULL;
+	int cod_op, size;
+	int offset = 0;
 
-	if(recv(*socket, &cod_op, sizeof(int), MSG_WAITALL) == -1)
+	if(recv(*socket, buffer, BUFFER_SIZE, 0) < 0)
 		cod_op = -1;
 
-	pthread_mutex_lock(&mutex);
-	process_request(cod_op, *socket);
-	pthread_mutex_unlock(&mutex);
+	else{
+		memcpy(&cod_op, buffer + offset, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		memcpy(&size, buffer + offset, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		stream = malloc(size);
+		memcpy(stream, buffer + offset, size);
+	}
+	free(buffer);
+
+	process_request(*socket, cod_op, size, stream);
 }
 
 
-t_buffer* recibir_mensaje(int socket_cliente){
+void process_request(int cliente_fd, int cod_op, int size, void* stream){
 
-	t_buffer* buffer = malloc(sizeof(t_buffer));
-
-	recv(socket_cliente, &(buffer->size), sizeof(uint32_t), MSG_WAITALL);
-
-	buffer->stream = malloc(buffer->size);
-
-	recv(socket_cliente, buffer->stream, buffer->size, MSG_WAITALL);
-
-	return buffer;
-}
-
-
-void process_request(int cod_op, int cliente_fd) {
-
-    t_buffer* msg = recibir_mensaje(cliente_fd);
+    t_buffer* msg = malloc(sizeof(t_buffer));
+    msg->size = size;
+    msg->stream = stream;
 
     t_mensaje* mensaje_guardar;
     t_suscriptor* suscriptor;
 
     //t_paquete* el_paquete;
 
-	switch (cod_op) {
+	switch(cod_op){
 
 		case NEW_POKEMON...LOCALIZED_POKEMON:
 
-		 	leer_mensaje(msg);
+			pthread_mutex_lock(&mutex);
 
-			mensaje_guardar = nodo_mensaje(cod_op, msg, obtener_id());
+				mensaje_guardar = nodo_mensaje(cod_op, msg, obtener_id());
 
-			agregar_elemento(LISTA_MENSAJES, cod_op, mensaje_guardar);
+			pthread_mutex_unlock(&mutex);
 
-			informe_lista_mensajes(LISTA_MENSAJES);
+			printf("mensaje %d recibido\n", mensaje_guardar->id);
 
-			//el_paquete = crear_paquete(cod_op, msg);
+			pthread_mutex_lock(&MUTEX_COLA_MENSAJES);
 
-			//enviar_a_suscriptores(LISTA_SUBS, el_paquete);
+				queue_push(COLA_MENSAJES, mensaje_guardar);
 
-			//guardar_mensaje(LISTA_MENSAJES, mensaje_guardar, LISTA_SUBS);
+				pthread_cond_signal(&condition_var_queue);
 
-			//free(el_paquete);
+			pthread_mutex_unlock(&MUTEX_COLA_MENSAJES);
 
 			break;
 
         case SUSCRIPTOR:
 
-        	leer_mensaje(msg);
+        	pthread_mutex_lock(&mutex);
 
-        	suscriptor = nodo_suscriptor(cliente_fd, obtener_id());
+        		suscriptor = nodo_suscriptor(cliente_fd, obtener_id());
+
+        	pthread_mutex_unlock(&mutex);
+
+        	pthread_mutex_lock(&MUTEX_LISTA_GENERAL_SUBS);
+
+        		list_add(LISTA_GENERAL_SUBS, suscriptor);
+
+        	pthread_mutex_unlock(&MUTEX_LISTA_GENERAL_SUBS);
 
         	enviar_confirmacion(suscriptor);
 
-        	free(suscriptor);
         	break;
 
 		case -1:
-			printf("no se recibio nada\n");
+
+			printf("\nNo se recibio el mensaje correctamente\n");
+			free(msg);
+			pthread_exit(NULL);
+
+		default:
+
+			free(msg->stream);
+			free(msg);
+
+			printf("\ncodigo de operacion invalido\n");
 			pthread_exit(NULL);
 		}
 }
+
 
 
 void enviar_confirmacion(t_suscriptor* suscriptor){
@@ -146,12 +172,31 @@ void enviar_confirmacion(t_suscriptor* suscriptor){
 	if(send(suscriptor->socket, mensaje_confirmacion, sizeof(int), 0) == -1)
 		printf("no se puedo enviar la confirmacion");
 
-	close(suscriptor->socket);
 	free(mensaje_confirmacion);
+}
+
+void agregar_suscriber(t_list* lista_subs, int cola_a_suscribirse, int socket){
+
+	t_suscriptor* suscriptor = malloc(sizeof(t_suscriptor));
+
+	suscriptor->socket = socket;
+
+	agregar_elemento(lista_subs, cola_a_suscribirse, suscriptor);
 
 }
 
 
+t_paquete* crear_paquete(int cod_op, t_buffer* payload){
+
+	t_paquete* paquete = malloc(sizeof(t_paquete));
+
+	paquete->codigo_operacion = cod_op;
+	paquete->buffer = payload;
+
+	return paquete;
+}
+
+//ya no usamos
 void leer_mensaje(t_buffer* buffer){
 
     int offset = 0, tamanio = 0;
@@ -173,56 +218,36 @@ void leer_mensaje(t_buffer* buffer){
 }
 
 
-//modificar en caso de modificar la struct t_mensaje
-void* serializar_nodo_mensaje(t_mensaje* nodo_mensaje, int* bytes){
 
-	int offset=0;
-	int tam_mensaje = 4 * sizeof(int) + nodo_mensaje->buffer->size;
-	void* stream = malloc( tam_mensaje);
 
-	memcpy(stream + offset, &tam_mensaje, sizeof(int));
-	offset += sizeof(int);
+void informe_lista_mensajes(void){
+	printf("\n");
 
-	memcpy(stream + offset, &(nodo_mensaje->id), sizeof(int));
-	offset += sizeof(int);
+	for(int i=0; i < list_size(LISTA_MENSAJES); i++){
 
-	memcpy(stream + offset, &(nodo_mensaje->cod_op), sizeof(int));
-	offset += sizeof(int);
+		printf("Mensajes del tipo: %d\n", i);
 
-	memcpy(stream + offset, &(nodo_mensaje->buffer->size), sizeof(int));
-	offset += sizeof(int);
+		t_list* list_tipo_mensaje = list_get(LISTA_MENSAJES, i);
 
-	memcpy(stream + offset, nodo_mensaje->buffer->stream, nodo_mensaje->buffer->size);
-	offset += nodo_mensaje->buffer->size;
+		printf(" | Cantidad de mensajes = %d\n", list_tipo_mensaje -> elements_count);
 
-	*bytes = offset;
+		for(int i = 0; i < list_size(list_tipo_mensaje); i++){
 
-	return stream;
+			t_mensaje* mensaje = list_get(list_tipo_mensaje, i);
+
+			printf("    | Id mensaje = %d, Subs que envie mensaje = %d, Subs que confirmaron = %d\n",
+					mensaje->id,
+					mensaje->subs_envie_msg->elements_count,
+					mensaje->subs_confirmaron_msg->elements_count);
+		}
+		printf("\n");
+	}
 }
 
-
-
-void agregar_suscriber(t_list* lista_subs, int cola_a_suscribirse, int socket)
-{
-	t_suscriptor* suscriptor = malloc(sizeof(t_suscriptor));
-
-	suscriptor->socket = socket;
-
-	agregar_elemento(lista_subs, cola_a_suscribirse, suscriptor);
-
+void informe_lista_suscriptores(void){
+	printf("\nCANT DE SUSCRIPTORES EN EL SISTEMA = %d\n", LISTA_GENERAL_SUBS->elements_count);
 }
 
-
-t_paquete* crear_paquete(int cod_op, t_buffer* payload)
-{
-	t_paquete* paquete = malloc(sizeof(t_paquete));
-
-	paquete->codigo_operacion = cod_op;
-	paquete->buffer = payload;
-
-	return paquete;
+void informe_cola_mensajes(){
+	printf("\nCANT DE MENSAJES NUEVOS EN EL SISTEMA = %d\n", COLA_MENSAJES->elements->elements_count);
 }
-
-
-
-

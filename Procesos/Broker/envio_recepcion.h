@@ -11,23 +11,39 @@
 #include<string.h>
 #include<pthread.h>
 
+#include <commons/collections/list.h>
+
 #include <cosas_comunes.h>
 #include "admin_mensajes.h"
 #include "broker.h"
+#include "planificador_mensajes.h"
 
-
-int id_basico;
-int* socket_server;
+#define THREAD_MAXIMOS_SERVIDOR 20
+#define BUFFER_SIZE 100
 
 
 pthread_t thread;
+
+
 pthread_mutex_t mutex;
+pthread_mutex_t mutex_recv;
 
 
-void iniciar_servidor();
+typedef struct{
+
+	int cola_mensajes;
+	int tiempo_suscripcion;
+
+}t_mensaje_suscriptor;
+
+int id_basico;
+
+
+
+void* iniciar_servidor();
 void esperar_cliente(int socket_servidor);
-void serve_client(int* socket);
-void process_request(int cod_op, int cliente_fd);
+void server_client(int* socket);
+void process_request(int cliente_fd, int cod_op, int size, void* stream);
 
 
 t_buffer* recibir_mensaje(int socket_cliente);
@@ -43,5 +59,10 @@ t_paquete* crear_paquete(int cod_op, t_buffer* payload);
 
 
 void enviar_confirmacion(t_suscriptor* suscriptor);
+
+
+void informe_lista_mensajes(void);
+void informe_lista_suscriptores(void);
+void informe_cola_mensajes();
 
 #endif /* ENVIO_RECEPCION_H_ */

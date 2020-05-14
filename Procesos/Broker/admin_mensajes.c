@@ -1,5 +1,7 @@
 #include "admin_mensajes.h"
 
+
+
 t_list* crear_lista_subs(void){
 
 	t_list* lista_subs = list_create();
@@ -29,7 +31,7 @@ t_mensaje* nodo_mensaje(int cod_op, t_buffer* buffer, int id){
 
 	nodo_mensaje -> id = id;
 	nodo_mensaje -> cod_op = cod_op;
-	nodo_mensaje -> buffer = buffer;
+	nodo_mensaje -> mensaje_recibido = buffer;
 	nodo_mensaje -> subs_envie_msg = list_create();
 	nodo_mensaje -> subs_confirmaron_msg = list_create();
 
@@ -141,8 +143,8 @@ bool comparar_suscriptores(t_suscriptor* sub1, t_suscriptor* sub2){
 //TODO
 void borrar_mensaje(void* mensaje){
 	t_mensaje* aux = mensaje;
-	free(aux->buffer->stream);
-	free(aux->buffer);
+	free(aux->mensaje_recibido->stream);
+	free(aux->mensaje_recibido);
 	list_destroy(aux->subs_envie_msg);
 	list_destroy(aux->subs_confirmaron_msg);
 	free(aux);
@@ -168,34 +170,8 @@ void borrar_suscriptor(void* suscriptor){
 
 
 void destruir_lista_suscriptores(t_list* lista_suscriptores){
-	list_destroy_and_destroy_elements(lista_suscriptores, &borrar_suscriptor);
+	list_destroy(lista_suscriptores);
 }
 
 
-
-
-// imprimir lista de mensajes
-void informe_lista_mensajes(t_list* lista){
-	printf("\n");
-
-	for(int i=0; i < list_size(lista); i++){
-
-		printf("Mensajes del tipo: %d\n", i);
-
-		t_list* list_tipo_mensaje = list_get(lista, i);
-
-		printf(" | Cantidad de mensajes = %d\n", list_tipo_mensaje -> elements_count);
-
-		for(int i = 0; i < list_size(list_tipo_mensaje); i++){
-
-			t_mensaje* mensaje = list_get(list_tipo_mensaje, i);
-
-			printf("    | Id mensaje = %d, Subs que envie mensaje = %d, Subs que confirmaron = %d\n",
-					mensaje->id,
-					mensaje->subs_envie_msg->elements_count,
-					mensaje->subs_confirmaron_msg->elements_count);
-		}
-		printf("\n");
-	}
-}
 

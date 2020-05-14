@@ -7,6 +7,7 @@
 #include<cosas_comunes.h>
 
 #include <commons/collections/list.h>
+#include <commons/collections/queue.h>
 #include <commons/collections/node.h>
 
 typedef enum{
@@ -22,11 +23,14 @@ typedef struct{
 
 }t_suscriptor;
 
+
 typedef struct{
 
 	int id;
 	int cod_op;
-	t_buffer* buffer;
+	t_buffer* mensaje_recibido;
+
+	// inicializar las listas antes de añadirlas a las colas o al sacarlas de la cola
 	t_list* subs_envie_msg;
 	t_list* subs_confirmaron_msg;
 
@@ -42,7 +46,8 @@ t_mensaje* nodo_mensaje(int cod_op, t_buffer* buffer, int id);
 t_suscriptor* nodo_suscriptor(int socket, int id);
 t_mensaje* buscar_mensaje(t_list* list, int id_mensaje);
 void agregar_sub_mensaje(t_list* list, int id_mensaje, t_suscriptor* subscriptor, tipo_lista tipo);
-void informe_lista_mensajes(t_list* lista);
+
+
 
 
 int obtener_tipo_mensaje(t_mensaje* mensaje_buscado, t_list* lista_mensajes);
