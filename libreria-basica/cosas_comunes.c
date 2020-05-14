@@ -130,22 +130,43 @@ int cant_elementos(char** array){
 //revisar la estructura del stream = codigo_msj + tamaño_stream + [tamaño_string + string]*
 void *serializar_paquete(t_paquete* paquete, int *bytes){
 
-	void* stream = malloc( sizeof(int) * 2 + paquete -> buffer -> size );
+	void* stream = malloc( 2 * sizeof(int) + paquete->buffer->size );
 
 	int offset=0;
 
-	memcpy(stream + offset, &(paquete -> codigo_operacion), sizeof(int));
+	memcpy(stream + offset, &(paquete->codigo_operacion), sizeof(int));
 	offset += sizeof(int);
 
-	memcpy(stream + offset, &(paquete -> buffer -> size), sizeof(int));
+	memcpy(stream + offset, &(paquete->buffer->size), sizeof(int));
 	offset += sizeof(int);
 
-	memcpy(stream + offset, paquete -> buffer -> stream, paquete -> buffer -> size);
-	offset += paquete -> buffer -> size;
+	memcpy(stream + offset, paquete->buffer->stream, paquete->buffer->size);
+	offset += paquete->buffer->size;
 
 	*bytes = offset;
 
-	printf("[serializar_paquete] tamaño del stream a enviar = %d\n", *bytes);
+	//printf("[serializar_paquete] tamaño del stream a enviar = %d\n", *bytes);
 
 	return stream;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//revisar_errores
+
+
+void check(int valor, char* mensaje_error){
+	if(valor < 0)
+		perror(mensaje_error);
 }

@@ -22,7 +22,8 @@
 #define BUFFER_SIZE 100
 
 
-pthread_t thread;
+
+pthread_t THREAD;
 
 
 pthread_mutex_t mutex;
@@ -43,7 +44,7 @@ int id_basico;
 void* iniciar_servidor();
 void esperar_cliente(int socket_servidor);
 void server_client(int* socket);
-void process_request(int cliente_fd, int cod_op, int size, void* stream);
+void process_request(int cliente_fd, int cod_op, t_buffer* mensaje);
 
 
 t_buffer* recibir_mensaje(int socket_cliente);

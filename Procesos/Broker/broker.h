@@ -24,12 +24,16 @@ char* PUERTO_SERVER;
 
 int* SOCKET_SERVER;
 
+
+
+pthread_t thread_server;
+pthread_t thread_planificador_mensajes;
+
 pthread_mutex_t MUTEX_COLA_MENSAJES;
 pthread_mutex_t MUTEX_LISTAS_MENSAJES[CANTIDAD_SUBLISTAS];
 pthread_mutex_t MUTEX_LISTA_GENERAL_SUBS;
 
-pthread_t thread_server;
-pthread_t thread_planificador_mensajes;
+
 
 
 void datos_servidor();

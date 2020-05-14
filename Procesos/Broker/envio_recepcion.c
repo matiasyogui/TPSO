@@ -48,7 +48,7 @@ void* iniciar_servidor(){
     while(1)
     	esperar_cliente(socket_servidor);
 
-    return NULL;
+    pthread_exit(0);
 }
 
 
@@ -64,16 +64,26 @@ void esperar_cliente(int socket_servidor){
 		perror("ACCEPT ERROR");
 		return;
 	}
-	pthread_create(&thread, NULL, (void*)server_client, &socket_cliente);
-	pthread_detach(thread);
+
+	if(pthread_create(&THREAD, NULL, (void*)server_client, &socket_cliente) != 0)
+		printf("fallo al crear el thread\n");
+	pthread_detach(THREAD);
+
+	/*if( z >= THREAD_POOL_SIZE){
+		z = 0;
+		while(z < THREAD_POOL_SIZE){
+			pthread_join(THREAD[z], NULL);
+		}
+		z = 0;
+	}*/
 }
 
 
 void server_client(int* socket){
 
 	void* buffer = malloc(BUFFER_SIZE);
-	void* stream = NULL;
-	int cod_op, size;
+	t_buffer* mensaje = malloc(sizeof(t_buffer));
+	int cod_op;
 	int offset = 0;
 
 	if(recv(*socket, buffer, BUFFER_SIZE, 0) < 0)
@@ -83,28 +93,22 @@ void server_client(int* socket){
 		memcpy(&cod_op, buffer + offset, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
 
-		memcpy(&size, buffer + offset, sizeof(uint32_t));
+		memcpy(&(mensaje->size), buffer + offset, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
 
-		stream = malloc(size);
-		memcpy(stream, buffer + offset, size);
+		mensaje->stream = malloc(mensaje->size);
+		memcpy(mensaje->stream, buffer + offset, mensaje->size);
 	}
 	free(buffer);
 
-	process_request(*socket, cod_op, size, stream);
+	process_request(*socket, cod_op, mensaje);
 }
 
 
-void process_request(int cliente_fd, int cod_op, int size, void* stream){
-
-    t_buffer* msg = malloc(sizeof(t_buffer));
-    msg->size = size;
-    msg->stream = stream;
+void process_request(int cliente_fd, int cod_op, t_buffer* mensaje){
 
     t_mensaje* mensaje_guardar;
     t_suscriptor* suscriptor;
-
-    //t_paquete* el_paquete;
 
 	switch(cod_op){
 
@@ -112,17 +116,17 @@ void process_request(int cliente_fd, int cod_op, int size, void* stream){
 
 			pthread_mutex_lock(&mutex);
 
-				mensaje_guardar = nodo_mensaje(cod_op, msg, obtener_id());
+				mensaje_guardar = nodo_mensaje(cod_op, mensaje, obtener_id());
 
 			pthread_mutex_unlock(&mutex);
 
-			printf("mensaje %d recibido\n", mensaje_guardar->id);
+			printf("mensaje %d recibido cod_op = %d\n", mensaje_guardar->id, cod_op);
 
 			pthread_mutex_lock(&MUTEX_COLA_MENSAJES);
 
 				queue_push(COLA_MENSAJES, mensaje_guardar);
 
-				pthread_cond_signal(&condition_var_queue);
+				//pthread_cond_signal(&condition_var_queue);
 
 			pthread_mutex_unlock(&MUTEX_COLA_MENSAJES);
 
@@ -149,13 +153,13 @@ void process_request(int cliente_fd, int cod_op, int size, void* stream){
 		case -1:
 
 			printf("\nNo se recibio el mensaje correctamente\n");
-			free(msg);
+			free(mensaje);
 			pthread_exit(NULL);
 
 		default:
 
-			free(msg->stream);
-			free(msg);
+			free(mensaje->stream);
+			free(mensaje);
 
 			printf("\ncodigo de operacion invalido\n");
 			pthread_exit(NULL);
