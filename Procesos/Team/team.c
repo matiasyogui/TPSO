@@ -5,76 +5,28 @@
 #include <commons/collections/list.h>
 #include <commons/string.h>
 
-
-char** POSICIONES_ENTRENADORES;
-char** POKEMON_ENTRENADORES;
-char** OBJETIVOS_ENTRENADORES;
-int TIEMPO_RECONEXION;
-int RETARDO_CICLO_CPU;
-char* ALGORITMO_PLANIFICACION;
-int QUANTUM;
-char* IP_BROKER;
-int ESTIMACION_INICIAL;
-int PUERTO_BROKER;
-char* LOG_FILE;
-int i;
-
-t_list* listaReady;
-t_list* listaExecute;
-t_list* listaBlocked;
-t_list* listaExit;
-
-
-pthread_mutex_t semPlanificador;
-t_entrenador* entrenadorActual;
-
 void element_destroyer(void* elemento){
-	t_entrenador* ent = elemento;
+	t_entrenador* ent = (t_entrenador*) elemento;
 	free(ent->objetivo);
 	free(ent->pokemones);
 	free(ent->posicion);
 	free(ent->semaforo);
 }
 
-void pasajeFIFO(t_list* lista1, t_list* lista2){
-	t_entrenador* nodoAPasar = list_remove(lista1, 0);
-	list_add(lista2, nodoAPasar);
+/*void algortimoCercano(void* elemento, int posicionPokemonx, int posicionPokemony){
+	t_entrenador* ent = (t_entrenador*) elemento;
+	ent -> cercania = ((ent -> posicion -> posx) - posicionPokemonx) + ((ent -> posicion -> posy) - posicionPokemony);
 }
 
-void Producer(t_entrenador* ent) {
-	while(1){
-	pthread_mutex_lock(ent->semaforo);
-	printf("bloquea al planificador \n");
-	printf("se ejecuta el entrenador con posicion %d y %d\n",ent->posicion->posx,ent->posicion->posy);
-	//entender el mensaje y ejecutarse
-
-	//bloquea devuelta
-	printf("desbloquea al planificador\n");
-	pthread_mutex_unlock(&semPlanificador);
+t_entrenador elegirEntrenadorXCercania(int posx, int posy){
+	void _algoritmoCercano(void* elemento){
+		algoritmoCercano(elemento, posx, posy);
 	}
+
+	t_list* listaFiltrada = list_map(listaBlocked, _algoritmoCercano);
 }
+*/
 
-void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i){
-	entrenador = malloc(sizeof(t_entrenador));
-	entrenador-> posicion = malloc(sizeof(t_posicion));
-	entrenador->posicion->posx = atoi(strtok(POSICIONES_ENTRENADORES[i],"|"));
-	entrenador->posicion->posy = atoi(strtok(NULL,"|"));
-	entrenador->objetivo = malloc(sizeof(string_split(OBJETIVOS_ENTRENADORES[i],"|")));
-	entrenador->objetivo = string_split(OBJETIVOS_ENTRENADORES[i], "|");
-	entrenador->pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
-
-	entrenador->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
-	//entrenadores[i]->mensaje = mensajeBroker;
-
-	entrenador->semaforo = malloc(sizeof(pthread_mutex_t));
-	pthread_mutex_init(entrenador->semaforo, NULL);
-
-	hilo = malloc(sizeof(pthread_t));
-	pthread_mutex_lock(entrenador->semaforo);
-	pthread_create(hilo, NULL, (void*) Producer, entrenador);
-
-	list_add(listaBlocked, entrenador);
-}
 
 int main(){
 
@@ -88,8 +40,8 @@ int main(){
 	pthread_t* hilos[cantEntrenadores];
 
 	//TEMPORAL hasta poder mandar mensajes entre procesos
-	//char* mensajeBroker = string_new();
-	//string_append(&mensajeBroker, argv[1]);
+	//char* mensajeConsola = string_new();
+	//string_append(&mensajeConsola, argv[1]);
 
 	//creo el diagrama de estados
 	listaReady = list_create();
@@ -102,41 +54,21 @@ int main(){
 		setteoEntrenador(entrenadores[i], hilos[i], i);
 	}
 
-	iniciar_servidor();
-
 	printf("/////////////////////////////////////////////////////////");
 	fflush(stdout);
 	pthread_mutex_lock(&semPlanificador);
-	//planificador
-	while(1){
-		//espera un mensaje
-		//saca a un entrenador de blocked segun cercania
-		pasajeFIFO(listaBlocked,listaReady);
-		//pasa al entrenador de ready a execute segun Algoritmo
-		entrenadorActual = list_remove(listaReady, 0);
-		printf("se saca de blocked el entrenador con posicion %d y %d\n", entrenadorActual->posicion->posx, entrenadorActual->posicion->posy);
 
-		//lo desbloquea y se ejecuta
-		printf("Se desbloquea el hilo\n");
-		pthread_mutex_unlock(entrenadorActual->semaforo);
-		pthread_mutex_lock(&semPlanificador);
-		printf("termina hilo\n");
-		//printf("se bloquea el entrenador con posicion %d y %d\n",entrenadores[0]->posicion->posx,entrenadores[0]->posicion->posy);
-		//printf("se pone en blocked el entrenador con posicion %d y %d\n",entrenadores[0]->posicion->posx,entrenadores[0]->posicion->posy);
-		list_add(listaBlocked,entrenadorActual);
-
-	}
+	iniciar_servidor();
 
 	for(i=0;i<cantEntrenadores;i++){
 		pthread_join(*hilos[i],NULL);
 	}
 
 	//DEFINIR como destruir elementos
-/*	list_destroy_and_destroy_elements(listaNew, element_destroyer);
-	list_destroy_and_destroy_elements(listaReady, );
-	list_destroy_and_destroy_elements(listaExecute, );
-	list_destroy_and_destroy_elements(listaBlocked, );
-	list_destroy_and_destroy_elements(listaExit, ); */
+	list_destroy_and_destroy_elements(listaReady, free);
+	list_destroy_and_destroy_elements(listaExecute, free);
+	list_destroy_and_destroy_elements(listaBlocked, free);
+	list_destroy_and_destroy_elements(listaExit, free);
 
 
 	for(i=0;i<cantEntrenadores;i++){

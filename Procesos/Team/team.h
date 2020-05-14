@@ -10,24 +10,8 @@
 
 #include"utils_team.h"
 
-typedef struct{
-	int posx;
-	int posy;
-}t_posicion;
-
-
-typedef struct{
-	t_posicion* posicion;
-	pthread_mutex_t* semaforo;
-	char* mensaje; //temporal
-	char* algoritmo_de_planificacion;
-	char** objetivo;
-	char** pokemones;
-}t_entrenador;
-
-void planificacion();
-
 void leer_archivo_configuracion();
+void element_destroyer(void* elemento);
 
 
 #endif /* BROKER_H_ */

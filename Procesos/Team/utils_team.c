@@ -7,6 +7,7 @@
 
 #include "utils_team.h"
 
+
 void iniciar_servidor(void)
 {
 	int socket_servidor;
@@ -37,7 +38,9 @@ void iniciar_servidor(void)
     freeaddrinfo(servinfo);
 
     while(1)
+
     	esperar_cliente(socket_servidor);
+
 }
 
 void esperar_cliente(int socket_servidor)
@@ -65,17 +68,30 @@ void serve_client(int* socket){
 	pthread_mutex_unlock(&mutex);
 }
 
-
 void process_request(int cod_op, int cliente_fd) {
 
     t_buffer* msg = recibir_mensaje(cliente_fd);
     printf("%d",cod_op);
+
     fflush(stdout);
+
+    mensajeActual = cod_op;
 
 	switch (cod_op) {
 
 		case NEW_POKEMON...LOCALIZED_POKEMON:
 		 	leer_mensaje(msg);
+
+			pasajeFIFO(listaBlocked,listaReady);
+			entrenadorActual = list_remove(listaReady, 0);
+			printf("se saca de blocked el entrenador con posicion %d y %d\n", entrenadorActual->posicion->posx, entrenadorActual->posicion->posy);
+
+			printf("Se desbloquea el hilo\n");
+			pthread_mutex_unlock(entrenadorActual->semaforo);
+			pthread_mutex_lock(&semPlanificador);
+			printf("termina hilo\n");
+
+			list_add(listaBlocked,entrenadorActual);
 
 			break;
 
@@ -122,3 +138,46 @@ void leer_mensaje(t_buffer* buffer){
     }
 }
 
+void pasajeFIFO(t_list* lista1, t_list* lista2){
+	t_entrenador* nodoAPasar = list_remove(lista1, 0);
+	list_add(lista2, nodoAPasar);
+}
+
+void Producer(t_entrenador* ent) {
+	while(1){
+	pthread_mutex_lock(ent->semaforo);
+	printf("bloquea al planificador \n");
+	printf("se ejecuta el entrenador con posicion %d y %d\n",ent->posicion->posx,ent->posicion->posy);
+	//entender el mensaje y ejecutarse
+
+	switch(mensajeActual){
+	case LOCALIZED_POKEMON:
+		printf("El entrenador con posicion: X=%d Y=%d, localizo un pokemon.\n",ent->posicion->posx,ent->posicion->posy);
+	}
+
+	//bloquea devuelta
+	printf("desbloquea al planificador\n");
+	pthread_mutex_unlock(&semPlanificador);
+	}
+}
+
+void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i){
+   	entrenador = malloc(sizeof(t_entrenador));
+   	entrenador-> posicion = malloc(sizeof(t_posicion));
+   	entrenador->posicion->posx = atoi(strtok(POSICIONES_ENTRENADORES[i],"|"));
+   	entrenador->posicion->posy = atoi(strtok(NULL,"|"));
+   	entrenador->objetivo = string_split(OBJETIVOS_ENTRENADORES[i], "|");
+   	entrenador->objetivo = malloc(sizeof(string_split(OBJETIVOS_ENTRENADORES[i],"|")));
+   	entrenador->pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
+
+    entrenador->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
+   	//entrenadores[i]->mensaje = mensajeBroker;
+
+   	entrenador->semaforo = malloc(sizeof(pthread_mutex_t));
+   	pthread_mutex_init(entrenador->semaforo, NULL);
+   	hilo = malloc(sizeof(pthread_t));
+   	pthread_mutex_lock(entrenador->semaforo);
+   	pthread_create(hilo, NULL, (void*) Producer, entrenador);
+
+   	list_add(listaBlocked, entrenador);
+}
