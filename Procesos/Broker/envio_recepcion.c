@@ -1,6 +1,5 @@
 #include "envio_recepcion.h"
 #include <errno.h>
-#include <semaphore.h>
 
 //TODO: BUSCAR OTRA FORMA DE GENERAR ID
 int obtener_id(void){
@@ -113,11 +112,15 @@ void process_request(int cliente_fd, int cod_op, t_buffer* mensaje){
 			informe_cola_mensajes();
 			pthread_mutex_unlock(&MUTEX_COLA_MENSAJES);
 
+			close(cliente_fd);
+
 			break;
 
         case SUSCRIPTOR:
 
         	tratar_suscriptor(cliente_fd, mensaje);
+
+        	informe_lista_mensajes();
 
         	free(mensaje->stream);
         	free(mensaje);
@@ -231,6 +234,7 @@ void enviar_confirmacion(int socket, int id){
 
 
 void informe_lista_mensajes(void){
+
 	printf("\n");
 
 	for(int i=0; i < list_size(LISTA_MENSAJES); i++){
@@ -238,6 +242,8 @@ void informe_lista_mensajes(void){
 		printf("Mensajes del tipo: %d\n", i);
 
 		t_list* list_tipo_mensaje = list_get(LISTA_MENSAJES, i);
+
+		pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[i]);
 
 		printf(" | Cantidad de mensajes = %d\n", list_tipo_mensaje -> elements_count);
 
@@ -250,6 +256,8 @@ void informe_lista_mensajes(void){
 					mensaje->subs_envie_msg->elements_count,
 					mensaje->subs_confirmaron_msg->elements_count);
 		}
+		pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[i]);
+
 		printf("\n");
 	}
 }

@@ -38,7 +38,7 @@ void datos_servidor(){
 
 	inicializar_listas();
 
-	//inicializar_semaforos();
+	inicializar_semaforos();
 }
 
 void inicializar_listas(void){

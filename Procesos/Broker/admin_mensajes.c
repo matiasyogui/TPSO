@@ -88,53 +88,7 @@ void agregar_sub_mensaje(t_list* list, int id_mensaje, t_suscriptor* suscriptor,
 }*/
 
 
-int obtener_tipo_mensaje(t_mensaje* mensaje_buscado, t_list* lista_mensajes){
 
-	for(int i=0; i< list_size(lista_mensajes); i++){
-
-		t_list* lista_por_tipo = list_get(lista_mensajes, i);
-
-		for(int j=0; j< list_size(lista_por_tipo); j++){
-
-			t_mensaje* mensaje = list_get(lista_por_tipo, j);
-
-			if(comparar_mensajes(mensaje_buscado, mensaje))
-				return i;
-		}
-	}
-	printf("[broker - obtener_tipo_mensaje]No se encontro el mensaje\n");
-	return -1;
-}
-
-
-bool existe_sub(t_suscriptor* sub_buscado, t_list* lista_subs){
-
-	for(int i=0; i< list_size(lista_subs); i++){
-
-		t_list* lista_por_tipo = list_get(lista_subs, i);
-
-		for(int j=0; j< list_size(lista_por_tipo); j++){
-
-			t_suscriptor* sub = list_get(lista_por_tipo, j);
-
-			if(comparar_suscriptores(sub_buscado, sub))
-				return true;
-		}
-	}
-	return false;
-}
-
-
-bool comparar_mensajes(t_mensaje* mensaje1, t_mensaje* mensaje2){
-
-	return mensaje1->id == mensaje2->id;
-}
-
-
-bool comparar_suscriptores(t_suscriptor* sub1, t_suscriptor* sub2){
-
-	return sub1->id == sub2->id;
-}
 
 
 

@@ -35,15 +35,16 @@ int main(int argc,char* argv[]){
 
 					recv(conexion, &size, sizeof(uint32_t), 0);
 					recv(conexion, &id, sizeof(uint32_t), 0);
-					printf("[CONFIRMACION DEL BROKER]id mensaje= %d, size= %d cod_op = %d\n ", id, size, cod_op);
+					printf("[CONFIRMACION DEL SUSCRIPCION]cod_op = %d, id mensaje en el broker= %d \n", cod_op, id);
 					break;
 
 				case NEW_POKEMON...LOCALIZED_POKEMON:
 
 					recv(conexion, &id, sizeof(uint32_t), 0);
 					recv(conexion, &size, sizeof(uint32_t), 0);
+					datos = malloc(size);
 					recv(conexion, datos, size, 0);
-					printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id suscriptor= %d\n ", cod_op, id);
+					printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id correlativo = %d, size mensaje = %d\n ", cod_op, id, size);
 					break;
 			}
 		}
@@ -55,7 +56,7 @@ int main(int argc,char* argv[]){
 		recv(conexion, &cod_op, sizeof(uint32_t), 0 );
 		recv(conexion, &size, sizeof(uint32_t), 0);
 		recv(conexion, &id, sizeof(uint32_t), 0);
-		printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id mensaje= %d, size= %d  \n", cod_op, id, size);
+		printf("[CONFIRMACION DEL SUSCRIPCION]cod_op = %d, id mensaje en el broker= %d \n", cod_op, id);
 	}
 
 	terminar_programa(conexion, LOGGER, CONFIG);
