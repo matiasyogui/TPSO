@@ -48,7 +48,7 @@ t_suscriptor* nodo_suscriptor(int socket, int id){
 	return nodo_suscriptor;
 }
 
-
+/*
 t_mensaje* buscar_mensaje(t_list* list, int id_mensaje){
 
 	for(int i=0; i< list_size(list); i++){
@@ -65,9 +65,9 @@ t_mensaje* buscar_mensaje(t_list* list, int id_mensaje){
 	}
 	printf("No se encontro el mensaje\n");
 	return NULL;
-}
+}*/
 
-
+/*
 void agregar_sub_mensaje(t_list* list, int id_mensaje, t_suscriptor* suscriptor, tipo_lista tipo){
 
 	t_mensaje* mensaje = buscar_mensaje(list, id_mensaje);
@@ -85,7 +85,7 @@ void agregar_sub_mensaje(t_list* list, int id_mensaje, t_suscriptor* suscriptor,
 		printf("No se puedo agregar el mensaje\n");
 		break;
 	}
-}
+}*/
 
 
 int obtener_tipo_mensaje(t_mensaje* mensaje_buscado, t_list* lista_mensajes){

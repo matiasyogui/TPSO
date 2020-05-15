@@ -30,9 +30,9 @@ pthread_t thread_server;
 pthread_t thread_planificador_mensajes;
 
 pthread_mutex_t MUTEX_COLA_MENSAJES;
-pthread_mutex_t MUTEX_LISTAS_MENSAJES[CANTIDAD_SUBLISTAS];
+pthread_mutex_t MUTEX_SUBLISTAS_MENSAJES[CANTIDAD_SUBLISTAS];
 pthread_mutex_t MUTEX_LISTA_GENERAL_SUBS;
-
+pthread_mutex_t MUTEX_SUBLISTAS_SUSCRIPTORES[CANTIDAD_SUBLISTAS];
 
 
 

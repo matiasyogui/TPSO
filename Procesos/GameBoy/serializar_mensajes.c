@@ -5,17 +5,15 @@ t_paquete* armar_paquete2(char* datos[]){
 
 	t_paquete* paquete = malloc(sizeof(t_paquete));
 
-	if(string_equals_ignore_case(datos[0], "suscriptor")){
+	if(string_equals_ignore_case(datos[0], "suscriptor") == 1){
 
 		paquete->codigo_operacion = tipo_mensaje(datos[0]);
 		paquete->buffer = armar_buffer(&datos[1], &stream_suscriptor);
-
 		return paquete;
 	}
 
 	paquete->codigo_operacion = tipo_mensaje(datos[1]);
 	paquete->buffer = armar_buffer_proceso(datos[0], paquete->codigo_operacion, &datos[2]);
-
 	return paquete;
 }
 

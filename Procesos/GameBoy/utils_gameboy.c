@@ -10,7 +10,7 @@ void inicializar_archivos(){
 
 void obtener_direcciones_envio(char* proceso){
 
-	if(string_equals_ignore_case(proceso, "suscriptor"))
+	if(string_equals_ignore_case(proceso, "suscriptor") == 1)
 		proceso = "broker";
 
 	char* ip_key = obtener_key("ip", proceso);
@@ -27,11 +27,12 @@ void obtener_direcciones_envio(char* proceso){
 void enviar_mensaje(t_paquete* paquete, int socket_cliente){
 
 	int bytes_enviar;
+
 	void* mensaje = serializar_paquete(paquete, &bytes_enviar);
 
-	if(send(socket_cliente, mensaje, bytes_enviar, 0) == -1)
-		perror("FALLO EL SEND()");
-	else
+	if(send(socket_cliente, mensaje, bytes_enviar, 0) < 0)
+		perror("[utils_gameboy.c : 34]FALLO EL SEND()");
+	//else
 		//log_info(LOGGER, "Se creo la conexion con el proceso IP = %s, PUERTO = %s\n", IP_SERVER, PUERTO_SERVER);
 
 	free(paquete->buffer->stream);

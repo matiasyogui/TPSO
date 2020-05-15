@@ -1,6 +1,8 @@
 #include "envio_recepcion.h"
 #include <errno.h>
+#include <semaphore.h>
 
+//TODO: BUSCAR OTRA FORMA DE GENERAR ID
 int obtener_id(void){
 
 		id_basico++;
@@ -61,21 +63,13 @@ void esperar_cliente(int socket_servidor){
 	int socket_cliente;
 
 	if((socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion)) < 0){
-		perror("ACCEPT ERROR");
+		perror("[envio_recepcion.c : 66]ACCEPT ERROR");
 		return;
 	}
 
 	if(pthread_create(&THREAD, NULL, (void*)server_client, &socket_cliente) != 0)
-		printf("fallo al crear el thread\n");
+		printf("[envio_recepcion.c : 71]FALLO AL CREAR EL THREAD\n");
 	pthread_detach(THREAD);
-
-	/*if( z >= THREAD_POOL_SIZE){
-		z = 0;
-		while(z < THREAD_POOL_SIZE){
-			pthread_join(THREAD[z], NULL);
-		}
-		z = 0;
-	}*/
 }
 
 
@@ -83,13 +77,15 @@ void server_client(int* socket){
 
 	void* buffer = malloc(BUFFER_SIZE);
 	t_buffer* mensaje = malloc(sizeof(t_buffer));
-	int cod_op;
-	int offset = 0;
 
-	if(recv(*socket, buffer, BUFFER_SIZE, 0) < 0)
+	int cod_op, offset = 0;
+
+	if(recv(*socket, buffer, BUFFER_SIZE, 0) < 0){
+		perror("[envio_recepcion.c : 71]FALLO RECV");
 		cod_op = -1;
-
+	}
 	else{
+
 		memcpy(&cod_op, buffer + offset, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
 
@@ -107,52 +103,30 @@ void server_client(int* socket){
 
 void process_request(int cliente_fd, int cod_op, t_buffer* mensaje){
 
-    t_mensaje* mensaje_guardar;
-    t_suscriptor* suscriptor;
-
 	switch(cod_op){
 
 		case NEW_POKEMON...LOCALIZED_POKEMON:
 
-			pthread_mutex_lock(&mutex);
-
-				mensaje_guardar = nodo_mensaje(cod_op, mensaje, obtener_id());
-
-			pthread_mutex_unlock(&mutex);
-
-			printf("mensaje %d recibido cod_op = %d\n", mensaje_guardar->id, cod_op);
+			tratar_mensaje(cliente_fd, cod_op, mensaje);
 
 			pthread_mutex_lock(&MUTEX_COLA_MENSAJES);
-
-				queue_push(COLA_MENSAJES, mensaje_guardar);
-
-				//pthread_cond_signal(&condition_var_queue);
-
+			informe_cola_mensajes();
 			pthread_mutex_unlock(&MUTEX_COLA_MENSAJES);
 
 			break;
 
         case SUSCRIPTOR:
 
-        	pthread_mutex_lock(&mutex);
+        	tratar_suscriptor(cliente_fd, mensaje);
 
-        		suscriptor = nodo_suscriptor(cliente_fd, obtener_id());
-
-        	pthread_mutex_unlock(&mutex);
-
-        	pthread_mutex_lock(&MUTEX_LISTA_GENERAL_SUBS);
-
-        		list_add(LISTA_GENERAL_SUBS, suscriptor);
-
-        	pthread_mutex_unlock(&MUTEX_LISTA_GENERAL_SUBS);
-
-        	enviar_confirmacion(suscriptor);
+        	free(mensaje->stream);
+        	free(mensaje);
 
         	break;
-
+        //TODO: WILLIAN HAS ALGO BIEN
 		case -1:
 
-			printf("\nNo se recibio el mensaje correctamente\n");
+			printf("NO SE RECIBIO EL MENSAJE CORRECTAMENTE\n");
 			free(mensaje);
 			pthread_exit(NULL);
 
@@ -161,66 +135,98 @@ void process_request(int cliente_fd, int cod_op, t_buffer* mensaje){
 			free(mensaje->stream);
 			free(mensaje);
 
-			printf("\ncodigo de operacion invalido\n");
+			printf("CODIGO DE OPERACION INVALIDO\n");
 			pthread_exit(NULL);
 		}
+	pthread_exit(NULL);
+}
+
+void tratar_mensaje(int socket, int cod_op, t_buffer* mensaje){
+
+	pthread_mutex_lock(&mutex);
+
+		t_mensaje*	mensaje_guardar = nodo_mensaje(cod_op, mensaje, obtener_id());
+
+	pthread_mutex_unlock(&mutex);
+
+	enviar_confirmacion(socket, mensaje_guardar->id);
+
+	printf("mensaje %d recibido cod_op = %d\n", mensaje_guardar->id, cod_op);
+
+	pthread_mutex_lock(&MUTEX_COLA_MENSAJES);
+
+		queue_push(COLA_MENSAJES, mensaje_guardar);
+		pthread_cond_signal(&condition_var_queue);
+
+	pthread_mutex_unlock(&MUTEX_COLA_MENSAJES);
 }
 
 
+void tratar_suscriptor(int socket, t_buffer* mensaje){
 
-void enviar_confirmacion(t_suscriptor* suscriptor){
+	int tiempo, cod_op = obtener_cod_op(mensaje, &tiempo);
 
-	void* mensaje_confirmacion = malloc(sizeof(int));
-	memcpy(mensaje_confirmacion, &(suscriptor->id), sizeof(int));
+	pthread_mutex_lock(&mutex);
 
-	if(send(suscriptor->socket, mensaje_confirmacion, sizeof(int), 0) == -1)
-		printf("no se puedo enviar la confirmacion");
+		t_suscriptor* suscriptor = nodo_suscriptor(socket, obtener_id());
+
+	pthread_mutex_unlock(&mutex);
+
+	enviar_confirmacion(suscriptor->socket, suscriptor->id);
+
+	//TODO: EXPLORAR CASOS EN LOS QUE NO DEBEMOS AGREGAR EL SUSCRIPTRO A LA LISTA
+	pthread_mutex_lock(&MUTEX_LISTA_GENERAL_SUBS);
+
+		list_add(LISTA_GENERAL_SUBS, suscriptor);
+
+	pthread_mutex_unlock(&MUTEX_LISTA_GENERAL_SUBS);
+
+
+	pthread_mutex_lock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
+
+		agregar_elemento(LISTA_SUBS, cod_op, suscriptor);
+
+	pthread_mutex_unlock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
+
+}
+
+
+int obtener_cod_op(t_buffer* buffer, int* tiempo){
+
+	int cod_op, offset = 0;
+
+	memcpy(&cod_op, buffer->stream, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+	printf("cod_op del sub = %d\n", cod_op);
+
+	memcpy(tiempo, buffer->stream + offset, sizeof(uint32_t));
+
+	return cod_op;
+}
+
+
+void enviar_confirmacion(int socket, int id){
+
+	void* mensaje_confirmacion = malloc( 3 * sizeof(int));
+	int tamano = sizeof(uint32_t);
+	uint32_t cod_op = CONFIRMACION;
+
+	int offset = 0;
+
+	memcpy(mensaje_confirmacion + offset, &(cod_op), sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(mensaje_confirmacion + offset, &tamano, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(mensaje_confirmacion + offset, &id, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	if(send(socket, mensaje_confirmacion, offset, MSG_NOSIGNAL) < 0)
+		perror("[envio_recepcion.c : 225]FALLO SEND");
 
 	free(mensaje_confirmacion);
 }
-
-void agregar_suscriber(t_list* lista_subs, int cola_a_suscribirse, int socket){
-
-	t_suscriptor* suscriptor = malloc(sizeof(t_suscriptor));
-
-	suscriptor->socket = socket;
-
-	agregar_elemento(lista_subs, cola_a_suscribirse, suscriptor);
-
-}
-
-
-t_paquete* crear_paquete(int cod_op, t_buffer* payload){
-
-	t_paquete* paquete = malloc(sizeof(t_paquete));
-
-	paquete->codigo_operacion = cod_op;
-	paquete->buffer = payload;
-
-	return paquete;
-}
-
-//ya no usamos
-void leer_mensaje(t_buffer* buffer){
-
-    int offset = 0, tamanio = 0;
-
-    while(offset < buffer->size){
-
-        memcpy(&tamanio, buffer->stream + offset, sizeof(uint32_t));
-        offset += sizeof(uint32_t);
-
-        char* palabra = malloc(tamanio);
-
-        memcpy(palabra, buffer->stream + offset, tamanio);
-        offset += tamanio;
-
-        printf("[broker] palabra : %s, tamañio = %d\n", palabra, tamanio);
-
-        free(palabra);
-    }
-}
-
 
 
 

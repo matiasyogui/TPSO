@@ -5,18 +5,17 @@ int main(){
 
 	datos_servidor();
 
-	//signal(SIGINT, finalizar_servidor);
+	signal(SIGINT, finalizar_servidor);
 
 	fflush(stdout);
 
-	//iniciar_servidor();
-
-
-
-	pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
 	pthread_create(&thread_planificador_mensajes, NULL, (void*)planificador_mensajes , NULL);
 
-	pthread_join(thread_server, NULL);
+	//iniciar_servidor();
+
+	pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
+
+	pthread_join(thread_planificador_mensajes, NULL);
 
 
 	return 0;
@@ -39,24 +38,8 @@ void datos_servidor(){
 
 	inicializar_listas();
 
-	inicializar_semaforos();
+	//inicializar_semaforos();
 }
-
-
-void finalizar_servidor(){
-
-	printf("\nFINALIZANDO\n");
-
-	finalizar_listas();
-	//finalizar_semaforos();
-
-	config_destroy(CONFIG);
-	log_destroy(LOGGER);
-	close(*SOCKET_SERVER);
-
-	raise(SIGTERM);
-}
-
 
 void inicializar_listas(void){
 
@@ -67,6 +50,26 @@ void inicializar_listas(void){
 	LISTA_GENERAL_SUBS = list_create();
 	LISTA_SUBS = crear_lista_subs();
 }
+
+void finalizar_servidor(){
+
+	printf("\nFINALIZANDO\n");
+
+	//finalizar_listas();
+	//finalizar_semaforos();
+
+	config_destroy(CONFIG);
+	log_destroy(LOGGER);
+	close(*SOCKET_SERVER);
+
+	pthread_cancel(thread_planificador_mensajes);
+	pthread_cancel(thread_server);
+
+	raise(SIGTERM);
+}
+
+
+
 
 void finalizar_listas(){
 
@@ -85,6 +88,7 @@ void finalizar_listas(){
 	pthread_mutex_unlock(&MUTEX_COLA_MENSAJES);
 }
 
+
 void inicializar_semaforos(void){
 
 	//planifador_mensajes.h
@@ -94,36 +98,19 @@ void inicializar_semaforos(void){
 	pthread_mutex_init(&MUTEX_COLA_MENSAJES, NULL);
 	pthread_mutex_init(&MUTEX_LISTA_GENERAL_SUBS, NULL);
 	for(int i=0; i< CANTIDAD_SUBLISTAS; i++)
-		pthread_mutex_init(&MUTEX_LISTAS_MENSAJES[i], NULL);
+		pthread_mutex_init(&MUTEX_SUBLISTAS_MENSAJES[i], NULL);
+
+	for(int i=0; i< CANTIDAD_SUBLISTAS; i++)
+		pthread_mutex_init(&MUTEX_SUBLISTAS_SUSCRIPTORES[i], NULL);
 
 	//envio_recepcion.h
 	pthread_mutex_init(&mutex, NULL);
-	pthread_mutex_init(&mutex_recv, NULL);
+	pthread_mutex_init(&mutex_send, NULL);
 }
 
-void finalizar_semaforos(void){
-
-	//planificador_mensajes.h
-	pthread_cond_destroy(&condition_var_queue);
-
-
-	//broker.h
-	pthread_mutex_destroy(&MUTEX_COLA_MENSAJES);
-	pthread_mutex_destroy(&MUTEX_LISTA_GENERAL_SUBS);
-	for(int i=0; i< CANTIDAD_SUBLISTAS; i++)
-		pthread_mutex_destroy(&MUTEX_LISTAS_MENSAJES[i]);
 
 
 
-	// envio_recepcion.h
-	pthread_mutex_destroy(&mutex_recv);
-	pthread_mutex_destroy(&mutex);
-
-}
-
-void finalizar_threads(void){
-
-}
 
 
 
