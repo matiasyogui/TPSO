@@ -129,8 +129,6 @@ void process_request(int cliente_fd, int cod_op){
 
         	tratar_suscriptor(cliente_fd, mensaje);
 
-        	close(cliente_fd);
-
         	break;
 
 		case -1:
@@ -185,7 +183,7 @@ void tratar_mensaje(int socket, int cod_op, t_buffer* mensaje){
 
 	pthread_mutex_unlock(&mutex);
 
-	//enviar_confirmacion(socket, mensaje_guardar->id);
+	enviar_confirmacion(socket, mensaje_guardar->id);
 
 	printf("mensaje %d recibido cod_op = %d\n", mensaje_guardar->id, cod_op);
 
