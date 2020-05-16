@@ -23,6 +23,8 @@
 #define IP "127.0.0.2"
 #define PUERTO "5002"
 
+int server_team;
+
 typedef enum
 {
 	MENSAJE=1

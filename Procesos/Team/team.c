@@ -27,9 +27,14 @@ t_entrenador elegirEntrenadorXCercania(int posx, int posy){
 }
 */
 
+void* finalizar_team(void){
+	close(server_team);
+	raise(SIGTERM);
+}
+
 
 int main(){
-
+	signal(SIGINT, finalizar_team);
 	//LEO ARCHIVO DE CONFIGURACION
 	leer_archivo_configuracion();
 
@@ -54,7 +59,7 @@ int main(){
 		setteoEntrenador(entrenadores[i], hilos[i], i);
 	}
 
-	printf("/////////////////////////////////////////////////////////");
+	printf("/////////////////////////////////////////////////////////\n");
 	fflush(stdout);
 	pthread_mutex_lock(&semPlanificador);
 

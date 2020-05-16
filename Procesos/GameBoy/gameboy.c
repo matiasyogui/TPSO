@@ -6,18 +6,16 @@ int main(int argc,char* argv[]){
 	inicializar_archivos();
 
 	//quitar el modo y regresar los argv[2] y argv+2 a argv[1] y argv + 1
-	char* modo = argv[1];
+	//char* modo = argv[1];
 
-	obtener_direcciones_envio(argv[2]);
+	obtener_direcciones_envio(argv[1]);
 
 
 	//enviar mensajes
-	t_paquete* paquete = armar_paquete2(argv+2);
-
+	t_paquete* paquete = armar_paquete2(argv+1);
 	int conexion = crear_conexion(IP_SERVER, PUERTO_SERVER);
-
 	enviar_mensaje(paquete, conexion);
-
+/*
 
 	 //espererar multiples respuestas
 	int cod_op, size, id;
@@ -58,14 +56,11 @@ int main(int argc,char* argv[]){
 		recv(conexion, &id, sizeof(uint32_t), 0);
 		printf("[CONFIRMACION DEL SUSCRIPCION]cod_op = %d, id mensaje en el broker= %d \n", cod_op, id);
 	}
-
+	*/
 	terminar_programa(conexion, LOGGER, CONFIG);
 
 	return 0;
 }
-
-
-
 
 
 

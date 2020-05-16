@@ -66,45 +66,50 @@ void esperar_cliente(int socket_servidor){
 		return;
 	}
 
-	if(pthread_create(&THREAD, NULL, (void*)server_client, &socket_cliente) != 0)
+	int* p_socket = malloc(sizeof(int));
+	*p_socket = socket_cliente;
+
+	if(pthread_create(&THREAD, NULL, (void*)server_client, p_socket) != 0)
 		printf("[envio_recepcion.c : 71]FALLO AL CREAR EL THREAD\n");
 	pthread_detach(THREAD);
+
 }
 
 
-void server_client(int* socket){
+void server_client(int* p_socket){
+	int cod_op, socket = *p_socket;
 
-	void* buffer = malloc(BUFFER_SIZE);
-	t_buffer* mensaje = malloc(sizeof(t_buffer));
-
-	int cod_op, offset = 0;
-
-	if(recv(*socket, buffer, BUFFER_SIZE, 0) < 0){
+	if(recv(socket, &cod_op, sizeof(uint32_t), 0) < 0){
 		perror("[envio_recepcion.c : 71]FALLO RECV");
 		cod_op = -1;
 	}
-	else{
+	free(p_socket);
 
-		memcpy(&cod_op, buffer + offset, sizeof(uint32_t));
-		offset += sizeof(uint32_t);
+	process_request(socket, cod_op);
+}
 
-		memcpy(&(mensaje->size), buffer + offset, sizeof(uint32_t));
-		offset += sizeof(uint32_t);
+t_buffer* recibir_mensaje(int cliente_fd){
 
-		mensaje->stream = malloc(mensaje->size);
-		memcpy(mensaje->stream, buffer + offset, mensaje->size);
-	}
-	free(buffer);
+	t_buffer* buffer = malloc(sizeof(t_buffer));
 
-	process_request(*socket, cod_op, mensaje);
+	recv(cliente_fd, &(buffer->size), sizeof(uint32_t), 0);
+
+	buffer->stream = malloc(buffer->size);
+
+	recv(cliente_fd, buffer->stream, buffer->size, 0);
+
+	return buffer;
 }
 
 
-void process_request(int cliente_fd, int cod_op, t_buffer* mensaje){
+void process_request(int cliente_fd, int cod_op){
 
+	t_buffer* mensaje;
 	switch(cod_op){
 
 		case NEW_POKEMON...LOCALIZED_POKEMON:
+
+			mensaje = recibir_mensaje(cliente_fd);
 
 			tratar_mensaje(cliente_fd, cod_op, mensaje);
 
@@ -112,37 +117,65 @@ void process_request(int cliente_fd, int cod_op, t_buffer* mensaje){
 			informe_cola_mensajes();
 			pthread_mutex_unlock(&MUTEX_COLA_MENSAJES);
 
+			informe_lista_mensajes();
+
 			close(cliente_fd);
 
 			break;
 
         case SUSCRIPTOR:
 
+        	mensaje = recibir_mensaje(cliente_fd);
+
         	tratar_suscriptor(cliente_fd, mensaje);
 
-        	informe_lista_mensajes();
-
-        	free(mensaje->stream);
-        	free(mensaje);
+        	close(cliente_fd);
 
         	break;
-        //TODO: WILLIAN HAS ALGO BIEN
+
 		case -1:
 
 			printf("NO SE RECIBIO EL MENSAJE CORRECTAMENTE\n");
-			free(mensaje);
 			pthread_exit(NULL);
 
 		default:
 
-			free(mensaje->stream);
-			free(mensaje);
-
 			printf("CODIGO DE OPERACION INVALIDO\n");
 			pthread_exit(NULL);
 		}
-	pthread_exit(NULL);
 }
+
+
+void leer_mensaje_newPokemon(t_buffer *mensaje){
+	char* pokemon;
+	int name_size, posx, posy, cantidad;
+
+	int offset = 0;
+
+	memcpy(&name_size, mensaje->stream + offset, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	pokemon = malloc(name_size);
+	memcpy(pokemon, mensaje->stream + offset, name_size);
+	offset += name_size;
+
+	memcpy(&posx, mensaje->stream + offset, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(&posy, mensaje->stream + offset, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(&cantidad, mensaje->stream + offset, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	printf("buffer_size = %d, pokemon = %s, posx = %d, posy = %d, cantidad = %d\n", mensaje->size, pokemon, posx, posy, cantidad);
+
+	free(pokemon);
+}
+
+
+
+
 
 void tratar_mensaje(int socket, int cod_op, t_buffer* mensaje){
 
@@ -152,7 +185,7 @@ void tratar_mensaje(int socket, int cod_op, t_buffer* mensaje){
 
 	pthread_mutex_unlock(&mutex);
 
-	enviar_confirmacion(socket, mensaje_guardar->id);
+	//enviar_confirmacion(socket, mensaje_guardar->id);
 
 	printf("mensaje %d recibido cod_op = %d\n", mensaje_guardar->id, cod_op);
 
@@ -204,6 +237,8 @@ int obtener_cod_op(t_buffer* buffer, int* tiempo){
 
 	memcpy(tiempo, buffer->stream + offset, sizeof(uint32_t));
 
+	free(buffer->stream);
+	free(buffer);
 	return cod_op;
 }
 

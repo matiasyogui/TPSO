@@ -57,7 +57,6 @@ void* planificar_mensaje(void* mensaje_enviar){
 		agregar_elemento(LISTA_MENSAJES, mensaje->cod_op, mensaje);
 	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[mensaje->cod_op]);
 
-
 	list_destroy(lista_subs);
 	free(stream_enviar);
 

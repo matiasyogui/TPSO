@@ -11,12 +11,9 @@ int main(){
 
 	pthread_create(&thread_planificador_mensajes, NULL, (void*)planificador_mensajes , NULL);
 
-	//iniciar_servidor();
-
 	pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
 
 	pthread_join(thread_planificador_mensajes, NULL);
-
 
 	return 0;
 }
