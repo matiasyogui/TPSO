@@ -43,86 +43,46 @@ void enviar_mensaje(t_paquete* paquete, int socket_cliente){
 }
 
 
+void modo_suscriptor(int conexion){
 
+	int cod_op, size, id;
+	void*datos;
 
+	while(1){
+		if(recv(conexion, &cod_op, sizeof(uint32_t), 0 ) < 0){
+			perror("[gameboy.c : 28]FALLO RECV");
+			continue;
+		}
+		switch(cod_op){
+			case CONFIRMACION:
+				recv(conexion, &size, sizeof(uint32_t), 0);
+				recv(conexion, &id, sizeof(uint32_t), 0);
+				printf("[CONFIRMACION DE SUSCRIPCION]cod_op = %d, mi id de suscriptor= %d \n", cod_op, id);
+				break;
 
-
-
-
-
-
-/*
-
-
-// ya no la usamos
-void leer_mensaje(void *stream){
-
-	int t_mensaje;
-	int offset = 0;
-	memcpy(&t_mensaje, stream + offset, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	printf("[leer_mensaje] t_mensaje = %d\n", t_mensaje);
-
-	int size;
-	memcpy(&size, stream + offset, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	printf("[leer_mensaje] size = %d\n", size);
-
-	while(offset < size + 2 * sizeof(uint32_t) ){
-
-		int tamanio=0;
-
-		memcpy(&tamanio, stream + offset, sizeof(uint32_t));
-		offset += sizeof(uint32_t);
-
-		char* palabra = malloc(tamanio);
-		memcpy(palabra, stream + offset, tamanio);
-		offset += tamanio;
-
-		//printf("[leer_mensaje] pointer = %p\n", stream);
-		printf("[leer_mensaje] palabra: %s, tamanño = %d, offset = %d\n", palabra, tamanio, offset);
-		free(palabra);
+				case NEW_POKEMON...LOCALIZED_POKEMON:
+					recv(conexion, &id, sizeof(uint32_t), 0);
+					recv(conexion, &size, sizeof(uint32_t), 0);
+					datos = malloc(size);
+					recv(conexion, datos, size, 0);
+					printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id correlativo = %d, size mensaje = %d\n ", cod_op, id, size);
+					break;
+			}
 	}
-	printf("fin\n");
 }
 
 
-// ya no la usamos
-t_paquete* armar_paquete(char** datos){
-	//datos = tipo_mensaje + [datos_mensaje]*
+void modo_emisor(int conexion){
 
-	char** datos_serializar = datos + 1;
+	int cod_op, size, id;
 
-	t_paquete* paquete = malloc(sizeof(t_paquete));
-
-	paquete -> codigo_operacion = tipo_mensaje(*datos);
-	paquete -> buffer = malloc(sizeof(t_buffer));
-	paquete -> buffer -> size = obtener_tamanio(datos_serializar) + cant_elementos(datos_serializar) * sizeof(uint32_t);
-
-	//printf("[armarpaquete] tamanio de todos los datos: %d\n", paquete -> buffer -> size);
-
-	void* stream = malloc(paquete -> buffer -> size);
-	int offset = 0;
-
-	while(*(datos_serializar) != NULL){
-
-		int longitud_string = strlen(*datos_serializar) + 1;  // incluimos el '\0'
-
-		memcpy(stream + offset, &longitud_string, sizeof(uint32_t));
-		offset += sizeof(uint32_t);
-
-		memcpy(stream + offset , *datos_serializar, longitud_string);
-		offset += longitud_string;
-
-		datos_serializar++;
-	}
-
-	paquete -> buffer -> stream = stream;
-
-	return paquete;
+	recv(conexion, &cod_op, sizeof(uint32_t), 0 );
+	recv(conexion, &size, sizeof(uint32_t), 0);
+	recv(conexion, &id, sizeof(uint32_t), 0);
+	printf("[CONFIRMACION DEL SUSCRIPCION]cod_op = %d, id mensaje en el broker= %d \n", cod_op, id);
 }
 
 
-*/
+
+
+

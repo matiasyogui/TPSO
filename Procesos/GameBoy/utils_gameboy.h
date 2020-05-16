@@ -20,10 +20,8 @@ void obtener_direcciones_envio(char* proceso);
 
 void enviar_mensaje(t_paquete* paquete, int conexion);
 
+void modo_suscriptor(int conexion);
 
-
-//t_paquete* armar_paquete(char** datos);
-//void leer_mensaje(void* stream);
-
+void modo_emisor(int conexion);
 
 #endif /* UTILS_GAMEBOY_H_ */

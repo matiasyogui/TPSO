@@ -20,9 +20,6 @@ int main(){
 
 
 
-
-
-
 void datos_servidor(){
 
 	CONFIG = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Broker/broker.config");
