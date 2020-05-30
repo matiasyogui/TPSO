@@ -1,5 +1,11 @@
 #include "planificador_mensajes.h"
 
+void enviar_mensaje_suscriptores(t_mensaje* mensaje);
+
+void* serializar_mensaje2(t_mensaje* mensaje, int* size);
+
+
+
 
 
 void tratar_mensaje(int socket, int cod_op, t_buffer* mensaje){
@@ -14,7 +20,7 @@ void tratar_mensaje(int socket, int cod_op, t_buffer* mensaje){
 
 	printf("mensaje %d recibido cod_op = %d\n", mensaje_guardar->id, cod_op);
 
-	enviar_mensajes_suscriptores(mensaje_guardar);
+	enviar_mensaje_suscriptores(mensaje_guardar);
 }
 
 
@@ -61,11 +67,11 @@ void enviar_mensaje_suscriptores(t_mensaje* mensaje){
 			continue;
 		}
 		// en que momento recibimos la confirmacion
-		pthread_mutex_lock(mensaje->mutex);
+		pthread_mutex_lock(&(mensaje->mutex));
 
 		list_add(mensaje->subs_envie_msg, suscriptor);
 
-		pthread_mutex_unlock(mensaje->mutex);
+		pthread_mutex_unlock(&(mensaje->mutex));
 	}
 
 	list_destroy(lista_subs);

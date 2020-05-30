@@ -17,8 +17,5 @@ pthread_t thread_envio_suscriptores;
 void tratar_mensaje(int socket, int cod_op, t_buffer* mensaje);
 void enviar_confirmacion(int socket, int id);
 
-void enviar_mensaje_suscriptores(t_mensaje* mensaje);
-
-void* serializar_mensaje2(t_mensaje* mensaje, int* size);
 
 #endif /* PLANIFICADOR_MENSAJES_H_ */

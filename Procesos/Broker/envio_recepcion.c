@@ -1,5 +1,6 @@
 #include "envio_recepcion.h"
 
+void* serializar_mensaje3(t_mensaje* mensaje, int* size);
 
 void* iniciar_servidor(){
 
@@ -131,11 +132,7 @@ void process_request(int cliente_fd, int cod_op){
 
 
 
-
-
 void tratar_suscriptor(int socket, t_buffer* mensaje){
-
-	printf("socket: %d\n", socket);
 
 	int tiempo, cod_op = obtener_cod_op(mensaje, &tiempo);
 
@@ -156,6 +153,32 @@ void tratar_suscriptor(int socket, t_buffer* mensaje){
 		agregar_elemento(LISTA_SUBS, cod_op, suscriptor);
 
 	pthread_mutex_unlock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
+
+	enviar_mensajes_suscriptor(suscriptor, cod_op);
+}
+
+void enviar_mensajes_suscriptor(t_suscriptor* suscriptor, int cod_op){
+
+	pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
+
+		t_list* mensajes_duplicados = list_duplicate(list_get(LISTA_MENSAJES, cod_op));
+
+	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
+
+	for(int i = 0; i< list_size(mensajes_duplicados); i++){
+		int size = 0;
+		t_mensaje* mensaje = list_get(mensajes_duplicados, i);
+		void* stream_enviar = serializar_mensaje3(mensaje, &size);
+
+		if(send(suscriptor -> socket, stream_enviar, size, 0)<0){
+			perror("fallo send");
+			continue;
+		}
+		pthread_mutex_lock(&(mensaje->mutex));
+		list_add(mensaje->subs_envie_msg, suscriptor);
+		free(stream_enviar);
+	}
+	list_destroy(mensajes_duplicados);
 }
 
 
@@ -205,5 +228,28 @@ void leer_mensaje_newPokemon(t_buffer *mensaje){
 	free(pokemon);
 }
 
+
+void* serializar_mensaje3(t_mensaje* mensaje, int* size){
+
+	void* stream = malloc(3 * sizeof(uint32_t) + mensaje->mensaje_recibido->size);
+
+	int offset = 0;
+
+	memcpy(stream + offset, &(mensaje->cod_op), sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &(mensaje->id), sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &(mensaje->mensaje_recibido->size), sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, mensaje->mensaje_recibido->stream, mensaje->mensaje_recibido->size);
+	offset += mensaje->mensaje_recibido->size;
+
+	*size = offset;
+
+	return stream;
+}
 
 

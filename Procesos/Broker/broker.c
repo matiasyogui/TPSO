@@ -9,9 +9,9 @@ int main(){
 
 	fflush(stdout);
 
-	pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
+	iniciar_servidor();
 
-	pthread_join(thread_planificador_mensajes, NULL);
+
 
 	return 0;
 }
@@ -52,7 +52,7 @@ void finalizar_servidor(){
 	//finalizar_semaforos();
 
 	config_destroy(CONFIG);
-	//log_destroy(LOGGER);
+	log_destroy(LOGGER);
 	close(*SOCKET_SERVER);
 
 	pthread_cancel(thread_planificador_mensajes);
