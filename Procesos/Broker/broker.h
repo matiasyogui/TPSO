@@ -10,7 +10,6 @@
 
 #define CANTIDAD_SUBLISTAS 6
 
-t_queue* COLA_MENSAJES;
 t_list* LISTA_MENSAJES;
 
 t_list* LISTA_GENERAL_SUBS;
@@ -29,7 +28,6 @@ int* SOCKET_SERVER;
 pthread_t thread_server;
 pthread_t thread_planificador_mensajes;
 
-pthread_mutex_t MUTEX_COLA_MENSAJES;
 pthread_mutex_t MUTEX_SUBLISTAS_MENSAJES[CANTIDAD_SUBLISTAS];
 pthread_mutex_t MUTEX_LISTA_GENERAL_SUBS;
 pthread_mutex_t MUTEX_SUBLISTAS_SUSCRIPTORES[CANTIDAD_SUBLISTAS];

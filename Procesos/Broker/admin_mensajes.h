@@ -3,17 +3,16 @@
 
 #include <stdbool.h>
 #include <commons/string.h>
+#include <pthread.h>
 
-#include<cosas_comunes.h>
+#include <cosas_comunes.h>
+#include "broker.h"
 
 #include <commons/collections/list.h>
 #include <commons/collections/queue.h>
 #include <commons/collections/node.h>
 
-typedef enum{
-	LISTA_SUBS_ENVIO=1,
-	LISTA_SUBS_CONFIRMARON=2,
-}tipo_lista;
+pthread_mutex_t mutex_id;
 
 
 typedef struct{
@@ -24,40 +23,28 @@ typedef struct{
 }t_suscriptor;
 
 
-typedef struct{
+typedef struct algo{
 
 	int id;
 	int cod_op;
 	t_buffer* mensaje_recibido;
-
-	// inicializar las listas antes de añadirlas a las colas o al sacarlas de la cola
 	t_list* subs_envie_msg;
-	t_list* subs_confirmaron_msg;
+	pthread_mutex_t mutex;
 
 }t_mensaje;
 
 
 
+///////////////////////// FUNCIONES CREACION DE LISTAS /////////////////////////
 t_list* crear_lista_subs(void);
 void agregar_elemento(t_list* lista, int index, void* data);
 
-
-t_mensaje* nodo_mensaje(int cod_op, t_buffer* buffer, int id);
-t_suscriptor* nodo_suscriptor(int socket, int id);
-t_mensaje* buscar_mensaje(t_list* list, int id_mensaje);
-void agregar_sub_mensaje(t_list* list, int id_mensaje, t_suscriptor* subscriptor, tipo_lista tipo);
+///////////////////////// FUNCIONES LISTA MENSAJES /////////////////////////
+t_mensaje* nodo_mensaje(int cod_op, t_buffer* buffer);
+t_suscriptor* nodo_suscriptor(int socket);
 
 
-
-
-int obtener_tipo_mensaje(t_mensaje* mensaje_buscado, t_list* lista_mensajes);
-bool existe_sub(t_suscriptor* sub_buscado, t_list* lista_subs);
-bool comparar_mensajes(t_mensaje* mensaje1, t_mensaje* mensaje2);
-bool comparar_suscriptores(t_suscriptor* sub1, t_suscriptor* sub2);
-
-
-/// funciones para eliminar listas y elementos
-
+///////////////////////// FUNCIONES PARA ELIMINAR LAS LISTAS /////////////////////////
 //mensajes
 void borrar_mensaje(void* mensaje);
 void limpiar_sublista_mensajes(void* sublista);
@@ -66,5 +53,11 @@ void destruir_lista_mensajes(t_list* lista_mensajes);
 //suscritores
 void borrar_suscriptor(void* suscriptor);
 void destruir_lista_suscriptores(t_list* lista_suscriptores);
+
+
+///////////////////////// FUNCIONES PARA MOSTRAR LAS LISTAS /////////////////////////
+void informe_lista_mensajes(void);
+void informe_lista_suscriptores(void);
+void informe_cola_mensajes();
 
 #endif /* ADMIN_MENSAJES_H_ */

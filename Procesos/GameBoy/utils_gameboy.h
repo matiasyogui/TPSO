@@ -24,4 +24,6 @@ void modo_suscriptor(int conexion);
 
 void modo_emisor(int conexion);
 
+char* comprobar_proceso(char *proceso);
+
 #endif /* UTILS_GAMEBOY_H_ */

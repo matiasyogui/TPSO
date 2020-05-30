@@ -1,36 +1,50 @@
 #include "planificador_mensajes.h"
 
-pthread_t tid;
 
-void* planificador_mensajes(void){
 
-	t_mensaje* mensaje;
+void tratar_mensaje(int socket, int cod_op, t_buffer* mensaje){
 
-	while(1){
+	t_mensaje* mensaje_guardar = nodo_mensaje(cod_op, mensaje);
 
-		pthread_mutex_lock(&MUTEX_COLA_MENSAJES);
-			if(queue_is_empty(COLA_MENSAJES))
-				pthread_cond_wait(&condition_var_queue, &MUTEX_COLA_MENSAJES);
-			mensaje = queue_pop(COLA_MENSAJES);
-		pthread_mutex_unlock(&MUTEX_COLA_MENSAJES);
+	agregar_elemento(LISTA_MENSAJES, mensaje_guardar->cod_op, mensaje_guardar);
 
-		if( pthread_create(&tid, NULL, planificar_mensaje, (void*)mensaje) !=0 )
-				printf("[planificador_mensaje.c : 18] FALLO AL CREAR EL THREAD\n");
-		pthread_detach(tid);
-	}
+	informe_lista_mensajes();
 
-	pthread_exit(0);
+	enviar_confirmacion(socket, mensaje_guardar->id);
+
+	printf("mensaje %d recibido cod_op = %d\n", mensaje_guardar->id, cod_op);
+
+	enviar_mensajes_suscriptores(mensaje_guardar);
 }
 
 
-//TODO: DURACION DE MENSAJE EN UNA COLA
-void* planificar_mensaje(void* mensaje_enviar){
+void enviar_confirmacion(int socket, int id){
 
-	t_mensaje* mensaje = mensaje_enviar;
+	void* mensaje_confirmacion = malloc( 3 * sizeof(int));
+	int tamano = sizeof(uint32_t);
+	uint32_t cod_op = CONFIRMACION;
+
+	int offset = 0;
+
+	memcpy(mensaje_confirmacion + offset, &(cod_op), sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(mensaje_confirmacion + offset, &tamano, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(mensaje_confirmacion + offset, &id, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	if(send(socket, mensaje_confirmacion, offset, MSG_NOSIGNAL) < 0)
+		perror("[envio_recepcion.c]FALLO SEND");
+
+	free(mensaje_confirmacion);
+}
+
+void enviar_mensaje_suscriptores(t_mensaje* mensaje){
 
 	int size;
 	void* stream_enviar = serializar_mensaje2(mensaje, &size);
-
 
 	pthread_mutex_lock(&MUTEX_SUBLISTAS_SUSCRIPTORES[mensaje->cod_op]);
 
@@ -38,38 +52,25 @@ void* planificar_mensaje(void* mensaje_enviar){
 
 	pthread_mutex_unlock(&MUTEX_SUBLISTAS_SUSCRIPTORES[mensaje->cod_op]);
 
-
 	for(int i = 0; i < list_size(lista_subs); i++){
-		printf("cantiddad_ subs %d\n",list_size(lista_subs));
+
 		t_suscriptor* suscriptor = list_get(lista_subs, i);
 
-
 		if( send(suscriptor->socket, stream_enviar, size, MSG_NOSIGNAL) < 0){
-			perror("[planificador_mensaje.c : 43] FALLO SEND");
+			perror("[envio_recepcion.c] FALLO SEND");
 			continue;
 		}
+		// en que momento recibimos la confirmacion
+		pthread_mutex_lock(mensaje->mutex);
 
 		list_add(mensaje->subs_envie_msg, suscriptor);
-	}
 
-	//LISTA_BLOQUEADA?
-	pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[mensaje->cod_op]);
-		agregar_elemento(LISTA_MENSAJES, mensaje->cod_op, mensaje);
-	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[mensaje->cod_op]);
+		pthread_mutex_unlock(mensaje->mutex);
+	}
 
 	list_destroy(lista_subs);
 	free(stream_enviar);
-
-	pthread_exit(0);
 }
-
-
-
-
-/*
- * 	broker -> proceso int(cod_op) + int(id) + int(size_stream) + stream
- * 	proceso -> broker int(cod_op) + int(size_stream) + (id_correlativo + stream)
- */
 
 void* serializar_mensaje2(t_mensaje* mensaje, int* size){
 
@@ -93,3 +94,5 @@ void* serializar_mensaje2(t_mensaje* mensaje, int* size){
 
 	return stream;
 }
+
+

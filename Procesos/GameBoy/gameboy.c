@@ -1,11 +1,11 @@
 #include "gameboy.h"
 
-
 int main(int argc,char* argv[]){
 
 	inicializar_archivos();
 
 	obtener_direcciones_envio(argv[1]);
+
 
 	//ENVIAR MENSAJES
 	t_paquete* paquete = armar_paquete2(argv+1);
@@ -14,17 +14,14 @@ int main(int argc,char* argv[]){
 
 
 	//ESPERAR RESPUESTAS
-	int cod_op, size, id;
-	void*datos;
-
 	if(string_equals_ignore_case(argv[1], "SUSCRIPTOR") == 1){
 		modo_suscriptor(conexion);
 	}else{
 		modo_emisor(conexion);
 	}
 
-	terminar_programa(conexion, LOGGER, CONFIG);
 
+	terminar_programa(conexion, LOGGER, CONFIG);
 	return 0;
 }
 
