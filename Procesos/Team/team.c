@@ -32,6 +32,69 @@ void* finalizar_team(void){
 	raise(SIGTERM);
 }
 
+void* stream_get_pokemon(char* datos, int* bytes){
+
+	char* nombre_pokemon = datos;
+	uint32_t size_nombre = strlen(nombre_pokemon) + 1;
+
+	*bytes = sizeof(uint32_t) + size_nombre;
+
+	void* stream = malloc(*bytes);
+
+	int offset = 0;
+
+	memcpy(stream + offset, &size_nombre, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, nombre_pokemon, size_nombre);
+	offset += size_nombre;
+
+	return stream;
+}
+
+void enviar_mensaje(t_paquete* paquete, int socket_cliente){
+
+	int bytes_enviar;
+
+	void* mensaje = serializar_paquete(paquete, &bytes_enviar);
+
+	if(send(socket_cliente, mensaje, bytes_enviar, 0) < 0)
+		perror("[utils_gameboy.c] FALLO EL SEND");
+
+
+	free(paquete->buffer->stream);
+	free(paquete->buffer);
+	free(paquete);
+	free(mensaje);
+}
+
+
+void enviarMensajeAlBroker(int codigo_operacion, char* mensaje){
+	int socket = crear_conexion("127.0.0.1", "4444");
+	int tamanioString;
+
+	void* streamMensaje = stream_get_pokemon(mensaje, &tamanioString);
+
+	t_paquete* paquete = malloc(sizeof(t_paquete));
+	paquete ->  codigo_operacion = codigo_operacion;
+	paquete -> buffer = malloc(sizeof(t_buffer));
+	paquete -> buffer -> size = tamanioString;
+	paquete -> buffer -> stream = malloc(sizeof(tamanioString));
+	paquete -> buffer -> stream = streamMensaje;
+
+	enviar_mensaje(paquete, socket);
+
+	int cod_confirmacion;
+	int tamanioMensajeBroker;
+	int idBroker;
+
+	recv(socket, &cod_confirmacion, sizeof(int), 0);
+	recv(socket, &tamanioMensajeBroker, sizeof(int), 0);
+	recv(socket, &idBroker, sizeof(int), 0);
+
+	printf("ID DEL MENSAJE BROKER= %d", idBroker);
+	fflush(stdout);
+}
 
 int main(){
 	signal(SIGINT, finalizar_team);
@@ -62,6 +125,9 @@ int main(){
 	printf("/////////////////////////////////////////////////////////\n");
 	fflush(stdout);
 	pthread_mutex_lock(&semPlanificador);
+
+	enviarMensajeAlBroker(GET_POKEMON, "Pikachu");
+
 
 	iniciar_servidor();
 
