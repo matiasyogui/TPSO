@@ -27,11 +27,6 @@ t_entrenador elegirEntrenadorXCercania(int posx, int posy){
 }
 */
 
-void* finalizar_team(void){
-	close(server_team);
-	raise(SIGTERM);
-}
-
 void* stream_get_pokemon(char* datos, int* bytes){
 
 	char* nombre_pokemon = datos;
@@ -97,7 +92,7 @@ void enviarMensajeAlBroker(int codigo_operacion, char* mensaje){
 }
 
 int main(){
-	signal(SIGINT, finalizar_team);
+
 	//LEO ARCHIVO DE CONFIGURACION
 	leer_archivo_configuracion();
 
@@ -128,8 +123,10 @@ int main(){
 
 	enviarMensajeAlBroker(GET_POKEMON, "Pikachu");
 
+	pthread_t servidor;
 
-	iniciar_servidor();
+	pthread_create(&servidor, NULL, (void*) iniciar_servidor, NULL);
+	pthread_detach(servidor);
 
 	for(i=0;i<cantEntrenadores;i++){
 		pthread_join(*hilos[i],NULL);
