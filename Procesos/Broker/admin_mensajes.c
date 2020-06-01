@@ -18,20 +18,18 @@ static int obtener_id(void){
 }
 
 
-
 ///////////////////////// FUNCIONES CREACION DE LISTAS /////////////////////////
 
 
+t_list* crear_listas(void){
 
-t_list* crear_lista_subs(void){
-
-	t_list* lista_subs = list_create();
+	t_list* listas = list_create();
 
 	for(int i = 0; i < 6; i++){
 		t_list* new_list = list_create();
-		list_add(lista_subs, new_list);
+		list_add(listas, new_list);
 	}
-	return lista_subs;
+	return listas;
 }
 
 void agregar_elemento(t_list* lista, int index, void* data){
@@ -46,9 +44,7 @@ void agregar_elemento(t_list* lista, int index, void* data){
 }
 
 
-
 ///////////////////////// FUNCIONES LISTA MENSAJES /////////////////////////
-
 
 
 t_mensaje* nodo_mensaje(int cod_op, t_buffer* buffer){
@@ -75,9 +71,7 @@ t_suscriptor* nodo_suscriptor(int socket){
 }
 
 
-
 ///////////////////////// FUNCIONES PARA ELIMINAR LAS LISTAS /////////////////////////
-
 
 //TODO
 void borrar_mensaje(void* mensaje){
@@ -117,9 +111,7 @@ void destruir_lista_suscriptores(t_list* lista_suscriptores){
 }
 
 
-
 ///////////////////////// FUNCIONES PARA MOSTRAR LAS LISTAS /////////////////////////
-
 
 
 void informe_lista_mensajes(void){
@@ -151,9 +143,3 @@ void informe_lista_mensajes(void){
 	}
 }
 
-
-
-void informe_lista_suscriptores(void){
-
-	printf("\nCANT DE SUSCRIPTORES EN EL SISTEMA = %d\n", LISTA_GENERAL_SUBS->elements_count);
-}

@@ -5,38 +5,17 @@
 #include <commons/string.h>
 #include <pthread.h>
 
-#include <cosas_comunes.h>
-#include "broker.h"
-
 #include <commons/collections/list.h>
-#include <commons/collections/node.h>
 
-pthread_mutex_t mutex_id;
+#include <cosas_comunes.h>
 
-
-typedef struct{
-
-	int id;
-	int socket;
-
-}t_suscriptor;
-
-
-typedef struct{
-
-	int id;
-	int cod_op;
-	t_buffer* mensaje_recibido;
-	t_list* subs_envie_msg;  // tratar con las confirmacions de los suscriptores que recibieron el mensaje
-	pthread_mutex_t mutex;
-
-}t_mensaje;
-
+#include "variables_globales.h"
 
 
 ///////////////////////// FUNCIONES CREACION DE LISTAS /////////////////////////
-t_list* crear_lista_subs(void);
+t_list* crear_listas(void);
 void agregar_elemento(t_list* lista, int index, void* data);
+
 
 ///////////////////////// FUNCIONES LISTA MENSAJES /////////////////////////
 t_mensaje* nodo_mensaje(int cod_op, t_buffer* buffer);
@@ -56,6 +35,5 @@ void destruir_lista_suscriptores(t_list* lista_suscriptores);
 
 ///////////////////////// FUNCIONES PARA MOSTRAR LAS LISTAS /////////////////////////
 void informe_lista_mensajes(void);
-void informe_lista_suscriptores(void);
 
 #endif /* ADMIN_MENSAJES_H_ */

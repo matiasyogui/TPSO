@@ -1,24 +1,20 @@
 #include "broker.h"
 
-
-int main(){
+int main(void){
 
 	datos_servidor();
 
-	signal(SIGINT, finalizar_servidor);
+	signal(SIGINT, (void*)finalizar_servidor);
 
 	fflush(stdout);
 
 	iniciar_servidor();
 
-
-
 	return 0;
 }
 
 
-
-void datos_servidor(){
+void datos_servidor(void){
 
 	CONFIG = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Broker/broker.config");
 
@@ -36,17 +32,12 @@ void datos_servidor(){
 
 void inicializar_listas(void){
 
-	LISTA_MENSAJES = crear_lista_subs();
-
-	//replantear como administrar a los suscriptores
-	LISTA_GENERAL_SUBS = list_create();
-	LISTA_SUBS = crear_lista_subs();
+	LISTA_MENSAJES = crear_listas();
+	LISTA_SUBS = crear_listas();
 }
 
 
-void finalizar_servidor(){
-
-	printf("\nFINALIZANDO\n");
+void finalizar_servidor(void){
 
 	//finalizar_listas();
 	//finalizar_semaforos();
@@ -55,27 +46,20 @@ void finalizar_servidor(){
 	log_destroy(LOGGER);
 	close(*SOCKET_SERVER);
 
-	pthread_cancel(thread_planificador_mensajes);
-	pthread_cancel(thread_server);
-
 	raise(SIGTERM);
 }
 
 
-void finalizar_listas(){
+void finalizar_listas(void){
 
 	//destruir_lista_mensajes(LISTA_MENSAJES);
 
-	//list_destroy_and_destroy_elements(LISTA_GENERAL_SUBS, &borrar_suscriptor);
-	//destruir_lista_suscriptores(LISTA_SUBS);
+	// funcion para destruir la lista de subs
 }
 
 
 void inicializar_semaforos(void){
 
-
-
-	pthread_mutex_init(&MUTEX_LISTA_GENERAL_SUBS, NULL);
 	for(int i=0; i< CANTIDAD_SUBLISTAS; i++)
 		pthread_mutex_init(&MUTEX_SUBLISTAS_MENSAJES[i], NULL);
 
@@ -84,9 +68,6 @@ void inicializar_semaforos(void){
 
 	//admin_mensajes.h
 	pthread_mutex_init(&mutex_id, NULL);
-
-	//envio_recepcion.h
-	pthread_mutex_init(&mutex_send, NULL);
 }
 
 

@@ -12,30 +12,15 @@
 #include <pthread.h>
 #include <errno.h>
 
-#include <commons/collections/list.h>
-
 #include <cosas_comunes.h>
+
+#include "variables_globales.h"
+
 #include "admin_mensajes.h"
-#include "broker.h"
-#include "planificador_mensajes.h"
-
-
-#define BUFFER_SIZE 100
-
-pthread_t THREAD;
-
-pthread_mutex_t mutex_send;
-
-typedef struct{
-
-	int cola_mensajes;
-	int tiempo_suscripcion;
-
-}t_mensaje_suscriptor;
 
 
 
-void* iniciar_servidor();
+void* iniciar_servidor(void);
 void esperar_cliente(int socket_servidor);
 void server_client(int* socket);
 void process_request(int cliente_fd, int cod_op);
@@ -47,6 +32,17 @@ void tratar_suscriptor(int socket, t_buffer* mensaje);
 int obtener_cod_op(t_buffer* buffer, int* tiempo);
 
 
+pthread_t thread_mensajes;
+pthread_t thread_envio_suscriptores;
+
+void tratar_mensaje(int socket, int cod_op, t_buffer* mensaje);
+void enviar_confirmacion(int socket, int id);
+
+
+void enviar_mensaje_suscriptores(t_mensaje* mensaje);
+void enviar_mensajes_suscriptor(t_suscriptor* suscriptor, int cod_op);
+
+void* serializar_mensaje2(t_mensaje* mensaje, int* size);
 
 
 #endif /* ENVIO_RECEPCION_H_ */

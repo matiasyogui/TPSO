@@ -4,38 +4,14 @@
 #include <commons/config.h>
 #include <cosas_comunes.h>
 
-#include "envio_recepcion.h"
+#include "variables_globales.h"
+
 #include "admin_mensajes.h"
-#include "planificador_mensajes.h"
-
-#define CANTIDAD_SUBLISTAS 6
-
-t_list* LISTA_MENSAJES;
-
-t_list* LISTA_GENERAL_SUBS;
-t_list* LISTA_SUBS;
-
-t_config* CONFIG;
-t_log* LOGGER;
-
-char* IP_SERVER;
-char* PUERTO_SERVER;
-
-int* SOCKET_SERVER;
+#include "envio_recepcion.h"
 
 
-
-pthread_t thread_server;
-pthread_t thread_planificador_mensajes;
-
-pthread_mutex_t MUTEX_SUBLISTAS_MENSAJES[CANTIDAD_SUBLISTAS];
-pthread_mutex_t MUTEX_LISTA_GENERAL_SUBS;
-pthread_mutex_t MUTEX_SUBLISTAS_SUSCRIPTORES[CANTIDAD_SUBLISTAS];
-
-
-
-void datos_servidor();
-void finalizar_servidor();
+void datos_servidor(void);
+void finalizar_servidor(void);
 
 void inicializar_listas(void);
 void finalizar_listas(void);
