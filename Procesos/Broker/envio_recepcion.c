@@ -188,33 +188,7 @@ void enviar_mensajes_suscriptor(t_suscriptor* suscriptor, int cod_op){
 
 
 
-void leer_mensaje_newPokemon(t_buffer *mensaje){
-	char* pokemon;
-	int name_size, posx, posy, cantidad;
 
-	int offset = 0;
-
-	memcpy(&name_size, mensaje->stream + offset, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	pokemon = malloc(name_size);
-	memcpy(pokemon, mensaje->stream + offset, name_size);
-	offset += name_size;
-
-	memcpy(&posx, mensaje->stream + offset, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(&posy, mensaje->stream + offset, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(&cantidad, mensaje->stream + offset, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	printf("buffer_size = %d, pokemon = %s, posx = %d, posy = %d, cantidad = %d\n",
-			mensaje->size, pokemon, posx, posy, cantidad);
-
-	free(pokemon);
-}
 
 
 void enviar_mensaje_suscriptores(t_mensaje* mensaje){
@@ -243,7 +217,6 @@ void enviar_mensaje_suscriptores(t_mensaje* mensaje){
 
 		pthread_mutex_unlock(&(mensaje->mutex));
 	}
-
 	list_destroy(lista_subs);
 	free(stream_enviar);
 }
@@ -306,4 +279,33 @@ int obtener_cod_op(t_buffer* buffer, int* tiempo){
 	free(buffer->stream);
 	free(buffer);
 	return cod_op;
+}
+
+
+void leer_mensaje_newPokemon(t_buffer *mensaje){
+	char* pokemon;
+	int name_size, posx, posy, cantidad;
+
+	int offset = 0;
+
+	memcpy(&name_size, mensaje->stream + offset, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	pokemon = malloc(name_size);
+	memcpy(pokemon, mensaje->stream + offset, name_size);
+	offset += name_size;
+
+	memcpy(&posx, mensaje->stream + offset, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(&posy, mensaje->stream + offset, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(&cantidad, mensaje->stream + offset, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	printf("buffer_size = %d, pokemon = %s, posx = %d, posy = %d, cantidad = %d\n",
+			mensaje->size, pokemon, posx, posy, cantidad);
+
+	free(pokemon);
 }

@@ -1,9 +1,12 @@
+#include "serializar_mensajes.h"
 
 #include <cosas_comunes.h>
 #include <pthread.h>
 #include "team.h"
 #include <commons/collections/list.h>
 #include <commons/string.h>
+
+pthread_mutex_t m;
 
 void element_destroyer(void* elemento){
 	t_entrenador* ent = (t_entrenador*) elemento;
@@ -26,25 +29,22 @@ t_entrenador elegirEntrenadorXCercania(int posx, int posy){
 	t_list* listaFiltrada = list_map(listaBlocked, _algoritmoCercano);
 }
 */
+void inicializar_listas(){
 
-void* stream_get_pokemon(char* datos, int* bytes){
+	listaReady = list_create();
+	listaExecute = list_create();
+	listaBlocked = list_create();
+	listaExit = list_create();
 
-	char* nombre_pokemon = datos;
-	uint32_t size_nombre = strlen(nombre_pokemon) + 1;
+	lista_mensajes = list_create();
+}
 
-	*bytes = sizeof(uint32_t) + size_nombre;
+void eliminar_listas(){
 
-	void* stream = malloc(*bytes);
-
-	int offset = 0;
-
-	memcpy(stream + offset, &size_nombre, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(stream + offset, nombre_pokemon, size_nombre);
-	offset += size_nombre;
-
-	return stream;
+	list_destroy_and_destroy_elements(listaReady, free);
+	list_destroy_and_destroy_elements(listaExecute, free);
+	list_destroy_and_destroy_elements(listaBlocked, free);
+	list_destroy_and_destroy_elements(listaExit, free);
 }
 
 void enviar_mensaje(t_paquete* paquete, int socket_cliente){
@@ -54,7 +54,7 @@ void enviar_mensaje(t_paquete* paquete, int socket_cliente){
 	void* mensaje = serializar_paquete(paquete, &bytes_enviar);
 
 	if(send(socket_cliente, mensaje, bytes_enviar, 0) < 0)
-		perror("[utils_gameboy.c] FALLO EL SEND");
+		perror(" FALLO EL SEND");
 
 
 	free(paquete->buffer->stream);
@@ -64,34 +64,65 @@ void enviar_mensaje(t_paquete* paquete, int socket_cliente){
 }
 
 
-void enviarMensajeAlBroker(int codigo_operacion, char* mensaje){
+void suscribirse(char* cola){
+	// suscriptor + cola + tiempo;
 	int socket = crear_conexion("127.0.0.1", "4444");
-	int tamanioString;
 
-	void* streamMensaje = stream_get_pokemon(mensaje, &tamanioString);
+	char *datos[] = {"suscriptor", cola, "-1"};
 
-	t_paquete* paquete = malloc(sizeof(t_paquete));
-	paquete ->  codigo_operacion = codigo_operacion;
-	paquete -> buffer = malloc(sizeof(t_buffer));
-	paquete -> buffer -> size = tamanioString;
-	paquete -> buffer -> stream = malloc(sizeof(tamanioString));
-	paquete -> buffer -> stream = streamMensaje;
+	t_paquete* paquete_enviar = armar_paquete2(datos);
 
-	enviar_mensaje(paquete, socket);
+	enviar_mensaje(paquete_enviar, socket);
 
-	int cod_confirmacion;
-	int tamanioMensajeBroker;
-	int idBroker;
+	int cod_op, id, size;
+	void* mensaje;
 
-	recv(socket, &cod_confirmacion, sizeof(int), 0);
-	recv(socket, &tamanioMensajeBroker, sizeof(int), 0);
-	recv(socket, &idBroker, sizeof(int), 0);
+	while(1){
+		if(recv(socket, &cod_op, sizeof(uint32_t), 0 ) < 0){
+			perror("FALLO RECV");
+			continue;
+		}
+		switch(cod_op){
 
-	printf("ID DEL MENSAJE BROKER= %d", idBroker);
-	fflush(stdout);
+			case CONFIRMACION:
+				recv(socket, &id, sizeof(uint32_t), 0);
+
+				printf("[CONFIRMACION DE SUSCRIPCION]cod_op = %d, mi id de suscriptor= %d \n", cod_op, id);
+				break;
+
+			case NEW_POKEMON...LOCALIZED_POKEMON:
+				recv(socket, &id, sizeof(uint32_t), 0);
+				recv(socket, &size, sizeof(uint32_t), 0);
+				mensaje = malloc(size);
+				recv(socket, datos, size, 0);
+
+				t_buffer* buffer = malloc(sizeof(t_buffer));
+				buffer -> size = size;
+				buffer -> stream = datos;
+
+				pthread_mutex_lock(&m);
+				list_add(lista_mensajes, buffer);
+				printf("mensajes = %d\n", list_size(lista_mensajes));
+				pthread_mutex_unlock(&m);
+
+				printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id correlativo = %d, size mensaje = %d \n", cod_op, id, size);
+				break;
+		}
+	}
 }
 
 int main(){
+	pthread_mutex_init(&m, NULL);
+
+	inicializar_listas();
+
+	pthread_t tid;
+	pthread_create(&tid, NULL, (void*)suscribirse, "new_pokemon");
+	pthread_create(&tid, NULL, (void*)suscribirse, "get_pokemon");
+	pthread_create(&tid, NULL, (void*)suscribirse, "appeared_pokemon");
+
+	thread_create(&tid, NULL, (void*)iniciar_servidor, NULL);
+
 
 	//LEO ARCHIVO DE CONFIGURACION
 	leer_archivo_configuracion();
@@ -106,38 +137,20 @@ int main(){
 	//char* mensajeConsola = string_new();
 	//string_append(&mensajeConsola, argv[1]);
 
-	//creo el diagrama de estados
-	listaReady = list_create();
-	listaExecute = list_create();
-	listaBlocked = list_create(); //sin NEW, inicializamos los entrenadores en BLOCKED
-	listaExit = list_create();
+
 
 	//setteo entrenadores y asigno hilo a c/entrenador
 	for(i=0;i<cantEntrenadores;i++){
 		setteoEntrenador(entrenadores[i], hilos[i], i);
 	}
 
-	printf("/////////////////////////////////////////////////////////\n");
-	fflush(stdout);
 	pthread_mutex_lock(&semPlanificador);
-
-	enviarMensajeAlBroker(GET_POKEMON, "Pikachu");
-
-	pthread_t servidor;
-
-	pthread_create(&servidor, NULL, (void*) iniciar_servidor, NULL);
-	pthread_detach(servidor);
 
 	for(i=0;i<cantEntrenadores;i++){
 		pthread_join(*hilos[i],NULL);
 	}
 
-	//DEFINIR como destruir elementos
-	list_destroy_and_destroy_elements(listaReady, free);
-	list_destroy_and_destroy_elements(listaExecute, free);
-	list_destroy_and_destroy_elements(listaBlocked, free);
-	list_destroy_and_destroy_elements(listaExit, free);
-
+	eliminar_listas();
 
 	for(i=0;i<cantEntrenadores;i++){
 		free(entrenadores[i]-> posicion);
@@ -145,43 +158,32 @@ int main(){
 		free(entrenadores[i]-> pokemones);
 		free(entrenadores[i]);
 	}
+
 	return EXIT_SUCCESS;
 }
 
 void leer_archivo_configuracion(){
+
 	t_config* config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team1.config");
-		//PASO TODOS LOS PARAMETROS
-		POSICIONES_ENTRENADORES = config_get_array_value(config,"POSICIONES_ENTRENADORES");
-		POKEMON_ENTRENADORES = config_get_array_value(config,"POKEMON_ENTRENADORES");
-		OBJETIVOS_ENTRENADORES = config_get_array_value(config,"OBJETIVOS_ENTRENADORES");
-		TIEMPO_RECONEXION = config_get_int_value(config,"TIEMPO_RECONEXION");
-		RETARDO_CICLO_CPU = config_get_int_value(config,"RETARDO_CICLO_CPU");
-		ALGORITMO_PLANIFICACION = config_get_string_value(config,"ALGORITMO_PLANIFICACION");
-		if(strcmp(ALGORITMO_PLANIFICACION,"RR")){
-				QUANTUM = config_get_int_value(config,"QUANTUM");
-		}
-		if(strcmp(ALGORITMO_PLANIFICACION,"SJF")){
-				ESTIMACION_INICIAL = config_get_int_value(config,"ESTIMACION_INICIAL");
-		}
-		IP_BROKER = config_get_string_value(config,"IP_BROKER");
-		PUERTO_BROKER= config_get_int_value(config,"PUERTO_BROKER");
-		LOG_FILE= config_get_string_value(config,"LOG_FILE");
 
+	//PASO TODOS LOS PARAMETROS
+	POSICIONES_ENTRENADORES = config_get_array_value(config,"POSICIONES_ENTRENADORES");
+	POKEMON_ENTRENADORES = config_get_array_value(config,"POKEMON_ENTRENADORES");
+	OBJETIVOS_ENTRENADORES = config_get_array_value(config,"OBJETIVOS_ENTRENADORES");
+	TIEMPO_RECONEXION = config_get_int_value(config,"TIEMPO_RECONEXION");
+	RETARDO_CICLO_CPU = config_get_int_value(config,"RETARDO_CICLO_CPU");
+	ALGORITMO_PLANIFICACION = config_get_string_value(config,"ALGORITMO_PLANIFICACION");
 
-		//MUESTRO CONFIG EN CONSOLA
-		int contador = 0;
-		while(POKEMON_ENTRENADORES[contador] != NULL){
-			printf("Entrenador %d POKEMONOS: %s\n", contador + 1, POKEMON_ENTRENADORES[contador]);
-			printf("Entrenador %d OBJETIVOS: %s\n\n", contador + 1, OBJETIVOS_ENTRENADORES[contador]);
-			contador++;
-		}
-		printf("\nTIEMPO_RECONEXION: %i\n", TIEMPO_RECONEXION);
-		printf("RETARDO_CICLO_CPU: %i\n", RETARDO_CICLO_CPU);
-		printf("ALGORITMO_PLANIFICACION: %s\n", ALGORITMO_PLANIFICACION);
-		printf("IP_BROKER: %s\n", IP_BROKER);
-		printf("PUERTO_BROKER: %d\n", PUERTO_BROKER);
-		printf("LOG_FILE: %s\n", LOG_FILE);
+	if(strcmp(ALGORITMO_PLANIFICACION,"RR"))
+		QUANTUM = config_get_int_value(config,"QUANTUM");
 
-		config_destroy(config);
+	if(strcmp(ALGORITMO_PLANIFICACION,"SJF"))
+		ESTIMACION_INICIAL = config_get_int_value(config,"ESTIMACION_INICIAL");
+
+	IP_BROKER = config_get_string_value(config,"IP_BROKER");
+	PUERTO_BROKER= config_get_int_value(config,"PUERTO_BROKER");
+	LOG_FILE= config_get_string_value(config,"LOG_FILE");
+
+	config_destroy(config);
 }
 

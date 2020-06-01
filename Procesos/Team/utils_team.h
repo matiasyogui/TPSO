@@ -55,6 +55,8 @@ t_list* listaExecute;
 t_list* listaBlocked;
 t_list* listaExit;
 
+t_list* lista_mensajes;
+
 char** POSICIONES_ENTRENADORES;
 char** POKEMON_ENTRENADORES;
 char** OBJETIVOS_ENTRENADORES;

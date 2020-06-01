@@ -8,11 +8,17 @@ void inicializar_archivos(){
 }
 
 
+static char* comprobar_proceso(char *proceso){
+
+	if(string_equals_ignore_case(proceso, "SUSCRIPTOR") == 1)
+		return "broker";
+	return proceso;
+}
+
+
 void obtener_direcciones_envio(char* proceso){
 
 	proceso = comprobar_proceso(proceso);
-
-	printf("%s\n",proceso);
 
 	char* ip_key = obtener_key("ip", proceso);
 	char* puerto_key = obtener_key("puerto", proceso);
@@ -43,7 +49,7 @@ void enviar_mensaje(t_paquete* paquete, int socket_cliente){
 }
 
 
-void modo_suscriptor(int conexion){
+static void modo_suscriptor(int conexion){
 
 	int cod_op, size, id;
 	void*datos;
@@ -54,6 +60,7 @@ void modo_suscriptor(int conexion){
 			continue;
 		}
 		switch(cod_op){
+
 			case CONFIRMACION:
 				recv(conexion, &id, sizeof(uint32_t), 0);
 
@@ -73,7 +80,7 @@ void modo_suscriptor(int conexion){
 }
 
 
-void modo_emisor(int conexion){
+static void modo_emisor(int conexion){
 
 	int cod_op, id;
 
@@ -84,11 +91,14 @@ void modo_emisor(int conexion){
 }
 
 
-char* comprobar_proceso(char *proceso){
+void esperando_respuestas(int socket, char* modo){
 
-	if(string_equals_ignore_case(proceso, "SUSCRIPTOR") == 1)
-		return "broker";
-	return proceso;
+	if(string_equals_ignore_case(modo, "SUSCRIPTOR") == 1)
+			modo_suscriptor(socket);
+		modo_emisor(socket);
 }
+
+
+
 
 
