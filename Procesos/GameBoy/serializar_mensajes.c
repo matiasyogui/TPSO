@@ -51,7 +51,7 @@ void* armar_mensaje_broker(int codigo_operacion, char*datos[], int* size){
 
 		case CAUGHT_POKEMON:
 
-			return armar_mensaje_id(codigo_operacion, atoi(datos[0]), datos+1, &stream_appeared_pokemon, size);
+			return armar_mensaje_id(codigo_operacion, atoi(datos[0]), datos+1, &stream_caught_pokemon, size);
 
 		default:
 			printf("No es posible enviar este tipo de mensaje\n");
@@ -166,7 +166,7 @@ void* mensaje_suscripcion(int cod_op, char* datos[], int *size){
 	memcpy(stream + offset, size, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	memcpy(stream + offset, stream, *size);
+	memcpy(stream + offset, mensaje, *size);
 	offset += *size;
 
 	*size = offset;

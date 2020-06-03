@@ -11,6 +11,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #include <cosas_comunes.h>
 
@@ -26,17 +27,17 @@ void server_client(int* socket);
 void process_request(int cliente_fd, int cod_op);
 
 t_buffer* recibir_mensaje(int socket_cliente);
+t_mensaje* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo);
 
-
-void tratar_suscriptor(int socket, t_buffer* mensaje);
+void* tratar_suscriptor(int socket);
 int obtener_cod_op(t_buffer* buffer, int* tiempo);
 
 
 pthread_t thread_mensajes;
 pthread_t thread_envio_suscriptores;
 
-void tratar_mensaje(int socket, int cod_op, t_buffer* mensaje);
-void enviar_confirmacion(int socket, int id);
+void* tratar_mensaje(t_mensaje* mensaje, int socket);
+void enviar_confirmacion(int socket, int mensaje);
 
 
 void enviar_mensaje_suscriptores(t_mensaje* mensaje);

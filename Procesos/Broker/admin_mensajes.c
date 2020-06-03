@@ -36,29 +36,31 @@ void agregar_elemento(t_list* lista, int index, void* data){
 
 	t_list* sub_lista = list_get(lista, index);
 
-	pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[index]);
-
 	list_add(sub_lista, data);
-
-	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[index]);
 }
+
 
 
 ///////////////////////// FUNCIONES LISTA MENSAJES /////////////////////////
 
 
-t_mensaje* nodo_mensaje(int cod_op, t_buffer* buffer){
+t_mensaje* nodo_mensaje(int cod_op, int id_correlativo, t_buffer* mensaje){
 
 	t_mensaje* nodo_mensaje = malloc(sizeof( t_mensaje ));
 
 	nodo_mensaje -> id = obtener_id();
+	nodo_mensaje -> id_correlativo = id_correlativo;
 	nodo_mensaje -> cod_op = cod_op;
-	nodo_mensaje -> mensaje_recibido = buffer;
+	nodo_mensaje -> mensaje = mensaje;
+
 	nodo_mensaje -> subs_envie_msg = list_create();
 	pthread_mutex_init(&(nodo_mensaje->mutex), NULL);
 
 	return nodo_mensaje;
 }
+
+
+
 
 t_suscriptor* nodo_suscriptor(int socket){
 
@@ -74,11 +76,11 @@ t_suscriptor* nodo_suscriptor(int socket){
 ///////////////////////// FUNCIONES PARA ELIMINAR LAS LISTAS /////////////////////////
 
 //TODO
-void borrar_mensaje(void* mensaje){
+void borrar_mensaje(void* nodo_mensaje){
 
-	t_mensaje* aux = mensaje;
-	free(aux->mensaje_recibido->stream);
-	free(aux->mensaje_recibido);
+	t_mensaje* aux = nodo_mensaje;
+	free(aux->mensaje->stream);
+	free(aux->mensaje);
 	list_destroy(aux->subs_envie_msg);
 	free(aux);
 }
@@ -132,8 +134,9 @@ void informe_lista_mensajes(void){
 
 			t_mensaje* mensaje = list_get(list_tipo_mensaje, i);
 
-			printf("    | Id mensaje = %d, Subs que envie mensaje = %d\n",
+			printf("    | Id mensaje = %d, size_mensaje = %d, Subs que envie mensaje = %d\n",
 					mensaje->id,
+					mensaje->mensaje->size,
 					mensaje->subs_envie_msg->elements_count);
 		}
 

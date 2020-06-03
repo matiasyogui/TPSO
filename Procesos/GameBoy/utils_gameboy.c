@@ -44,8 +44,8 @@ void enviar_mensaje(void* mensaje, int bytes_enviar, int socket_cliente){
 
 static void modo_suscriptor(int conexion){
 
-	int cod_op, size, id;
-	void*datos;
+	int cod_op, size, id_mensaje, estado;
+	void* datos;
 
 	while(1){
 		if(recv(conexion, &cod_op, sizeof(uint32_t), 0 ) < 0){
@@ -55,18 +55,67 @@ static void modo_suscriptor(int conexion){
 		switch(cod_op){
 
 			case CONFIRMACION:
-				recv(conexion, &id, sizeof(uint32_t), 0);
+				recv(conexion, &estado, sizeof(uint32_t), 0);
 
-				printf("[CONFIRMACION DE SUSCRIPCION]cod_op = %d, mi id de suscriptor= %d \n", cod_op, id);
+				printf("[CONFIRMACION DE SUSCRIPCION]cod_op = %d, estado= %d \n", cod_op, estado);
 				break;
 
-			case NEW_POKEMON...LOCALIZED_POKEMON:
-				recv(conexion, &id, sizeof(uint32_t), 0);
+			case NEW_POKEMON:
+
+				recv(conexion, &id_mensaje, sizeof(uint32_t), 0);
 				recv(conexion, &size, sizeof(uint32_t), 0);
 				datos = malloc(size);
 				recv(conexion, datos, size, 0);
 
-				printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id correlativo = %d, size mensaje = %d \n", cod_op, id, size);
+				printf("[MENSAJE DEL BROKER]cod_op = %d, id_mensaje = %d, size mensaje = %d \n", cod_op, id_mensaje, size);
+				break;
+
+			case GET_POKEMON:
+
+				recv(conexion, &id_mensaje, sizeof(uint32_t), 0);
+				recv(conexion, &size, sizeof(uint32_t), 0);
+				datos = malloc(size);
+				recv(conexion, datos, size, 0);
+
+				printf("[MENSAJE DEL BROKER]cod_op = %d, id_mensaje = %d, size mensaje = %d \n", cod_op, id_mensaje, size);
+				break;
+
+			case APPEARED_POKEMON:
+
+				recv(conexion, &id_mensaje, sizeof(uint32_t), 0);
+				recv(conexion, &size, sizeof(uint32_t), 0);
+				datos = malloc(size);
+				recv(conexion, datos, size, 0);
+
+				printf("[MENSAJE DEL BROKER]cod_op = %d, id_mensaje = %d, size mensaje = %d \n", cod_op, id_mensaje, size);
+				break;
+
+			case CATCH_POKEMON:
+
+				recv(conexion, &id_mensaje, sizeof(uint32_t), 0);
+				recv(conexion, &size, sizeof(uint32_t), 0);
+				datos = malloc(size);
+				recv(conexion, datos, size, 0);
+
+				printf("[MENSAJE DEL BROKER]cod_op = %d, id_mensaje = %d, size mensaje = %d \n", cod_op, id_mensaje, size);
+
+				break;
+
+			case CAUGHT_POKEMON:
+
+				recv(conexion, &id_mensaje, sizeof(uint32_t), 0);
+				recv(conexion, &size, sizeof(uint32_t), 0);
+				datos = malloc(size);
+				recv(conexion, datos, size, 0);
+
+				printf("[MENSAJE DEL BROKER]cod_op = %d, id_mensaje = %d, size mensaje = %d \n", cod_op, id_mensaje, size);
+
+				break;
+
+			case LOCALIZED_POKEMON:
+
+				// aun no definido
+
 				break;
 			}
 	}

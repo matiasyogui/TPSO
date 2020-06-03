@@ -81,21 +81,72 @@ void server_client(int* p_socket){
 
 void process_request(int cliente_fd, int cod_op){
 
-	t_buffer* mensaje = recibir_mensaje(cliente_fd);
+	t_mensaje* mensaje;
 
 	switch(cod_op){
 
-		case NEW_POKEMON...LOCALIZED_POKEMON:
+		case NEW_POKEMON:
 
-			tratar_mensaje(cliente_fd, cod_op, mensaje);
+			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, false)) == NULL)
+				break;
+
+			tratar_mensaje(mensaje, cliente_fd);
 
 			close(cliente_fd);
 
 			break;
 
+		case GET_POKEMON:
+
+			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, false)) == NULL)
+				break;
+
+			tratar_mensaje(mensaje, cliente_fd);
+
+			break;
+
+		case APPEARED_POKEMON:
+
+			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, true)) == NULL)
+				break;
+
+			tratar_mensaje(mensaje, cliente_fd);
+
+			break;
+
+		case CATCH_POKEMON:
+
+			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, false)) == NULL)
+				break;
+
+			tratar_mensaje(mensaje, cliente_fd);
+
+			break;
+
+		case CAUGHT_POKEMON:
+
+			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, true)) == NULL)
+				break;
+			tratar_mensaje(mensaje, cliente_fd);
+
+			break;
+
+		case LOCALIZED_POKEMON:
+
+			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, true)) == NULL)
+				break;
+
+			tratar_mensaje(mensaje, cliente_fd);
+
+			break;
+
         case SUSCRIPTOR:
 
-        	tratar_suscriptor(cliente_fd, mensaje);
+        	tratar_suscriptor(cliente_fd);
+
+        	break;
+
+        case CONFIRMACION:
 
         	break;
 
@@ -112,45 +163,41 @@ void process_request(int cliente_fd, int cod_op){
 }
 
 
-t_buffer* recibir_mensaje(int cliente_fd){
+void* tratar_mensaje(t_mensaje* mensaje, int socket){
 
-	t_buffer* buffer = malloc(sizeof(t_buffer));
+	pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[mensaje->cod_op]);
 
-	recv(cliente_fd, &(buffer->size), sizeof(uint32_t), 0);
+	agregar_elemento(LISTA_MENSAJES, mensaje->cod_op, mensaje);
 
-	buffer->stream = malloc(buffer->size);
-
-	recv(cliente_fd, buffer->stream, buffer->size, 0);
-
-	return buffer;
-}
-
-void tratar_mensaje(int socket, int cod_op, t_buffer* mensaje){
-
-	t_mensaje* mensaje_guardar = nodo_mensaje(cod_op, mensaje);
-
-	agregar_elemento(LISTA_MENSAJES, mensaje_guardar->cod_op, mensaje_guardar);
+	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[mensaje->cod_op]);
 
 	informe_lista_mensajes();
 
-	enviar_confirmacion(socket, mensaje_guardar->id);
+	enviar_confirmacion(socket, mensaje->id);
 
-	printf("mensaje %d recibido cod_op = %d\n", mensaje_guardar->id, cod_op);
+	close(socket);
 
-	enviar_mensaje_suscriptores(mensaje_guardar);
+	enviar_mensaje_suscriptores(mensaje);
+
+	return EXIT_SUCCESS;
 }
 
 
+void* tratar_suscriptor(int socket){
 
-void tratar_suscriptor(int socket, t_buffer* mensaje){
+	t_buffer* mensaje;
 
-	int tiempo, cod_op = obtener_cod_op(mensaje, &tiempo);
+	if((mensaje = recibir_mensaje(socket)) == NULL){
+		enviar_confirmacion(socket, false);
+		return NULL;
+	}
+	int tiempo;
+	int cod_op = obtener_cod_op(mensaje, &tiempo);
 
 	t_suscriptor* suscriptor = nodo_suscriptor(socket);
 
-	enviar_confirmacion(suscriptor->socket, suscriptor->id);
+	enviar_confirmacion(suscriptor->socket, true);
 
-	//TODO: EXPLORAR CASOS EN LOS QUE NO DEBEMOS AGREGAR EL SUSCRIPTRO A LA LISTA
 	pthread_mutex_lock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
 
 		agregar_elemento(LISTA_SUBS, cod_op, suscriptor);
@@ -158,154 +205,41 @@ void tratar_suscriptor(int socket, t_buffer* mensaje){
 	pthread_mutex_unlock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
 
 	enviar_mensajes_suscriptor(suscriptor, cod_op);
+
+	return EXIT_SUCCESS;
 }
 
+void leer_new_pokemon(int cliente_fd){
 
-
-void enviar_mensajes_suscriptor(t_suscriptor* suscriptor, int cod_op){
-
-	pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
-
-		t_list* mensajes_duplicados = list_duplicate(list_get(LISTA_MENSAJES, cod_op));
-
-	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
-
-	for(int i = 0; i< list_size(mensajes_duplicados); i++){
-		int size = 0;
-		t_mensaje* mensaje = list_get(mensajes_duplicados, i);
-		void* stream_enviar = serializar_mensaje2(mensaje, &size);
-
-		if(send(suscriptor -> socket, stream_enviar, size, 0)<0){
-			perror("fallo send");
-			continue;
-		}
-		pthread_mutex_lock(&(mensaje->mutex));
-		list_add(mensaje->subs_envie_msg, suscriptor);
-		free(stream_enviar);
-	}
-	list_destroy(mensajes_duplicados);
-}
-
-
-
-
-
-
-void enviar_mensaje_suscriptores(t_mensaje* mensaje){
-
-	int size;
-	void* stream_enviar = serializar_mensaje2(mensaje, &size);
-
-	pthread_mutex_lock(&MUTEX_SUBLISTAS_SUSCRIPTORES[mensaje->cod_op]);
-
-		t_list* lista_subs = list_duplicate( list_get(LISTA_SUBS, mensaje->cod_op) );
-
-	pthread_mutex_unlock(&MUTEX_SUBLISTAS_SUSCRIPTORES[mensaje->cod_op]);
-
-	for(int i = 0; i < list_size(lista_subs); i++){
-
-		t_suscriptor* suscriptor = list_get(lista_subs, i);
-
-		if( send(suscriptor->socket, stream_enviar, size, MSG_NOSIGNAL) < 0){
-			perror("[envio_recepcion.c] FALLO SEND");
-			continue;
-		}
-		// en que momento recibimos la confirmacion
-		pthread_mutex_lock(&(mensaje->mutex));
-
-		list_add(mensaje->subs_envie_msg, suscriptor);
-
-		pthread_mutex_unlock(&(mensaje->mutex));
-	}
-	list_destroy(lista_subs);
-	free(stream_enviar);
-}
-
-
-void enviar_confirmacion(int socket, int id){
-
-	void* mensaje_confirmacion = malloc( 2 * sizeof(int));
-	uint32_t cod_op = CONFIRMACION;
-
-	int offset = 0;
-
-	memcpy(mensaje_confirmacion + offset, &(cod_op), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(mensaje_confirmacion + offset, &id, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	if(send(socket, mensaje_confirmacion, offset, MSG_NOSIGNAL) < 0)
-		perror("[envio_recepcion.c]FALLO SEND");
-
-	free(mensaje_confirmacion);
-}
-
-
-void* serializar_mensaje2(t_mensaje* mensaje, int* size){
-
-	void* stream = malloc(3 * sizeof(uint32_t) + mensaje->mensaje_recibido->size);
-
-	int offset = 0;
-
-	memcpy(stream + offset, &(mensaje->cod_op), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(stream + offset, &(mensaje->id), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(stream + offset, &(mensaje->mensaje_recibido->size), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(stream + offset, mensaje->mensaje_recibido->stream, mensaje->mensaje_recibido->size);
-	offset += mensaje->mensaje_recibido->size;
-
-	*size = offset;
-
-	return stream;
-}
-
-
-int obtener_cod_op(t_buffer* buffer, int* tiempo){
-
-	int cod_op, offset = 0;
-
-	memcpy(&cod_op, buffer->stream, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-	printf("cod_op del sub = %d\n", cod_op);
-
-	memcpy(tiempo, buffer->stream + offset, sizeof(uint32_t));
-
-	free(buffer->stream);
-	free(buffer);
-	return cod_op;
-}
-
-
-void leer_mensaje_newPokemon(t_buffer *mensaje){
 	char* pokemon;
-	int name_size, posx, posy, cantidad;
+	int size, posx, posy, cantidad;
+	recv(cliente_fd, &size, sizeof(uint32_t), 0);
+	recv(cliente_fd, &size, sizeof(uint32_t), 0);
+	pokemon = malloc(sizeof(size));
+	recv(cliente_fd, pokemon, size, 0);
+	recv(cliente_fd, &posx, sizeof(uint32_t), 0);
+	recv(cliente_fd, &posy, sizeof(uint32_t), 0);
+	recv(cliente_fd, &cantidad, sizeof(uint32_t), 0);
+
+	printf("pokemon = %s, posx = %d, posy = %d, cantidad = %d\n", pokemon, posx, posy, cantidad);
+}
+
+
+void leer_suscripcion(int cliente_fd){
+	uint32_t size, cod_op, tiempo;
+
+	recv(cliente_fd, &size, sizeof(uint32_t), 0);
+
+	void* stream = malloc(size);
+	recv(cliente_fd, stream, size, 0);
 
 	int offset = 0;
-
-	memcpy(&name_size, mensaje->stream + offset, sizeof(uint32_t));
+	memcpy(&cod_op, stream + offset, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+	memcpy(&tiempo, stream + offset, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	pokemon = malloc(name_size);
-	memcpy(pokemon, mensaje->stream + offset, name_size);
-	offset += name_size;
-
-	memcpy(&posx, mensaje->stream + offset, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(&posy, mensaje->stream + offset, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(&cantidad, mensaje->stream + offset, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	printf("buffer_size = %d, pokemon = %s, posx = %d, posy = %d, cantidad = %d\n",
-			mensaje->size, pokemon, posx, posy, cantidad);
-
-	free(pokemon);
+	printf("size = %d, cod_op = %d, tiempo = %d\n", size, cod_op, tiempo);
 }
+
+

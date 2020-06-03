@@ -18,7 +18,7 @@ void agregar_elemento(t_list* lista, int index, void* data);
 
 
 ///////////////////////// FUNCIONES LISTA MENSAJES /////////////////////////
-t_mensaje* nodo_mensaje(int cod_op, t_buffer* buffer);
+t_mensaje* nodo_mensaje(int cod_op, int id_correlativo, t_buffer* mensaje);
 t_suscriptor* nodo_suscriptor(int socket);
 
 

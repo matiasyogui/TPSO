@@ -2,6 +2,7 @@
 #define VARIABLES_GLOBALES_H_
 
 #include <commons/collections/list.h>
+#include <stdbool.h>
 
 ///////////////////////////broker.h////////////////////////
 char* IP_SERVER;
@@ -34,12 +35,19 @@ typedef struct{
 typedef struct{
 
 	int id;
+	int id_correlativo;
 	int cod_op;
-	t_buffer* mensaje_recibido;
+
+	t_buffer* mensaje;
+
 	t_list* subs_envie_msg;  // tratar con las confirmacions de los suscriptores que recibieron el mensaje
 	pthread_mutex_t mutex;
 
 }t_mensaje;
+
+
+
+
 
 
 /////////////////////////envio_recepcion.h///////////////////////////////
