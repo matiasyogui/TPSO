@@ -174,17 +174,26 @@ void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i){
    	entrenador->posicion->posx = atoi(strtok(POSICIONES_ENTRENADORES[i],"|"));
    	entrenador->posicion->posy = atoi(strtok(NULL,"|"));
    	entrenador->objetivo = string_split(OBJETIVOS_ENTRENADORES[i], "|");
-   	entrenador->objetivo = malloc(sizeof(string_split(OBJETIVOS_ENTRENADORES[i],"|")));
    	entrenador->pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
 
     entrenador->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
    	//entrenadores[i]->mensaje = mensajeBroker;
+
+    //entrenador->idCorrelativos = list_create();
 
    	entrenador->semaforo = malloc(sizeof(pthread_mutex_t));
    	pthread_mutex_init(entrenador->semaforo, NULL);
    	hilo = malloc(sizeof(pthread_t));
    	pthread_mutex_lock(entrenador->semaforo);
    	pthread_create(hilo, NULL, (void*) Producer, entrenador);
+
+   	for(int j = 0; j < cant_elementos(entrenador -> objetivo); j++){
+   		list_add(objetivoGlobal, entrenador->objetivo[j]);
+   	}
+
+   	for(int jj = 0; jj < cant_elementos(entrenador -> pokemones); jj++){
+   		list_add(pokemonYaAtrapado, entrenador -> pokemones[jj]);
+   	}
 
    	list_add(listaBlocked, entrenador);
 }

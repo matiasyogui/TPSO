@@ -8,45 +8,6 @@
 
 pthread_mutex_t m;
 
-void element_destroyer(void* elemento){
-	t_entrenador* ent = (t_entrenador*) elemento;
-	free(ent->objetivo);
-	free(ent->pokemones);
-	free(ent->posicion);
-	free(ent->semaforo);
-}
-
-/*void algortimoCercano(void* elemento, int posicionPokemonx, int posicionPokemony){
-	t_entrenador* ent = (t_entrenador*) elemento;
-	ent -> cercania = ((ent -> posicion -> posx) - posicionPokemonx) + ((ent -> posicion -> posy) - posicionPokemony);
-}
-
-t_entrenador elegirEntrenadorXCercania(int posx, int posy){
-	void _algoritmoCercano(void* elemento){
-		algoritmoCercano(elemento, posx, posy);
-	}
-
-	t_list* listaFiltrada = list_map(listaBlocked, _algoritmoCercano);
-}
-*/
-void inicializar_listas(){
-
-	listaReady = list_create();
-	listaExecute = list_create();
-	listaBlocked = list_create();
-	listaExit = list_create();
-
-	lista_mensajes = list_create();
-}
-
-void eliminar_listas(){
-
-	list_destroy_and_destroy_elements(listaReady, free);
-	list_destroy_and_destroy_elements(listaExecute, free);
-	list_destroy_and_destroy_elements(listaBlocked, free);
-	list_destroy_and_destroy_elements(listaExit, free);
-}
-
 void enviar_mensaje(t_paquete* paquete, int socket_cliente){
 
 	int bytes_enviar;
@@ -61,6 +22,87 @@ void enviar_mensaje(t_paquete* paquete, int socket_cliente){
 	free(paquete->buffer);
 	free(paquete);
 	free(mensaje);
+}
+
+bool igualdadListas(void* elemento){
+	char* pokemon = (char*) elemento;
+	bool seEncontro = false;
+
+	int j = 0;
+	while(!seEncontro && j < pokemonYaAtrapado->elements_count){
+		if((char*) list_get(pokemonYaAtrapado, j) == pokemon){
+			list_remove(pokemonYaAtrapado, j);
+			seEncontro = true;
+		}
+	j++;
+	}
+
+	return seEncontro;
+}
+
+void enviarGet(void* elemento){
+	char* pokemon = (char*) elemento;
+
+	int socket = crear_conexion("127.0.0.1", "4444");
+
+	char *datos[] = {"get_pokemon", pokemon};
+
+	t_paquete* paquete_enviar = armar_paquete2(datos);
+
+	enviar_mensaje(paquete_enviar, socket);
+}
+
+//TODO: FALTAN QUE NO SE REPITAN POKEMONES.
+void pedir_pokemones(){
+	t_list* pokemonesAPedir = list_create();
+
+	pokemonesAPedir = list_filter(objetivoGlobal, igualdadListas);
+
+	list_iterate(pokemonesAPedir, enviarGet);
+}
+
+void element_destroyer(void* elemento){
+	t_entrenador* ent = (t_entrenador*) elemento;
+	free(ent->objetivo);
+	free(ent->pokemones);
+	free(ent->posicion);
+	free(ent->semaforo);
+}
+
+/*
+void algortimoCercano(void* elemento, int posicionPokemonx, int posicionPokemony){
+	t_entrenador* ent = (t_entrenador*) elemento;
+	ent -> cercania = ((ent -> posicion -> posx) - posicionPokemonx) + ((ent -> posicion -> posy) - posicionPokemony);
+}
+
+t_entrenador elegirEntrenadorXCercania(int posx, int posy){
+	void _algoritmoCercano(void* elemento){
+		algoritmoCercano(elemento, posx, posy);
+	}
+
+	t_list* listaFiltrada = list_map(listaBlocked, _algoritmoCercano);
+}
+*/
+
+void inicializar_listas(){
+
+	listaReady = list_create();
+	listaExecute = list_create();
+	listaBlocked = list_create();
+	listaExit = list_create();
+
+	lista_mensajes = list_create();
+
+	objetivoGlobal = list_create();
+	pokemonYaAtrapado = list_create();
+}
+
+void eliminar_listas(){
+
+	list_destroy_and_destroy_elements(listaReady, free);
+	list_destroy_and_destroy_elements(listaExecute, free);
+	list_destroy_and_destroy_elements(listaBlocked, free);
+	list_destroy_and_destroy_elements(listaExit, free);
 }
 
 
@@ -90,18 +132,25 @@ void suscribirse(char* cola){
 				printf("[CONFIRMACION DE SUSCRIPCION]cod_op = %d, mi id de suscriptor= %d \n", cod_op, id);
 				break;
 
-			case NEW_POKEMON...LOCALIZED_POKEMON:
+			case APPEARED_POKEMON:
+			case CAUGHT_POKEMON:
+			case LOCALIZED_POKEMON:
 				recv(socket, &id, sizeof(uint32_t), 0);
 				recv(socket, &size, sizeof(uint32_t), 0);
 				mensaje = malloc(size);
 				recv(socket, datos, size, 0);
 
-				t_buffer* buffer = malloc(sizeof(t_buffer));
-				buffer -> size = size;
-				buffer -> stream = datos;
+				t_mensajeTeam* mensajeAGuardar = malloc(sizeof(t_mensajeTeam));
+				mensajeAGuardar -> buffer = malloc(sizeof(t_buffer));
+				mensajeAGuardar -> buffer -> size = size;
+				mensajeAGuardar -> buffer -> stream = malloc(size);
+				mensajeAGuardar -> buffer -> stream = datos;
+
+				mensajeAGuardar -> id = id;
+				mensajeAGuardar -> cod_op = cod_op;
 
 				pthread_mutex_lock(&m);
-				list_add(lista_mensajes, buffer);
+				list_add(lista_mensajes, mensajeAGuardar);
 				printf("mensajes = %d\n", list_size(lista_mensajes));
 				pthread_mutex_unlock(&m);
 
@@ -117,13 +166,12 @@ int main(){
 	inicializar_listas();
 
 	pthread_t tid;
-	pthread_create(&tid, NULL, (void*)suscribirse, "new_pokemon");
-	pthread_create(&tid, NULL, (void*)suscribirse, "get_pokemon");
 	pthread_create(&tid, NULL, (void*)suscribirse, "appeared_pokemon");
+	pthread_create(&tid, NULL, (void*)suscribirse, "caught_pokemon");
+	pthread_create(&tid, NULL, (void*)suscribirse, "localized_pokemon");
 
-	thread_create(&tid, NULL, (void*)iniciar_servidor, NULL);
-
-
+	pthread_create(&tid, NULL, (void*)iniciar_servidor, NULL);
+/*
 	//LEO ARCHIVO DE CONFIGURACION
 	leer_archivo_configuracion();
 
@@ -133,16 +181,12 @@ int main(){
 	t_entrenador* entrenadores[cantEntrenadores];
 	pthread_t* hilos[cantEntrenadores];
 
-	//TEMPORAL hasta poder mandar mensajes entre procesos
-	//char* mensajeConsola = string_new();
-	//string_append(&mensajeConsola, argv[1]);
-
-
-
 	//setteo entrenadores y asigno hilo a c/entrenador
 	for(i=0;i<cantEntrenadores;i++){
 		setteoEntrenador(entrenadores[i], hilos[i], i);
 	}
+
+	pedir_pokemones();
 
 	pthread_mutex_lock(&semPlanificador);
 
@@ -158,7 +202,7 @@ int main(){
 		free(entrenadores[i]-> pokemones);
 		free(entrenadores[i]);
 	}
-
+*/
 	return EXIT_SUCCESS;
 }
 

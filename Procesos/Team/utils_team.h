@@ -42,7 +42,15 @@ typedef struct{
 	char* algoritmo_de_planificacion;
 	char** objetivo;
 	char** pokemones;
+	//t_list* idCorrelativos;
 }t_entrenador;
+
+typedef struct{
+	int id;
+	int cod_op;
+	t_buffer* buffer;
+}t_mensajeTeam;
+
 
 pthread_t thread;
 pthread_mutex_t mutex;
@@ -56,6 +64,9 @@ t_list* listaBlocked;
 t_list* listaExit;
 
 t_list* lista_mensajes;
+
+t_list* objetivoGlobal;
+t_list* pokemonYaAtrapado;
 
 char** POSICIONES_ENTRENADORES;
 char** POKEMON_ENTRENADORES;
