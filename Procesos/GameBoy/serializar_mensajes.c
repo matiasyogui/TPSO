@@ -1,36 +1,27 @@
 #include "serializar_mensajes.h"
 
+void* armar_mensaje_enviar(char* datos[], int* size){
 
-t_paquete* armar_paquete2(char* datos[]){
+	if(string_equals_ignore_case(datos[0], "suscriptor") == 1)
+		return mensaje_suscripcion(codigo_operacion(datos[0]), datos + 1, size);
 
-	t_paquete* paquete = malloc(sizeof(t_paquete));
-
-	if(string_equals_ignore_case(datos[0], "suscriptor") == 1){
-
-		paquete->codigo_operacion = tipo_mensaje(datos[0]);
-		paquete->buffer = armar_buffer(&datos[1], &stream_suscriptor);
-		return paquete;
-	}
-
-	paquete->codigo_operacion = tipo_mensaje(datos[1]);
-	paquete->buffer = armar_buffer_proceso(datos[0], paquete->codigo_operacion, &datos[2]);
-	return paquete;
+	return armar_mensaje_proceso(datos[0], codigo_operacion(datos[1]), datos + 2, size);
 }
 
 
-t_buffer* armar_buffer_proceso(char* proceso, int tipo_mensaje, char* datos[]){
+void* armar_mensaje_proceso(char* proceso, int codigo_operacion, char* datos[],int* size){
 
 	if(string_equals_ignore_case(proceso, "broker") == 1)
 
-		return armar_buffer_broker(tipo_mensaje, datos);
+		return armar_mensaje_broker(codigo_operacion, datos, size);
 
 	if(string_equals_ignore_case(proceso, "team") == 1)
 
-		return armar_buffer_team(tipo_mensaje, datos);
+		return armar_mensaje_team(codigo_operacion, datos, size);
 
 	if(string_equals_ignore_case(proceso, "gamecard") == 1)
 
-		return armar_buffer_gamecard(tipo_mensaje, datos);
+		return armar_mensaje_gamecard(codigo_operacion, datos, size);
 
 	printf("Proceso no reconocido\n");
 	exit(-1);
@@ -38,29 +29,29 @@ t_buffer* armar_buffer_proceso(char* proceso, int tipo_mensaje, char* datos[]){
 
 
 //BROKER
-t_buffer* armar_buffer_broker(int tipo_mensaje, char*datos[]){
+void* armar_mensaje_broker(int codigo_operacion, char*datos[], int* size){
 
-	switch(tipo_mensaje){
+	switch(codigo_operacion){
 
 		case NEW_POKEMON:
 
-			return armar_buffer(datos, &stream_new_pokemon);
+			return armar_mensaje(codigo_operacion, datos, &stream_new_pokemon, size);
 
 		case GET_POKEMON:
 
-			return armar_buffer(datos, &stream_get_pokemon);
+			return armar_mensaje(codigo_operacion, datos, &stream_get_pokemon, size);
 
 		case APPEARED_POKEMON:
 
-			return armar_buffer(datos, &stream_appeared_pokemon_id);
+			return armar_mensaje_id(codigo_operacion, atoi(datos[3]), datos, &stream_appeared_pokemon, size);
 
 		case CATCH_POKEMON:
 
-			return armar_buffer(datos, &stream_catch_pokemon);
+			return armar_mensaje(codigo_operacion, datos, &stream_catch_pokemon, size);
 
 		case CAUGHT_POKEMON:
 
-			return armar_buffer(datos, &stream_caught_pokemon_id);
+			return armar_mensaje_id(codigo_operacion, atoi(datos[0]), datos+1, &stream_appeared_pokemon, size);
 
 		default:
 			printf("No es posible enviar este tipo de mensaje\n");
@@ -68,14 +59,15 @@ t_buffer* armar_buffer_broker(int tipo_mensaje, char*datos[]){
 	}
 }
 
-//TEAM
-t_buffer* armar_buffer_team(int tipo_mensaje, char* datos[]){
 
-	switch(tipo_mensaje){
+//TEAM
+void* armar_mensaje_team(int codigo_operacion, char* datos[], int* size){
+
+	switch(codigo_operacion){
 
 		case APPEARED_POKEMON:
 
-			return armar_buffer(datos, &stream_appeared_pokemon);
+			return armar_mensaje(codigo_operacion, datos, &stream_appeared_pokemon, size);
 
 		default:
 			printf("No es posible enviar este tipo de mensaje\n");
@@ -83,22 +75,23 @@ t_buffer* armar_buffer_team(int tipo_mensaje, char* datos[]){
 	}
 }
 
-//GAMECARD
-t_buffer* armar_buffer_gamecard(int tipo_mensaje, char* datos[]){
 
-	switch(tipo_mensaje){
+//GAMECARD
+void* armar_mensaje_gamecard(int codigo_operacion, char* datos[], int* size){
+
+	switch(codigo_operacion){
 
 		case NEW_POKEMON:
 
-			return armar_buffer(datos, &stream_new_pokemon_id);
+			return armar_mensaje_id(codigo_operacion, atoi(datos[4]), datos, &stream_new_pokemon, size);
 
 		case CATCH_POKEMON:
 
-			return armar_buffer(datos, &stream_catch_pokemon_id);
+			return armar_mensaje_id(codigo_operacion, atoi(datos[3]), datos, &stream_catch_pokemon, size);
 
 		case GET_POKEMON:
 
-			return armar_buffer(datos, &stream_get_pokemon_id);
+			return armar_mensaje_id(codigo_operacion, atoi(datos[1]), datos, &stream_get_pokemon, size);
 
 		default:
 			printf("No es posible enviar este tipo de mensaje\n");
@@ -107,44 +100,87 @@ t_buffer* armar_buffer_gamecard(int tipo_mensaje, char* datos[]){
 }
 
 
+////////////////////////////////////////////////////////////////////////////
 
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+void* armar_mensaje(int cod_op, char* datos[], void*(armar_stream)(char*[], int*), int* size){
 
+	void* mensaje = armar_stream(datos, size);
 
-t_buffer* armar_buffer(char* datos[], void*(armar_stream)(char*[], int*)){
-
-	t_buffer* buffer = malloc(sizeof(t_buffer));
-	buffer->stream = armar_stream(datos, (int*)&(buffer->size));
-
-	return buffer;
-}
-
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-void* add_id_stream(uint32_t id, void* stream, int* bytes){
-
-	void* new_stream = malloc(sizeof(uint32_t) + *bytes);
+	void* stream = malloc( 2 * sizeof(uint32_t) + *size);
 
 	int offset = 0;
 
-	memcpy(new_stream + offset, &id, sizeof(uint32_t));
+	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	memcpy(new_stream + offset, stream, *bytes);
-	offset += *bytes;
+	memcpy(stream + offset, size, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
 
-	*bytes = offset;
-	free(stream);
-	return new_stream;
+	memcpy(stream + offset, mensaje, *size);
+	offset += *size;
+
+	*size = offset;
+	free(mensaje);
+	return stream;
 }
 
 
-//NEW_POKEMON
+void* armar_mensaje_id(int cod_op, int id, char* datos[], void*(armar_stream)(char*[], int*), int* size){
 
-void* stream_new_pokemon(char* datos[], int* bytes){
+	void* mensaje = armar_stream(datos, size);
+
+	void* stream = malloc( 3 * sizeof(uint32_t) + *size);
+
+	int offset = 0;
+
+	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &id, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, size, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, mensaje, *size);
+	offset += *size;
+
+	*size = offset;
+	free(mensaje);
+	return stream;
+}
+
+
+void* mensaje_suscripcion(int cod_op, char* datos[], int *size){
+
+	void* mensaje = stream_suscripcion(datos, size);
+
+	void* stream = malloc( 2 * sizeof(uint32_t) + *size);
+
+	int offset = 0;
+
+	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, size, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, stream, *size);
+	offset += *size;
+
+	*size = offset;
+	free(mensaje);
+	return stream;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+//NEW_POKEMON
+void* stream_new_pokemon(char* datos[], int* size){
 
 	char* nombre_pokemon = datos[0];
 	uint32_t size_nombre = strlen(nombre_pokemon) + 1,
@@ -152,9 +188,9 @@ void* stream_new_pokemon(char* datos[], int* bytes){
 			posY = atoi(datos[2]),
 			cantidad = atoi(datos[3]);
 
-	*bytes = sizeof(uint32_t) + size_nombre + 3 * sizeof(uint32_t);
+	*size = sizeof(uint32_t) + size_nombre + 3 * sizeof(uint32_t);
 
-	void* stream = malloc(*bytes);
+	void* stream = malloc(*size);
 
 	int offset = 0;
 
@@ -176,27 +212,18 @@ void* stream_new_pokemon(char* datos[], int* bytes){
 	return stream;
 }
 
-void* stream_new_pokemon_id(char*datos[], int* bytes){
-
-	uint32_t id = atoi(datos[4]);
-	void * stream = stream_new_pokemon(datos, bytes);
-
-	return add_id_stream( id, stream, bytes);
-}
-
 
 //APPEARED_POKEMON
-
-void* stream_appeared_pokemon(char* datos[], int* bytes){
+void* stream_appeared_pokemon(char* datos[], int* size){
 
 	char* nombre_pokemon = datos[0];
 	uint32_t size_nombre = strlen(nombre_pokemon) + 1,
 			 posX = atoi(datos[1]),
 			 posY = atoi(datos[2]);
 
-	*bytes = sizeof(uint32_t) + size_nombre + 2 * sizeof(uint32_t);
+	*size = sizeof(uint32_t) + size_nombre + 2 * sizeof(uint32_t);
 
-	void* stream = malloc(*bytes);
+	void* stream = malloc(*size);
 
 	int offset = 0;
 
@@ -213,27 +240,18 @@ void* stream_appeared_pokemon(char* datos[], int* bytes){
 	offset += sizeof(uint32_t);
 
 	return stream;
-}
-
-void* stream_appeared_pokemon_id(char*datos[], int* bytes){
-
-	uint32_t id = atoi(datos[3]);
-	void * stream = stream_appeared_pokemon(datos, bytes);
-
-	return add_id_stream(id, stream, bytes);
 }
 
 
 //GET_POKEMON
-
-void* stream_get_pokemon(char* datos[], int* bytes){
+void* stream_get_pokemon(char* datos[], int* size){
 
 	char* nombre_pokemon = datos[0];
 	uint32_t size_nombre = strlen(nombre_pokemon) + 1;
 
-	*bytes = sizeof(uint32_t) + size_nombre;
+	*size = sizeof(uint32_t) + size_nombre;
 
-	void* stream = malloc(*bytes);
+	void* stream = malloc(*size);
 
 	int offset = 0;
 
@@ -246,26 +264,17 @@ void* stream_get_pokemon(char* datos[], int* bytes){
 	return stream;
 }
 
-void* stream_get_pokemon_id(char*datos[], int* bytes){
-
-	uint32_t id = atoi(datos[1]);
-	void * stream = stream_get_pokemon(datos, bytes);
-
-	return add_id_stream(id, stream, bytes);
-}
-
 
 //CATCH_POKEMON
-
-void* stream_catch_pokemon(char* datos[], int *bytes){
+void* stream_catch_pokemon(char* datos[], int *size){
 
 	char* nombre_pokemon = datos[0];
 	uint32_t size_nombre = strlen(nombre_pokemon) + 1,
 			 posX = atoi(datos[1]),
 			 posY = atoi(datos[2]);
 
-	*bytes =  sizeof(uint32_t) + size_nombre + 2*sizeof(uint32_t);
-	void* stream = malloc(*bytes);
+	*size =  sizeof(uint32_t) + size_nombre + 2*sizeof(uint32_t);
+	void* stream = malloc(*size);
 
 	int offset = 0;
 
@@ -284,23 +293,14 @@ void* stream_catch_pokemon(char* datos[], int *bytes){
 	return stream;
 }
 
-void* stream_catch_pokemon_id(char*datos[], int* bytes){
-
-	uint32_t id = atoi(datos[3]);
-	void * stream = stream_catch_pokemon(datos, bytes);
-
-	return add_id_stream(id, stream, bytes);
-}
-
 
 //CAUGHT_POKEMON
-
-void* stream_caught_pokemon(char* datos[], int *bytes){
+void* stream_caught_pokemon(char* datos[], int *size){
 
 	uint32_t flag = atoi(datos[0]);
 
-	*bytes = sizeof(uint32_t);
-	void* stream = malloc(*bytes);
+	*size = sizeof(uint32_t);
+	void* stream = malloc(*size);
 
 	int offset = 0;
 
@@ -310,25 +310,16 @@ void* stream_caught_pokemon(char* datos[], int *bytes){
 	return stream;
 }
 
-void* stream_caught_pokemon_id(char*datos[], int* bytes){
 
-	uint32_t id = atoi(datos[0]);
-	void * stream = stream_caught_pokemon(&datos[1], bytes);
+//MENSAJE DE SUSCRIPCION
+void* stream_suscripcion(char* datos[], int* size){
 
-	return add_id_stream(id, stream, bytes);
-}
-
-
-//SUSCRIPTOR
-
-void* stream_suscriptor(char* datos[], int* bytes){
-
-	uint32_t t_mensaje = tipo_mensaje(datos[0]),
+	uint32_t t_mensaje = codigo_operacion(datos[0]),
 			 tiempo_suscripcion = atoi(datos[1]);
 
-	*bytes = 2 * sizeof(uint32_t);
+	*size = 2 * sizeof(uint32_t);
 
-	void* stream = malloc(*bytes);
+	void* stream = malloc(*size);
 
 	int offset = 0;
 

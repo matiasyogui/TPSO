@@ -31,20 +31,13 @@ void obtener_direcciones_envio(char* proceso){
 }
 
 
-void enviar_mensaje(t_paquete* paquete, int socket_cliente){
-
-	int bytes_enviar;
-
-	void* mensaje = serializar_paquete(paquete, &bytes_enviar);
+void enviar_mensaje(void* mensaje, int bytes_enviar, int socket_cliente){
 
 	if(send(socket_cliente, mensaje, bytes_enviar, 0) < 0)
 		perror("[utils_gameboy.c] FALLO EL SEND");
 
 	log_info(LOGGER, "Se creo la conexion con el proceso IP = %s, PUERTO = %s\n", IP_SERVER, PUERTO_SERVER);
 
-	free(paquete->buffer->stream);
-	free(paquete->buffer);
-	free(paquete);
 	free(mensaje);
 }
 

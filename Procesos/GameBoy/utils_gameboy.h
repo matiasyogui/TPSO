@@ -16,7 +16,7 @@ void inicializar_archivos();
 
 void obtener_direcciones_envio(char* proceso);
 
-void enviar_mensaje(t_paquete* paquete, int conexion);
+void enviar_mensaje(void* mensaje, int bytes_enviar, int conexion);
 
 void esperando_respuestas(int socket, char* modo);
 

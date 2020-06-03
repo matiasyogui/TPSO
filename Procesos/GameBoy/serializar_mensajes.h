@@ -7,51 +7,48 @@
 #include <stdio.h>
 
 
-t_paquete* armar_paquete2(char* datos[]);
+void* armar_mensaje_enviar(char* datos[], int* size);
 
 
-t_buffer* armar_buffer_proceso(char* proceso, int tipo_mensaje, char* datos[]);
+void* armar_mensaje_proceso(char* proceso, int codigo_opreacion, char* datos[], int *size);
 
+//
+void* armar_mensaje_broker(int codigo_opreacion, char*datos[], int* size);
 
-t_buffer* armar_buffer_broker(int tipo_mensaje, char*datos[]);
+void* armar_mensaje_team(int codigo_opreacion, char* datos[], int* size);
 
-t_buffer* armar_buffer_team(int tipo_mensaje, char* datos[]);
+void* armar_mensaje_gamecard(int codigo_opreacion, char* datos[], int* size);
+//
 
-t_buffer* armar_buffer_gamecard(int tipo_mensaje, char* datos[]);
+//
+void* armar_mensaje(int cod_op, char* datos[], void*(armar_stream)(char*[], int*), int* size);
 
+void* armar_mensaje_id(int cod_op, int id, char* datos[], void*(armar_stream)(char*[], int*), int* size);
 
-t_buffer* armar_buffer(char* datos[], void* (armar_stream)(char*[], int*));
-
-
-void* add_id_stream(uint32_t id, void* stream, int* bytes);
-
+void* mensaje_suscripcion(int cod_op, char* datos[], int *size);
+//
 
 //NEW_POKEMONS
-void* stream_new_pokemon(char* datos[], int* bytes);
+void* stream_new_pokemon(char* datos[], int* size);
 
-void* stream_new_pokemon_id(char*datos[], int* bytes);
 
 //APPEARED_POKEMON
-void* stream_appeared_pokemon(char* datos[], int* bytes);
+void* stream_appeared_pokemon(char* datos[], int* size);
 
-void* stream_appeared_pokemon_id(char*datos[], int* bytes);
 
 //GET_POKEMON
-void* stream_get_pokemon(char* datos[], int* bytes);
+void* stream_get_pokemon(char* datos[], int* size);
 
-void* stream_get_pokemon_id(char*datos[], int* bytes);
 
 //CATCH_POKEMON
-void* stream_catch_pokemon(char* datos[], int *bytes);
+void* stream_catch_pokemon(char* datos[], int *size);
 
-void* stream_catch_pokemon_id(char*datos[], int* bytes);
 
 //CAUGHT_POKEMON
-void* stream_caught_pokemon(char* datos[], int *bytes);
+void* stream_caught_pokemon(char* datos[], int *size);
 
-void* stream_caught_pokemon_id(char*datos[], int* bytes);
 
 //SUSCRIPTOR
-void* stream_suscriptor(char* datos[], int* bytes);
+void* stream_suscripcion(char* datos[], int* size);
 
 #endif /* SERIALIZAR_MENSAJES_H_ */
