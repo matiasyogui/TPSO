@@ -21,7 +21,7 @@ void iniciar_servidor(void)
         	perror("fallo socket");
         	continue;
         }
-
+        SOCKET_SERVER = socket_servidor;
 
         if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1) {
         	perror("fallo bind");
@@ -39,7 +39,6 @@ void iniciar_servidor(void)
     freeaddrinfo(servinfo);
     server_team = socket_servidor;
     while(1)
-
     	esperar_cliente(socket_servidor);
 
 }

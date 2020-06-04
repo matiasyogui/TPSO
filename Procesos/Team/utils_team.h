@@ -1,22 +1,15 @@
-/*
- * utils_team.h
- *
- *  Created on: 7 may. 2020
- *      Author: utnso
- */
-
 #ifndef UTILS_TEAM_H_
 #define UTILS_TEAM_H_
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<sys/socket.h>
-#include<unistd.h>
-#include<netdb.h>
-#include<commons/log.h>
-#include<commons/collections/list.h>
-#include<string.h>
-#include<pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <commons/log.h>
+#include <commons/collections/list.h>
+#include <string.h>
+#include <pthread.h>
 #include <cosas_comunes.h>
 
 

@@ -7,12 +7,12 @@ t_paquete* armar_paquete2(char* datos[]){
 
 	if(string_equals_ignore_case(datos[0], "suscriptor") == 1){
 
-		paquete->codigo_operacion = tipo_mensaje(datos[0]);
+		paquete->codigo_operacion = codigo_operacion(datos[0]);
 		paquete->buffer = armar_buffer(&datos[1], &stream_suscriptor);
 		return paquete;
 	}
 
-	paquete->codigo_operacion = tipo_mensaje(datos[1]);
+	paquete->codigo_operacion = codigo_operacion(datos[1]);
 	paquete->buffer = armar_buffer_proceso(datos[0], paquete->codigo_operacion, &datos[2]);
 	return paquete;
 }
@@ -323,7 +323,7 @@ void* stream_caught_pokemon_id(char*datos[], int* bytes){
 
 void* stream_suscriptor(char* datos[], int* bytes){
 
-	uint32_t t_mensaje = tipo_mensaje(datos[0]),
+	uint32_t t_mensaje = codigo_operacion(datos[0]),
 			 tiempo_suscripcion = atoi(datos[1]);
 
 	*bytes = 2 * sizeof(uint32_t);

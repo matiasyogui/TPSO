@@ -10,6 +10,8 @@
 
 #include"utils_team.h"
 
+
+
 void leer_archivo_configuracion();
 void element_destroyer(void* elemento);
 

@@ -25,31 +25,71 @@ void enviar_mensaje(t_paquete* paquete, int socket_cliente){
 }
 
 bool igualdadListas(void* elemento){
-	char* pokemon = (char*) elemento;
-	bool seEncontro = false;
 
-	int j = 0;
-	while(!seEncontro && j < pokemonYaAtrapado->elements_count){
-		if((char*) list_get(pokemonYaAtrapado, j) == pokemon){
-			list_remove(pokemonYaAtrapado, j);
-			seEncontro = true;
+	for(int i = 0; i < list_size(pokemonYaAtrapado); i++){
+		if(string_equals_ignore_case((char*) list_get(pokemonYaAtrapado, i), (char*)elemento) == 1){
+			list_remove(pokemonYaAtrapado, i);
+			return false;
 		}
-	j++;
 	}
+	return true;
+}
 
-	return seEncontro;
+
+bool buscarElemento(t_list* lista, void* elemento){
+
+	for(int i= 0; i<list_size(lista); i++){
+		if( string_equals_ignore_case(list_get(lista, i), (char*)elemento) == 1)
+			return false;
+	}
+	list_add(lista, elemento);
+	return true;
+}
+
+
+t_list* listaSinRepetidos(t_list* lista){
+
+	t_list* list_aux = list_create();
+
+	bool _buscarElemento(void* elemento){
+		return buscarElemento(list_aux, elemento);
+	}
+	return list_filter(lista, _buscarElemento);
 }
 
 void enviarGet(void* elemento){
+
+	int cod_op = GET_POKEMON;
 	char* pokemon = (char*) elemento;
+	int len = strlen(pokemon) + 1;
 
+	//printf("pokemon = %s\n", pokemon);
+
+	int offset = 0;
+
+	void* stream = malloc( 2*sizeof(uint32_t) + len);
+
+	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &len, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, pokemon, len);
+	offset += len;
+
+
+	//enviamos el mensaje
 	int socket = crear_conexion("127.0.0.1", "4444");
+	if(send(socket, stream, offset, 0) < 0)
+		perror(" FALLO EL SEND");
 
-	char *datos[] = {"get_pokemon", pokemon};
 
-	t_paquete* paquete_enviar = armar_paquete2(datos);
-
-	enviar_mensaje(paquete_enviar, socket);
+	//esperamos respuesta del broker
+	int cod_op2, id_mensaje;
+	recv(socket, &cod_op2, sizeof(uint32_t), 0);
+	recv(socket, &id_mensaje, sizeof(uint32_t), 0);
+	printf("[CONFIRMACION DE RECEPCION DE MENSAJE]cod_op = %d, mi id de suscriptor= %d \n", cod_op2, id_mensaje);
 }
 
 //TODO: FALTAN QUE NO SE REPITAN POKEMONES.
@@ -58,7 +98,13 @@ void pedir_pokemones(){
 
 	pokemonesAPedir = list_filter(objetivoGlobal, igualdadListas);
 
-	list_iterate(pokemonesAPedir, enviarGet);
+	t_list* pokemonAPedirSinRepetidos = listaSinRepetidos(pokemonesAPedir);
+
+	for(int i = 0; i< list_size(pokemonAPedirSinRepetidos); i++){
+		printf("pokemon = %s\n", (char*)list_get(pokemonAPedirSinRepetidos, i));
+	}
+
+	list_iterate(pokemonAPedirSinRepetidos, enviarGet);
 }
 
 void element_destroyer(void* elemento){
@@ -116,7 +162,7 @@ void suscribirse(char* cola){
 
 	enviar_mensaje(paquete_enviar, socket);
 
-	int cod_op, id, size;
+	int cod_op, id_correlativo, size;
 	void* mensaje;
 
 	while(1){
@@ -127,26 +173,45 @@ void suscribirse(char* cola){
 		switch(cod_op){
 
 			case CONFIRMACION:
-				recv(socket, &id, sizeof(uint32_t), 0);
+				recv(socket, &id_correlativo, sizeof(uint32_t), 0);
 
-				printf("[CONFIRMACION DE SUSCRIPCION]cod_op = %d, mi id de suscriptor= %d \n", cod_op, id);
+				printf("[CONFIRMACION DE SUSCRIPCION]cod_op = %d, mi id de suscriptor= %d \n", cod_op, id_correlativo);
 				break;
 
 			case APPEARED_POKEMON:
-			case CAUGHT_POKEMON:
-			case LOCALIZED_POKEMON:
-				recv(socket, &id, sizeof(uint32_t), 0);
+
+				recv(socket, &id_correlativo, sizeof(uint32_t), 0);
 				recv(socket, &size, sizeof(uint32_t), 0);
 				mensaje = malloc(size);
-				recv(socket, datos, size, 0);
+				recv(socket, mensaje, size, 0);
+
+				printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id_correlativo = %d, size mensaje = %d \n", cod_op, id_correlativo, size);
+				break;
+
+			case CAUGHT_POKEMON:
+
+				recv(socket, &id_correlativo, sizeof(uint32_t), 0);
+				recv(socket, &size, sizeof(uint32_t), 0);
+				mensaje = malloc(size);
+				recv(socket, mensaje, size, 0);
+
+				printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id_correlativo = %d, size mensaje = %d \n", cod_op, id_correlativo, size);
+				break;
+
+			case LOCALIZED_POKEMON:
+
+				recv(socket, &id_correlativo, sizeof(uint32_t), 0);
+				recv(socket, &size, sizeof(uint32_t), 0);
+				mensaje = malloc(size);
+				recv(socket, mensaje, size, 0);
 
 				t_mensajeTeam* mensajeAGuardar = malloc(sizeof(t_mensajeTeam));
 				mensajeAGuardar -> buffer = malloc(sizeof(t_buffer));
 				mensajeAGuardar -> buffer -> size = size;
 				mensajeAGuardar -> buffer -> stream = malloc(size);
-				mensajeAGuardar -> buffer -> stream = datos;
+				mensajeAGuardar -> buffer -> stream = mensaje;
 
-				mensajeAGuardar -> id = id;
+				mensajeAGuardar -> id = id_correlativo;
 				mensajeAGuardar -> cod_op = cod_op;
 
 				pthread_mutex_lock(&m);
@@ -154,13 +219,22 @@ void suscribirse(char* cola){
 				printf("mensajes = %d\n", list_size(lista_mensajes));
 				pthread_mutex_unlock(&m);
 
-				printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id correlativo = %d, size mensaje = %d \n", cod_op, id, size);
+				printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id correlativo = %d, size mensaje = %d \n", cod_op, id_correlativo, size);
 				break;
 		}
 	}
 }
 
+
+void finalizar_server(){
+	close(server_team);
+	raise(SIGTERM);
+}
+
+
 int main(){
+
+	signal(SIGINT, (void*)finalizar_server);
 	pthread_mutex_init(&m, NULL);
 
 	inicializar_listas();
@@ -171,8 +245,9 @@ int main(){
 	pthread_create(&tid, NULL, (void*)suscribirse, "localized_pokemon");
 
 	pthread_create(&tid, NULL, (void*)iniciar_servidor, NULL);
-/*
+
 	//LEO ARCHIVO DE CONFIGURACION
+
 	leer_archivo_configuracion();
 
 	pthread_mutex_init(&semPlanificador,NULL);
@@ -187,7 +262,8 @@ int main(){
 	}
 
 	pedir_pokemones();
-
+	pthread_join(tid, NULL);
+/*
 	pthread_mutex_lock(&semPlanificador);
 
 	for(i=0;i<cantEntrenadores;i++){
