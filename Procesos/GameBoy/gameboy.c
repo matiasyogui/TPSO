@@ -13,6 +13,8 @@ int main(int argc,char* argv[]){
 
 	enviar_mensaje(mensaje_enviar, bytes_enviar, conexion);
 
+	generar_log_suscripcion(argv+1);
+
 	esperando_respuestas(conexion, argv[1]);
 
 	terminar_programa(conexion, LOGGER, CONFIG);

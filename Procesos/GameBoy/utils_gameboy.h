@@ -20,4 +20,6 @@ void enviar_mensaje(void* mensaje, int bytes_enviar, int conexion);
 
 void esperando_respuestas(int socket, char* modo);
 
+void generar_log_suscripcion(char* datos[]);
+
 #endif /* UTILS_GAMEBOY_H_ */

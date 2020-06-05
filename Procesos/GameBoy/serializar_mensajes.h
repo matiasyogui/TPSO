@@ -10,14 +10,14 @@
 void* armar_mensaje_enviar(char* datos[], int* size);
 
 
-void* armar_mensaje_proceso(char* proceso, int codigo_opreacion, char* datos[], int *size);
+void* armar_mensaje_proceso(char* datos[], int *size);
 
 //
-void* armar_mensaje_broker(int codigo_opreacion, char*datos[], int* size);
+void* armar_mensaje_broker(char* datos[], int* size);
 
-void* armar_mensaje_team(int codigo_opreacion, char* datos[], int* size);
+void* armar_mensaje_team(char* datos[], int* size);
 
-void* armar_mensaje_gamecard(int codigo_opreacion, char* datos[], int* size);
+void* armar_mensaje_gamecard(char* datos[], int* size);
 //
 
 //

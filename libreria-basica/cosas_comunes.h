@@ -21,7 +21,9 @@ typedef enum{
 	CATCH_POKEMON,
 	CAUGHT_POKEMON,
 	LOCALIZED_POKEMON,
+
 	SUSCRIPTOR,
+
 	CONFIRMACION
 
 }message_code;
@@ -69,7 +71,7 @@ t_config* leer_config(char* ruta);
 void terminar_programa(int conexion, t_log* logger, t_config* config);
 
 //DEVULVE EL TIPO DE MENSAJE APARTIR DE UN STRING
-int tipo_mensaje(char* tipo_mensaje);
+int codigo_operacion(char* tipo_mensaje);
 
 //ME DEVUELVE UN STRING PARA USARLO EN UN CONFIG
 char* obtener_key(char* dato, char* proceso);

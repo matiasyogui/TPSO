@@ -68,7 +68,7 @@ void terminar_programa(int conexion, t_log* logger, t_config* config){
 
 
 
-int tipo_mensaje(char* tipo_mensaje){
+int codigo_operacion(char* tipo_mensaje){
 
 	if(string_equals_ignore_case(tipo_mensaje, "NEW_POKEMON") == 1)
 		return NEW_POKEMON;
