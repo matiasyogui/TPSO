@@ -1,18 +1,64 @@
 #include "broker.h"
 
+#include <string.h>
+
+void datos_servidor(void);
+void finalizar_servidor(void);
+void inicializar_listas(void);
+void inicializar_semaforos(void);
+
+
 int main(void){
 
 	datos_servidor();
 
 	signal(SIGINT, (void*)finalizar_servidor);
 
-	fflush(stdout);
+	//fflush(stdout);
+	//iniciar_servidor();
 
-	iniciar_servidor();
+	/*
+	dump_memoria();
+
+	char* palabra1 = "hola|";
+	char* palabra2 = "hormiga|";
+	char* palabra3 = "murcielago|";
+	char* palabra4 = "no sirve";
+	char* palabra5 = "este tp";
+
+	void* stream = pedir_memoria(strlen(palabra1));
+	dump_memoria();
+	void* memoria = stream;
+
+	memcpy(stream, palabra1, strlen(palabra1));
+
+	printf("memoria = %s\n", (char*)memoria);
+
+
+	void* stream2 = pedir_memoria(strlen(palabra2));
+	dump_memoria();
+	memcpy(stream2, palabra2, strlen(palabra2));
+
+	printf("memoria = %s\n", (char*)memoria);
+
+	void* stream3 = pedir_memoria(strlen(palabra3));
+	dump_memoria();
+	memcpy(stream3, palabra3, strlen(palabra3));
+
+	printf("memoria = %s\n", (char*)memoria);
+
+
+
+	eliminar_particion(stream2);
+
+	char* palabra6 = "volaaaar|";
+	void* stream6 = pedir_memoria(strlen(palabra6));
+	memcpy(stream6, palabra6, strlen(palabra6));
+	printf("memoria = %s\n", (char*)memoria);
+	*/
 
 	return 0;
 }
-
 
 void datos_servidor(void){
 
@@ -30,15 +76,8 @@ void datos_servidor(void){
 }
 
 
-void inicializar_listas(void){
-
-	LISTA_MENSAJES = crear_listas();
-	LISTA_SUBS = crear_listas();
-}
-
 
 void finalizar_servidor(void){
-
 	//finalizar_listas();
 	//finalizar_semaforos();
 
@@ -50,11 +89,11 @@ void finalizar_servidor(void){
 }
 
 
-void finalizar_listas(void){
+void inicializar_listas(void){
 
-	//destruir_lista_mensajes(LISTA_MENSAJES);
-
-	// funcion para destruir la lista de subs
+	LISTA_MENSAJES = crear_listas();
+	LISTA_SUBS = crear_listas();
+	iniciar_memoria();
 }
 
 

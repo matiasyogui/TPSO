@@ -8,14 +8,11 @@
 
 #include "admin_mensajes.h"
 #include "envio_recepcion.h"
+#include "memoria.h"
 
 
-void datos_servidor(void);
-void finalizar_servidor(void);
 
-void inicializar_listas(void);
-void finalizar_listas(void);
-void inicializar_semaforos(void);
-void finalizar_semaforos(void);
+
+
 
 #endif /* BROKER_H_ */
