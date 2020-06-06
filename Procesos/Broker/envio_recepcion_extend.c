@@ -1,5 +1,7 @@
 #include "envio_recepcion.h"
 
+
+
 t_buffer* recibir_mensaje(int cliente_fd){
 
 	t_buffer* buffer = malloc(sizeof(t_buffer));
@@ -61,8 +63,9 @@ void enviar_mensajes_suscriptor(t_suscriptor* suscriptor, int cod_op){
 
 	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
 
-	for(int i = 0; i< list_size(mensajes_duplicados); i++){
-		int size = 0;
+	int size = 0;
+	for(int i = 0; i < list_size(mensajes_duplicados); i++){
+
 		t_mensaje* mensaje = list_get(mensajes_duplicados, i);
 		void* stream_enviar = serializar_mensaje2(mensaje, &size);
 
@@ -70,8 +73,14 @@ void enviar_mensajes_suscriptor(t_suscriptor* suscriptor, int cod_op){
 			perror("fallo send");
 			continue;
 		}
+
+		t_notificacion* notificacion = nodo_notificacion(suscriptor);
+
 		pthread_mutex_lock(&(mensaje->mutex));
-		list_add(mensaje->subs_envie_msg, suscriptor);
+
+			list_add(mensaje->subs_envie_msg, notificacion);
+
+		pthread_mutex_unlock(&(mensaje->mutex));
 		free(stream_enviar);
 	}
 	list_destroy(mensajes_duplicados);
@@ -105,16 +114,14 @@ void enviar_mensaje_suscriptores(t_mensaje* mensaje){
 
 		pthread_mutex_unlock(&(mensaje->mutex));
 	}
-	printf("fin del envio i = %d\n",list_size(lista_subs));
 	list_destroy(lista_subs);
 	free(stream_enviar);
-
 }
 
 
 void enviar_confirmacion(int socket, int mensaje){
 
-	void* mensaje_confirmacion = malloc( 2 * sizeof(int));
+	void* mensaje_confirmacion = malloc( 2 * sizeof(uint32_t));
 	uint32_t cod_op = CONFIRMACION;
 
 	int offset = 0;
@@ -145,9 +152,7 @@ void* serializar_mensaje2(t_mensaje* mensaje_enviar, int* size){
 		memcpy(stream + offset, &(mensaje_enviar->id_correlativo), sizeof(uint32_t));
 	else
 		memcpy(stream + offset, &(mensaje_enviar->id), sizeof(uint32_t));
-
 	offset += sizeof(uint32_t);
-
 
 	memcpy(stream + offset, &(mensaje_enviar->mensaje->size), sizeof(uint32_t));
 	offset += sizeof(uint32_t);
@@ -156,7 +161,6 @@ void* serializar_mensaje2(t_mensaje* mensaje_enviar, int* size){
 	offset += mensaje_enviar->mensaje->size;
 
 	*size = offset;
-
 	return stream;
 }
 
@@ -178,3 +182,39 @@ int obtener_cod_op(t_buffer* buffer, int* tiempo){
 	return cod_op;
 }
 
+
+/*
+typedef struct{
+	t_mensaje* mensaje;
+	t_suscriptor* suscriptor;
+}data;
+
+
+void anadir_notificacion(t_mensaje* mensaje, t_notificacion* notificacion){
+
+	pthread_mutex_lock(&(mensaje -> mutex));
+		list_add(mensaje->subs_envie_msg, (void*) notificacion);
+	pthread_mutex_unlock(&(mensaje -> mutex));
+}
+
+void* enviar_mensaje(void* datos){
+
+	data* data1 = datos;
+	t_mensaje* mensaje = data1->mensaje;
+	t_suscriptor* suscriptor = data1-> suscriptor;
+
+	int size;
+	void* stream_enviar = selializar_mensaje2(mensaje, &size);
+
+	if(send(suscriptor->socket, stream_enviar, size, 0) < 0)
+		return NULL;
+
+	t_notificacion* notificacion = nodo_notificacion(suscriptor);
+
+	anadir_notificacion(mensaje, notificacion);
+
+
+
+
+	pthread_exit(1);
+}*/

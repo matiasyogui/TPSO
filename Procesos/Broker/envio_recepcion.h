@@ -43,7 +43,7 @@ void enviar_confirmacion(int socket, int mensaje);
 void enviar_mensaje_suscriptores(t_mensaje* mensaje);
 void enviar_mensajes_suscriptor(t_suscriptor* suscriptor, int cod_op);
 
-void* serializar_mensaje2(t_mensaje* mensaje, int* size);
+void* serializar_mensaje2(t_mensaje* mensaje_enviar, int* size);
 
 
 #endif /* ENVIO_RECEPCION_H_ */

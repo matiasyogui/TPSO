@@ -86,16 +86,7 @@ void process_request(int cliente_fd, int cod_op){
 	switch(cod_op){
 
 		case NEW_POKEMON:
-
-			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, false)) == NULL)
-				break;
-
-			tratar_mensaje(mensaje, cliente_fd);
-
-			close(cliente_fd);
-
-			break;
-
+		case CATCH_POKEMON:
 		case GET_POKEMON:
 
 			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, false)) == NULL)
@@ -106,31 +97,7 @@ void process_request(int cliente_fd, int cod_op){
 			break;
 
 		case APPEARED_POKEMON:
-
-			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, true)) == NULL)
-				break;
-
-			tratar_mensaje(mensaje, cliente_fd);
-
-			break;
-
-		case CATCH_POKEMON:
-
-			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, false)) == NULL)
-				break;
-
-			tratar_mensaje(mensaje, cliente_fd);
-
-			break;
-
 		case CAUGHT_POKEMON:
-
-			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, true)) == NULL)
-				break;
-			tratar_mensaje(mensaje, cliente_fd);
-
-			break;
-
 		case LOCALIZED_POKEMON:
 
 			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, true)) == NULL)
@@ -203,6 +170,8 @@ void* tratar_suscriptor(int socket){
 		agregar_elemento(LISTA_SUBS, cod_op, suscriptor);
 
 	pthread_mutex_unlock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
+
+	informe_lista_subs();
 
 	enviar_mensajes_suscriptor(suscriptor, cod_op);
 

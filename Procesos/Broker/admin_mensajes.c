@@ -60,16 +60,24 @@ t_mensaje* nodo_mensaje(int cod_op, int id_correlativo, t_buffer* mensaje){
 }
 
 
-
-
 t_suscriptor* nodo_suscriptor(int socket){
 
 	t_suscriptor* nodo_suscriptor = malloc(sizeof(t_suscriptor));
 
-	nodo_suscriptor->id = obtener_id();
 	nodo_suscriptor->socket = socket;
 
 	return nodo_suscriptor;
+}
+
+
+t_notificacion* nodo_notificacion(t_suscriptor* suscriptor){
+
+	t_notificacion* notificacion = malloc(sizeof(t_notificacion));
+
+	notificacion->suscriptor = suscriptor;
+	notificacion->ACK = false;
+
+	return notificacion;
 }
 
 
@@ -118,7 +126,7 @@ void destruir_lista_suscriptores(t_list* lista_suscriptores){
 
 void informe_lista_mensajes(void){
 
-	printf("\n");
+	printf("\n//////////////////////////////////INFORME LISTAS DE mENSAJES//////////////////////////////////\n\n");
 
 	for(int i=0; i < list_size(LISTA_MENSAJES); i++){
 
@@ -144,5 +152,28 @@ void informe_lista_mensajes(void){
 
 		printf("\n");
 	}
+	printf("///////////////////////////////////////////////////////////////////////////////////////////////////\n\n");
+}
+
+
+void informe_lista_subs(void){
+
+	printf("//////////////////////////////////INFORME LISTAS DE SUBSCRIPTORES//////////////////////////////////\n\n");
+
+	for(int i=0; i < list_size(LISTA_SUBS); i++){
+
+		printf("Suscriptores de la cola: %d\n", i);
+
+		t_list* list_tipo_mensaje = list_get(LISTA_SUBS, i);
+
+		pthread_mutex_lock(&MUTEX_SUBLISTAS_SUSCRIPTORES[i]);
+
+		printf(" | Cantidad de subscriptores = %d\n", list_tipo_mensaje -> elements_count);
+
+		pthread_mutex_unlock(&MUTEX_SUBLISTAS_SUSCRIPTORES[i]);
+
+		printf("\n");
+	}
+	printf("///////////////////////////////////////////////////////////////////////////////////////////////////\n\n");
 }
 

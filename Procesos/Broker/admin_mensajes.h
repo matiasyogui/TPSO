@@ -20,6 +20,7 @@ void agregar_elemento(t_list* lista, int index, void* data);
 ///////////////////////// FUNCIONES LISTA MENSAJES /////////////////////////
 t_mensaje* nodo_mensaje(int cod_op, int id_correlativo, t_buffer* mensaje);
 t_suscriptor* nodo_suscriptor(int socket);
+t_notificacion* nodo_notificacion(t_suscriptor* suscriptor);
 
 
 ///////////////////////// FUNCIONES PARA ELIMINAR LAS LISTAS /////////////////////////
@@ -35,5 +36,6 @@ void destruir_lista_suscriptores(t_list* lista_suscriptores);
 
 ///////////////////////// FUNCIONES PARA MOSTRAR LAS LISTAS /////////////////////////
 void informe_lista_mensajes(void);
+void informe_lista_subs(void);
 
 #endif /* ADMIN_MENSAJES_H_ */
