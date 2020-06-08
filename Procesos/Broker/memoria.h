@@ -1,4 +1,4 @@
-#ifndef MEMORIA_H_
+/*#ifndef MEMORIA_H_
 #define MEMORIA_H_
 
 #include <stdio.h>
@@ -17,3 +17,4 @@ int buscar_numero_particion(void* inicio_particion);
 void dump_memoria();
 
 #endif /* MEMORIA_H_ */
+

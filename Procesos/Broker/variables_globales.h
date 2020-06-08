@@ -15,6 +15,7 @@ int* SOCKET_SERVER;
 t_list* LISTA_MENSAJES;
 t_list* LISTA_SUBS;
 
+
 t_config* CONFIG;
 t_log* LOGGER;
 

@@ -14,8 +14,8 @@ int main(void){
 
 	signal(SIGINT, (void*)finalizar_servidor);
 
-	//fflush(stdout);
-	//iniciar_servidor();
+	fflush(stdout);
+	iniciar_servidor();
 
 	/*
 	dump_memoria();
@@ -93,7 +93,7 @@ void inicializar_listas(void){
 
 	LISTA_MENSAJES = crear_listas();
 	LISTA_SUBS = crear_listas();
-	iniciar_memoria();
+	//iniciar_memoria();
 }
 
 

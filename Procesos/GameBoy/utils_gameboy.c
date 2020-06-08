@@ -121,7 +121,6 @@ static void modo_emisor(int socket){
 char* cod_opToString(int cod_op){
 	switch(cod_op){
 	case NEW_POKEMON:
-		return "new_pokemon";
 	case GET_POKEMON:
 		return "get_pokemon";
 	case APPEARED_POKEMON:
