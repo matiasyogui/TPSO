@@ -3,7 +3,7 @@
 static void modo_suscriptor(int socket);
 static void modo_emisor(int socket);
 static char* comprobar_proceso(char *proceso);
-char* cod_opToString(int cod_op);
+void enviar_confirmacion(int socket);
 
 
 void inicializar_archivos(){
@@ -19,7 +19,6 @@ static char* comprobar_proceso(char *proceso){
 		return "broker";
 	return proceso;
 }
-
 
 void obtener_direcciones_envio(char* proceso){
 
@@ -56,26 +55,26 @@ void esperando_respuestas(int socket, char* modo){
 
 static void modo_suscriptor(int socket){
 
+	int status;
 	int cod_op, size, id_mensaje, estado;
 	void* datos;
 
 	void _manejo_error(void){
-		int error =-1;
+		int error = 0;
 		send(socket, &error, sizeof(uint32_t), 0);
 	}
 
 	while(1){
 
-		if(recv(socket, &cod_op, sizeof(uint32_t), 0) < 0){
-			perror("[gameboy.c : 28]FALLO RECV");
-			continue;
-		}
+		status = recv(socket, &cod_op, sizeof(uint32_t), 0);
+		if(status < 0){	perror("[gameboy.c : 28]FALLO RECV"); continue;}
+
 		switch(cod_op){
 
 			case CONFIRMACION:
 
-				if(recv(socket, &estado, sizeof(uint32_t), 0) < 0)
-					continue;
+				status = recv(socket, &estado, sizeof(uint32_t), 0);
+				if(status < 0) continue;
 
 				printf("[CONFIRMACION DE SUSCRIPCION] estado = %d \n", estado);
 
@@ -83,23 +82,22 @@ static void modo_suscriptor(int socket){
 
 			case NEW_POKEMON...CAUGHT_POKEMON:
 
-				if(recv(socket, &id_mensaje, sizeof(uint32_t), 0) < 0){
-					_manejo_error();
-					continue;
-				}
-				if(recv(socket, &size, sizeof(uint32_t), 0) < 0){
-					_manejo_error();
-					continue;
-				}
+				status = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
+				if(status < 0){	_manejo_error(); continue;}
+
+				status = recv(socket, &size, sizeof(uint32_t), 0);
+				if(status < 0){	_manejo_error(); continue;}
+
 				datos = malloc(size);
-				if(recv(socket, datos, size, 0) < 0){
-					_manejo_error();
-					continue;
-				}
+
+				status = recv(socket, datos, size, 0);
+				if(status < 0){	_manejo_error(); continue;}
 
 				printf("[MENSAJE DEL BROKER]cod_op_mensaje = %d, id_mensaje = %d, size mensaje = %d \n", cod_op, id_mensaje, size);
 
 				log_info(LOGGER, "Se recibio un mensaje de la cola %s", cod_opToString(cod_op));
+
+				enviar_confirmacion(socket);
 
 			break;
 		}
@@ -109,31 +107,15 @@ static void modo_suscriptor(int socket){
 
 static void modo_emisor(int socket){
 
-	int cod_op, id;
+	int cod_op, id, status;
 
-	recv(socket, &cod_op, sizeof(uint32_t), 0);
-	recv(socket, &id, sizeof(uint32_t), 0);
+	status = recv(socket, &cod_op, sizeof(uint32_t), 0);
+	if(status <0) perror("ERROR RECV");
+
+	status = recv(socket, &id, sizeof(uint32_t), 0);
+	if(status <0) perror("ERROR RECV");
 
 	printf("[CONFIRMACION DEL RECPCION DEL MENSAJE] id del mensaje en el broker = %d \n", id);
-}
-
-
-char* cod_opToString(int cod_op){
-	switch(cod_op){
-	case NEW_POKEMON:
-		return "new_pokemon";
-	case GET_POKEMON:
-		return "get_pokemon";
-	case APPEARED_POKEMON:
-		return "appeared_pokemon";
-	case CATCH_POKEMON:
-		return "catch_pokemon";
-	case CAUGHT_POKEMON:
-		return "caught_pokemon";
-	case LOCALIZED_POKEMON:
-		return "localized_pokemon";
-	}
-	return "error";
 }
 
 
@@ -145,4 +127,11 @@ void generar_log_suscripcion(char* datos[]){
 		log_info(LOGGER, "Se realizo la conexion al proceso %s", datos[0]);
 }
 
+void enviar_confirmacion(int socket){
 
+	int confirmacion = 1;
+	int status;
+
+	status = send(socket, (void*)&confirmacion, sizeof(uint32_t), 0);
+	if(status < 0) printf("ERROR SEND");
+}

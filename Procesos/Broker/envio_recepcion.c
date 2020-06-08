@@ -1,6 +1,17 @@
 #include "envio_recepcion.h"
 
+pthread_t THREAD;
+
 void* iniciar_servidor(void){
+
+	int flag = 1;
+	void _detener_proceso(){
+		printf("servidor_recibio_señar\n");
+		flag = 0;
+		pthread_join(THREAD, NULL);
+	}
+
+	signal(SIGINT, _detener_proceso);
 
 	int socket_servidor;
 
@@ -13,33 +24,29 @@ void* iniciar_servidor(void){
 
     getaddrinfo(IP_SERVER, PUERTO_SERVER, &hints, &servinfo);
 
+    int status;
+
     for (p=servinfo; p != NULL; p = p->ai_next)
     {
-        if ((socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0){
-        	perror("SOCKET ERROR");
-        	continue;
-        }
+        socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+        if(socket_servidor < 0){perror("SOCKET ERROR"); continue; }
 
-        if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) < 0){
-            close(socket_servidor);
-            perror("BIND ERROR");
-            continue;
-        }
+        status = bind(socket_servidor, p->ai_addr, p->ai_addrlen);
+        if(status < 0){perror("BIND ERROR"); close(socket_servidor); continue;}
+
         break;
     }
 
-	if(listen(socket_servidor, SOMAXCONN) < 0){
-		perror("LISTEN ERROR");
-		raise(SIGINT);
-	}
-
+    status = listen(socket_servidor, SOMAXCONN);
     freeaddrinfo(servinfo);
+    if(status < 0){perror("LISTEN ERROR"); raise(SIGINT);}
 
     SOCKET_SERVER = &socket_servidor;
 
-    while(1)
+    while(flag)
     	esperar_cliente(socket_servidor);
 
+    printf("fin2\n");
     pthread_exit(0);
 }
 
@@ -52,28 +59,27 @@ void esperar_cliente(int socket_servidor){
 
 	int socket_cliente;
 
-	if((socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion)) < 0){
-		perror("[envio_recepcion.c] ACCEPT ERROR");
-		return;
-	}
+	socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion);
+	if(socket_cliente < 0){perror("[envio_recepcion.c] FALLO ACCEPT"); return;}
 
 	int* p_socket = malloc(sizeof(int));
 	*p_socket = socket_cliente;
 
-	if(pthread_create(&THREAD, NULL, (void*)server_client, p_socket) != 0)
-		printf("[envio_recepcion.c] FALLO AL CREAR EL THREAD\n");
+	int status;
+	status = pthread_create(&THREAD, NULL, (void*)server_client, p_socket);
+	if(status != 0) printf("[envio_recepcion.c] FALLO AL CREAR EL THREAD\n");
+
 	pthread_detach(THREAD);
 }
 
 
 void server_client(int* p_socket){
-	int cod_op, socket = *p_socket;
 
-	if(recv(socket, &cod_op, sizeof(uint32_t), 0) < 0){
-		perror("[envio_recepcion.c] FALLO RECV");
-		cod_op = -1;
-	}
+	int cod_op, socket = *p_socket;
 	free(p_socket);
+
+	int status = recv(socket, &cod_op, sizeof(uint32_t), 0);
+	if(status < 0){ perror("[envio_recepcion.c] FALLO RECV"); cod_op = -1;}
 
 	process_request(socket, cod_op);
 }
@@ -92,7 +98,7 @@ void process_request(int cliente_fd, int cod_op){
 			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, false)) == NULL)
 				break;
 
-			tratar_mensaje(mensaje, cliente_fd);
+			tratar_mensaje(cliente_fd, mensaje, cod_op);
 
 			break;
 
@@ -103,17 +109,13 @@ void process_request(int cliente_fd, int cod_op){
 			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, true)) == NULL)
 				break;
 
-			tratar_mensaje(mensaje, cliente_fd);
+			tratar_mensaje(cliente_fd, mensaje, cod_op);
 
 			break;
 
         case SUSCRIPTOR:
 
         	tratar_suscriptor(cliente_fd);
-
-        	break;
-
-        case CONFIRMACION:
 
         	break;
 
@@ -130,13 +132,9 @@ void process_request(int cliente_fd, int cod_op){
 }
 
 
-void* tratar_mensaje(t_mensaje* mensaje, int socket){
+void* tratar_mensaje(int socket, t_mensaje* mensaje, int cod_op){
 
-	pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[mensaje->cod_op]);
-
-	agregar_elemento(LISTA_MENSAJES, mensaje->cod_op, mensaje);
-
-	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[mensaje->cod_op]);
+	guardar_mensaje(mensaje, cod_op);
 
 	informe_lista_mensajes();
 
@@ -144,7 +142,7 @@ void* tratar_mensaje(t_mensaje* mensaje, int socket){
 
 	close(socket);
 
-	enviar_mensaje_suscriptores(mensaje);
+	//enviar_mensaje_suscriptores(mensaje);
 
 	return EXIT_SUCCESS;
 }
@@ -165,18 +163,15 @@ void* tratar_suscriptor(int socket){
 
 	enviar_confirmacion(suscriptor->socket, true);
 
-	pthread_mutex_lock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
-
-		agregar_elemento(LISTA_SUBS, cod_op, suscriptor);
-
-	pthread_mutex_unlock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
+	guardar_suscriptor(suscriptor, cod_op);
 
 	informe_lista_subs();
 
-	enviar_mensajes_suscriptor(suscriptor, cod_op);
+	//enviar_mensajes_suscriptor(suscriptor, cod_op);
 
 	return EXIT_SUCCESS;
 }
+
 
 void leer_new_pokemon(int cliente_fd){
 

@@ -7,11 +7,21 @@ char* ALGORITMO_REEMPLAZO;
 char* ALGORITMO_PARTICION_LIBRE;
 int FRECUENCIA_COMPACTACION;
 
+typedef struct{
 
+	void* inicio_particion;
+	void* fin_particion;
+
+}t_particion;
+
+t_list* particiones;
 void* inicio_memoria;
 
 static void obtener_datos();
+static int buscar_numero_particion(void* inicio_particion);
 
+static void* busqueda_FIRST_FIT(int size, int* numero_particion);
+//static void* busqueda_BEST_FIT(int size, int* numero_particion);
 
 
 void iniciar_memoria(){
@@ -19,7 +29,6 @@ void iniciar_memoria(){
 	obtener_datos();
 
 	inicio_memoria = malloc(TAMANO_MEMORIA);
-
 	particiones = list_create();
 
 	t_particion* inicio = malloc(sizeof(t_particion));
@@ -27,7 +36,6 @@ void iniciar_memoria(){
 	inicio -> fin_particion = inicio_memoria;
 
 	list_add(particiones, inicio);
-
 
 	t_particion* fin = malloc(sizeof(t_particion));
 	fin -> inicio_particion = inicio_memoria + TAMANO_MEMORIA;
@@ -37,12 +45,21 @@ void iniciar_memoria(){
 }
 
 
+
+//FIRST FIT
 void* pedir_memoria(int size){
 
 	void* inicio_particion;
-
 	int numero_particion;
-	if((inicio_particion = busqueda_particion_libre(size, &numero_particion)) == NULL){
+
+	//TODO: Enviar a otra funcion
+	if(string_equals_ignore_case(ALGORITMO_PARTICION_LIBRE, "FF") == 1)
+		inicio_particion = busqueda_FIRST_FIT(size, &numero_particion);
+
+	if(string_equals_ignore_case(ALGORITMO_PARTICION_LIBRE, "BF") == 1)
+		//inicio_particion = busqueda_BEST_FIT(size, &numero_particion);
+
+	if(inicio_particion == NULL){
 		printf("no se encontro un espacio libre");
 		return NULL;
 	}
@@ -56,7 +73,7 @@ void* pedir_memoria(int size){
 	return particion->inicio_particion;
 }
 
-void* busqueda_particion_libre(int size, int* numero_particion){
+void* busqueda_FIRST_FIT(int size, int* numero_particion){
 
 	for(int i = 0; i < (list_size(particiones) - 1); i++){
 
@@ -71,6 +88,34 @@ void* busqueda_particion_libre(int size, int* numero_particion){
 	return NULL;
 }
 
+//BEST FIT
+/*
+void* busqueda_BEST_FIT(int size, int* numero_particion){
+
+	void* particion_candidata = NULL;
+
+
+	for(int i = 0; i < (list_size(particiones) - 1); i++){
+
+		t_particion* primera_particion = list_get(particiones, i);
+		t_particion* segunda_particion = list_get(particiones, i+1);
+
+		int size_particion_libre = segunda_particion->inicio_particion - primera_particion->fin_particion,
+			perdida_actual = size_particion_libre - size;
+
+		if( size_particion_libre >= size ){
+
+			particion_candidata = primera_particion->fin_particion;
+			//size_particion_candidata = size_particion_libre;
+			*numero_particion = i+1;
+		}
+	}
+	return particion_candidata;
+}
+
+*/
+
+
 
 
 void eliminar_particion(void* inicio_particion){
@@ -79,7 +124,6 @@ void eliminar_particion(void* inicio_particion){
 
 	list_remove_and_destroy_element(particiones, numero_particion_eliminar, free);
 }
-
 
 int buscar_numero_particion(void* inicio_particion){
 
@@ -93,25 +137,28 @@ int buscar_numero_particion(void* inicio_particion){
 }
 
 
+
+
+
+
+
+
 void dump_memoria(){
 
-	printf("//////////////////////////INFORME DE MEMORIA///////////////////////////////////\n\n");
+	printf("-----------------------------------INFORME DE MEMORIA-----------------------------------\n\n");
+	printf("INFORME: %s\n\n", temporal_get_string_time());
 
-	printf("%d\n", list_size(particiones));
 	for(int i = 0;  i < list_size(particiones); i++){
 
 		t_particion* particion = list_get(particiones, i);
-		printf("[N%d] Inicio Particion = %d, Fin Particion = %d, Tamaño = %d\n",
+		printf("Particion %d: %x - %x 	Size: %d bytes",
 				i,
 				particion->inicio_particion,
 				particion->fin_particion,
 				(particion->fin_particion - particion->inicio_particion));
 	}
-	printf("\n////////////////////////////////////////////////////////////////////////////////////\n\n");
+	printf("\n--------------------------------------------------------------------------------------\n\n");
 }
-
-
-
 
 
 static void obtener_datos(){
