@@ -1,4 +1,4 @@
-#include "memoria.h"
+/*#include "memoria.h"
 
 int TAMANO_MEMORIA;
 int TAMANO_MINIMO_PARTICION;
@@ -25,7 +25,6 @@ static void* busqueda_FIRST_FIT(int size, int* numero_particion);
 
 
 void iniciar_memoria(){
-
 	obtener_datos();
 
 	inicio_memoria = malloc(TAMANO_MEMORIA);
@@ -113,7 +112,7 @@ void* busqueda_BEST_FIT(int size, int* numero_particion){
 	return particion_candidata;
 }
 
-*/
+
 
 
 
@@ -171,4 +170,4 @@ static void obtener_datos(){
 	ALGORITMO_PARTICION_LIBRE = config_get_string_value(CONFIG, "ALGORITMO_PARTICION_LIBRE");
 
 	FRECUENCIA_COMPACTACION = config_get_int_value(CONFIG, "FRECUENCIA_COMPACTACION");
-}
+} */

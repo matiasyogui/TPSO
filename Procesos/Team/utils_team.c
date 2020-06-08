@@ -21,7 +21,6 @@ void iniciar_servidor(void)
         	perror("fallo socket");
         	continue;
         }
-        SOCKET_SERVER = socket_servidor;
 
         if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1) {
         	perror("fallo bind");
@@ -80,34 +79,20 @@ void process_request(int cod_op, int cliente_fd) {
 
     mensajeActual = cod_op;
 
-	switch (cod_op) {
+	if(cod_op == APPEARED_POKEMON){
+		t_mensajeTeam* mensaje = malloc(sizeof(t_mensajeTeam));
 
-		case NEW_POKEMON...LOCALIZED_POKEMON:
+		mensaje->cod_op = cod_op;
+		mensaje->buffer = msg;
+		mensaje->id = -1;
 
-			leer_mensaje_appeared(msg);
+		pthread_mutex_lock(&mListaGlobal);
+		list_add(lista_mensajes, mensaje);
+		printf("MENSAJES EN LA LISTA GLOBAL = %d\n\n", list_size(lista_mensajes));
+		pthread_mutex_unlock(&mListaGlobal);
 
-			pasajeFIFO(listaBlocked,listaReady);
-			entrenadorActual = list_remove(listaReady, 0);
-			printf("se saca de blocked el entrenador con posicion %d y %d\n", entrenadorActual->posicion->posx, entrenadorActual->posicion->posy);
-
-			printf("Se desbloquea el hilo\n");
-			pthread_mutex_unlock(entrenadorActual->semaforo);
-			pthread_mutex_lock(&semPlanificador);
-			printf("termina hilo\n");
-
-			list_add(listaBlocked,entrenadorActual);
-
-			close(cliente_fd);
-
-			break;
-
-        case SUSCRIPTOR:
-
-        	break;
-
-		case -1:
-			pthread_exit(NULL);
-		}
+	}else
+		pthread_exit(NULL);
 
 }
 
@@ -130,7 +115,7 @@ void leer_mensaje(t_buffer* buffer){
 
     while(offset < buffer->size){
 
-        memcpy(&tamanio, buffer->stream + offset, sizeof(uint32_t));
+        memcpy(&tamanio, buffer->size + offset, sizeof(uint32_t));
         offset += sizeof(uint32_t);
 
         char* palabra = malloc(tamanio);
@@ -176,9 +161,7 @@ void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i){
    	entrenador->pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
 
     entrenador->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
-   	//entrenadores[i]->mensaje = mensajeBroker;
-
-    //entrenador->idCorrelativos = list_create();
+   	entrenador->mensaje = malloc(sizeof(t_mensajeTeam));
 
    	entrenador->semaforo = malloc(sizeof(pthread_mutex_t));
    	pthread_mutex_init(entrenador->semaforo, NULL);

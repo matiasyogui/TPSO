@@ -11,9 +11,8 @@ char* PUERTO_SERVER;
 
 int* SOCKET_SERVER;
 
-t_config* CONFIG;
 t_log* LOGGER;
-
+t_config* CONFIG;
 
 ///////////////////////////ADMIN_MENSAJES.H////////////////////////
 

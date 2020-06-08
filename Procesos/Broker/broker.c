@@ -115,7 +115,7 @@ void datos_servidor(void){
 	PUERTO_SERVER = config_get_string_value(CONFIG, "PUERTO_BROKER");
 
 	iniciar_listas();
-	iniciar_memoria();
+	//iniciar_memoria();
 }
 
 
@@ -131,6 +131,7 @@ void finalizar_servidor(void){
 	pthread_join(thread_planificador, NULL);
 	raise(SIGTERM);
 }
+
 
 
 

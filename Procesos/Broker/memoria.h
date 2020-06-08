@@ -1,4 +1,4 @@
-#ifndef MEMORIA_H_
+/*#ifndef MEMORIA_H_
 #define MEMORIA_H_
 
 #include <commons/temporal.h>
@@ -12,4 +12,7 @@ void eliminar_particion(void* inicio_particion);
 
 void dump_memoria();
 
-#endif /* MEMORIA_H_ */
+#endif
+
+*/
+
