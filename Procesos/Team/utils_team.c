@@ -91,6 +91,10 @@ void process_request(int cod_op, int cliente_fd) {
 		printf("MENSAJES EN LA LISTA GLOBAL = %d\n\n", list_size(lista_mensajes));
 		pthread_mutex_unlock(&mListaGlobal);
 
+
+
+		send(cliente_fd,&(mensaje->id),sizeof(int),0);
+
 	}else
 		pthread_exit(NULL);
 
@@ -115,7 +119,7 @@ void leer_mensaje(t_buffer* buffer){
 
     while(offset < buffer->size){
 
-        memcpy(&tamanio, buffer->size + offset, sizeof(uint32_t));
+        memcpy(&tamanio, &(buffer->size) + offset, sizeof(uint32_t));
         offset += sizeof(uint32_t);
 
         char* palabra = malloc(tamanio);

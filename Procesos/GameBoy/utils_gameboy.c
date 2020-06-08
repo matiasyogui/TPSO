@@ -109,12 +109,11 @@ static void modo_suscriptor(int socket){
 
 static void modo_emisor(int socket){
 
-	int cod_op, id;
+	int id;
 
-	recv(socket, &cod_op, sizeof(uint32_t), 0);
 	recv(socket, &id, sizeof(uint32_t), 0);
 
-	printf("[CONFIRMACION DEL RECPCION DEL MENSAJE] id del mensaje en el broker = %d \n", id);
+	printf("[CONFIRMACION DEL RECPCION DEL MENSAJE] id = %d \n", id);
 }
 
 
