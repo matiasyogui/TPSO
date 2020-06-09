@@ -15,18 +15,18 @@
 
 
 void* iniciar_servidor(void);
-void esperar_cliente(int socket_servidor);
-void server_client(void* socket);
-void process_request(int cliente_fd, int cod_op);
+int esperar_cliente(int socket_servidor);
+int server_client(void* socket);
+int process_request(int cliente_fd, int cod_op);
 
 t_buffer* recibir_mensaje(int socket_cliente);
 t_mensaje* generar_nodo_mensaje(int socket, bool EsCorrelativo, int cod_op);
 
-void* tratar_suscriptor(int socket);
+int tratar_suscriptor(int socket);
 int obtener_cod_op(t_buffer* buffer, int* tiempo);
 
 
-void* tratar_mensaje(int socket, t_mensaje* mensaje, int cod_op);
+int tratar_mensaje(int socket, t_mensaje* mensaje, int cod_op);
 void enviar_confirmacion(int socket, int mensaje);
 
 

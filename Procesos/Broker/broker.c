@@ -1,6 +1,9 @@
 #include "broker.h"
 
 pthread_t thread_server, thread_planificador;
+
+pthread_mutex_t mutex_server = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t cond_server = PTHREAD_COND_INITIALIZER;
 void datos_servidor(void);
 void finalizar_servidor(void);
 
@@ -18,10 +21,10 @@ int main(void){
 	status = pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
 	if(status != 0) printf("error al iniciar el thread del server");
 
-	status = pthread_create(&thread_planificador, NULL, (void*)planificar_envios, (void*)&cola_mensajes);
-	if(status != 0) printf("error al iniciar el thread del planificador");
+	//status = pthread_create(&thread_planificador, NULL, (void*)planificar_envios, (void*)&cola_mensajes);
+	//if(status != 0) printf("error al iniciar el thread del planificador");
 
-	pthread_join(thread_server, NULL);
+	while(1);
 
 	return 0;
 }
@@ -37,19 +40,22 @@ void datos_servidor(void){
 	PUERTO_SERVER = config_get_string_value(CONFIG, "PUERTO_BROKER");
 
 	iniciar_listas();
-	iniciar_memoria();
+	//iniciar_memoria();
 }
 
 
 void finalizar_servidor(void){
+	int status;
 
-	pthread_kill(thread_server, SIGUSR2);
-	pthread_join(thread_server, NULL);
-	printf("finalizo el server\n");
-	//finalizar_listas();
-	//finalizar_semaforos();
-	//pthread_join(thread_planificador, NULL);
+	printf("esperando finalizacion del thread servidor\n");
 
+	status = pthread_cancel(thread_server);
+	if(status != 0 ) perror("fallo cancel 1\n");
+
+	status = pthread_join(thread_server, NULL);
+	if(status != 0 ) perror("fallo join 1\n");
+
+	printf("fin");
 
 	config_destroy(CONFIG);
 	log_destroy(LOGGER);
