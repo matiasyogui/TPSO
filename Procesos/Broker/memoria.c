@@ -138,11 +138,6 @@ int buscar_numero_particion(void* inicio_particion){
 
 
 
-
-
-
-
-
 void dump_memoria(){
 
 	printf("-----------------------------------INFORME DE MEMORIA-----------------------------------\n\n");

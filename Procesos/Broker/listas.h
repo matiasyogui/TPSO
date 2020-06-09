@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <cosas_comunes.h>
 #include <commons/collections/list.h>
+#include <commons/collections/queue.h>
 #include <signal.h>
 #include "variables_globales.h"
 

@@ -1,15 +1,20 @@
 #include "listas.h"
 
 #define CANTIDAD_SUBLISTAS 6
+#define cant_threads_tareas 4
 
 static int id_basico = 0;
 
 t_list* LISTA_MENSAJES;
 t_list* LISTA_SUBS;
 
+t_queue* cola_tareas1;
+t_queue* cola_tareas1;
+pthread_t* thread_envio[cant_threads_tareas];
+
 pthread_mutex_t MUTEX_SUBLISTAS_MENSAJES[CANTIDAD_SUBLISTAS];
 pthread_mutex_t MUTEX_SUBLISTAS_SUSCRIPTORES[CANTIDAD_SUBLISTAS];
-pthread_mutex_t mutex_id;
+pthread_mutex_t mutex_id = PTHREAD_MUTEX_INITIALIZER;
 
 //DECLARACIONES
 static t_list* crear_listas(void);
@@ -41,7 +46,6 @@ void iniciar_listas(void){
 
 	pthread_mutex_init(&mutex_id, NULL);
 }
-
 
 void guardar_mensaje(t_mensaje* mensaje, int cod_op){
 
@@ -238,21 +242,13 @@ static int obtener_id(void){
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
 void* planificar_envios(void* _cola_mensajes){
 
 	int status;
-	int flag = 1;
-	void _detener_proceso(){
-		printf("planificador recibio señal\n");
-		flag = 0;
-	}
-
-	signal(SIGINT, _detener_proceso);
 
 	int cola_mensajes = *((int*)_cola_mensajes);
 
-	while(flag){
+	while(1){
 
 		pthread_mutex_lock(&(MUTEX_SUBLISTAS_MENSAJES[cola_mensajes]));
 			t_list* mensajes_enviar = list_duplicate(list_get(LISTA_MENSAJES, cola_mensajes));
@@ -274,12 +270,9 @@ void* planificar_envios(void* _cola_mensajes){
 
 			t_datos* datos = armar_paquete(cola_mensajes, mensaje_enviar, subs_enviar_por_mensaje);
 
-			int* _i = malloc(sizeof(int));
-			*_i = i;
-			status = pthread_create(&threads[*_i], NULL, (void*)funcion_envio, (void*)datos);
+			status = pthread_create(&threads[i], NULL, (void*)funcion_envio, (void*)datos);
 			if(status != 0) printf("[LISTAS.C] ERROR AL CREAR EL THREAD");
 
-			free(_i);
 		}
 		for(int i = 0; i < list_size(mensajes_enviar); i++)
 			pthread_join(threads[i], NULL);
@@ -307,12 +300,9 @@ void* funcion_envio(void* _datos){
 
 		datos_envio->suscriptor = list_get(datos->lista_subs, i);
 
-		int* _i = malloc(sizeof(int));
-		*_i = i;
-		status = pthread_create(&threads[*_i], NULL, (void*)enviar_mensaje, (void*)datos_envio);
+		status = pthread_create(&threads[i], NULL, (void*)enviar_mensaje, (void*)datos_envio);
 		if(status != 0) printf("[LISTAS.C] ERROR AL CREAR EL THREAD2");
 
-		free(_i);
 	}
 	free(datos);
 
@@ -326,7 +316,6 @@ void* funcion_envio(void* _datos){
 
 	pthread_exit(NULL);
 }
-
 
 
 void* enviar_mensaje(void* datos){
@@ -362,9 +351,6 @@ void* enviar_mensaje(void* datos){
 
 
 
-
-
-
 static t_datos* armar_paquete(int cod_op, t_mensaje* mensaje, t_list* subs){
 
 	t_datos* datos = malloc(sizeof(t_datos));
@@ -375,6 +361,7 @@ static t_datos* armar_paquete(int cod_op, t_mensaje* mensaje, t_list* subs){
 	return datos;
 }
 
+
 static t_datos_envio* armar_paquete_datos(t_buffer* buffer, t_list* notificaciones, pthread_mutex_t* mutex){
 
 	t_datos_envio* datos = malloc(sizeof(t_datos_envio));
@@ -384,7 +371,6 @@ static t_datos_envio* armar_paquete_datos(t_buffer* buffer, t_list* notificacion
 
 	return datos;
 }
-
 
 
 static t_buffer* armar_buffer_envio(t_mensaje* mensaje, int cod_op){
@@ -398,6 +384,7 @@ static t_buffer* armar_buffer_envio(t_mensaje* mensaje, int cod_op){
 
 
 
+
 static t_list* subs_enviar(t_list* lista_subs, t_list* notificiones_envio){
 
 	bool _filtro(void* elemento){
@@ -406,6 +393,7 @@ static t_list* subs_enviar(t_list* lista_subs, t_list* notificiones_envio){
 	return list_filter(lista_subs, _filtro);
 }
 
+
 static bool existeElemento(t_list* lista, void* elemento){
 
 	bool _igualar(void* otro_elemento){
@@ -413,7 +401,6 @@ static bool existeElemento(t_list* lista, void* elemento){
 	}
 	return list_any_satisfy(lista, _igualar);
 }
-
 
 
 

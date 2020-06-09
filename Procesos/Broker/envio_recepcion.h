@@ -2,6 +2,7 @@
 #define ENVIO_RECEPCION_H_
 
 #include <commons/collections/list.h>
+#include <commons/collections/queue.h>
 #include <pthread.h>
 #include <errno.h>
 #include <signal.h>
@@ -15,7 +16,7 @@
 
 void* iniciar_servidor(void);
 void esperar_cliente(int socket_servidor);
-void server_client(int* socket);
+void server_client(void* socket);
 void process_request(int cliente_fd, int cod_op);
 
 t_buffer* recibir_mensaje(int socket_cliente);

@@ -1,19 +1,27 @@
 #include "envio_recepcion.h"
 
-pthread_t THREAD;
+#define cant_threads 3
+pthread_t THREADS[cant_threads];
+pthread_mutex_t mutex_cola = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t condicional= PTHREAD_COND_INITIALIZER;
+
+t_queue* cola_clientes;
+
+void* funcion_thread();
 
 void* iniciar_servidor(void){
 
 	int flag = 1;
-	void _detener_proceso(){
-		printf("servidor_recibio_señar\n");
+	cola_clientes = queue_create();
+	int socket_servidor;
+
+	void _tratar_senal(){
 		flag = 0;
-		pthread_join(THREAD, NULL);
+		for(int i = 0; i < cant_threads; i++)
+			pthread_join(THREADS[i], NULL);
 	}
 
-	signal(SIGINT, _detener_proceso);
-
-	int socket_servidor;
+	signal(SIGUSR2, (void*)_tratar_senal);
 
     struct addrinfo hints, *servinfo, *p;
 
@@ -43,10 +51,14 @@ void* iniciar_servidor(void){
 
     SOCKET_SERVER = &socket_servidor;
 
+    for(int i = 0; i < cant_threads; i++){
+    	pthread_create(&THREADS[i], NULL, funcion_thread, NULL);
+    }
+
     while(flag)
     	esperar_cliente(socket_servidor);
 
-    printf("fin2\n");
+	close(socket_servidor);
     pthread_exit(0);
 }
 
@@ -65,17 +77,32 @@ void esperar_cliente(int socket_servidor){
 	int* p_socket = malloc(sizeof(int));
 	*p_socket = socket_cliente;
 
-	int status;
-	status = pthread_create(&THREAD, NULL, (void*)server_client, p_socket);
-	if(status != 0) printf("[envio_recepcion.c] FALLO AL CREAR EL THREAD\n");
+	pthread_mutex_lock(&mutex_cola);
 
-	pthread_detach(THREAD);
+		queue_push(cola_clientes, p_socket);
+		pthread_cond_signal(&condicional);
+
+	pthread_mutex_unlock(&mutex_cola);
 }
 
 
-void server_client(int* p_socket){
+void* funcion_thread(){
+	while(1){
+		pthread_mutex_lock(&mutex_cola);
 
-	int cod_op, socket = *p_socket;
+			if(queue_is_empty(cola_clientes))
+				pthread_cond_wait(&condicional, &mutex_cola);
+
+			server_client(queue_pop(cola_clientes));
+
+		pthread_mutex_unlock(&mutex_cola);
+	}
+}
+
+
+void server_client(void* p_socket){
+
+	int cod_op, socket = *((int*)p_socket);
 	free(p_socket);
 
 	int status = recv(socket, &cod_op, sizeof(uint32_t), 0);
@@ -127,8 +154,9 @@ void process_request(int cliente_fd, int cod_op){
 		default:
 
 			printf("CODIGO DE OPERACION INVALIDO\n");
-			pthread_exit(NULL);
+			break;
 		}
+
 }
 
 
