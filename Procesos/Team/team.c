@@ -292,7 +292,7 @@ int main(){
 
 	pthread_mutex_init(&mBlockAReady, NULL);
 	pthread_mutex_lock(&mBlockAReady);
-	pthread_create(&blockAReady, NULL, (void*)pasajeBlockAReady, NULL);
+	//pthread_create(&blockAReady, NULL, (void*)pasajeBlockAReady, NULL);
 
 	pthread_mutex_lock(&semPlanificador);
 

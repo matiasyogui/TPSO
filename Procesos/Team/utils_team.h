@@ -29,6 +29,12 @@ typedef struct{
 }t_posicion;
 
 typedef struct{
+	int id;
+	int cod_op;
+	t_buffer* buffer;
+}t_mensajeTeam;
+
+typedef struct{
 	t_posicion* posicion;
 	pthread_mutex_t* semaforo;
 	int cercania;
@@ -39,11 +45,7 @@ typedef struct{
 	t_mensajeTeam* mensaje;
 }t_entrenador;
 
-typedef struct{
-	int id;
-	int cod_op;
-	t_buffer* buffer;
-}t_mensajeTeam;
+
 
 
 pthread_t thread;

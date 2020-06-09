@@ -107,35 +107,15 @@ static void modo_suscriptor(int socket){
 
 static void modo_emisor(int socket){
 
-	int cod_op, id, status;
-
-	status = recv(socket, &cod_op, sizeof(uint32_t), 0);
-	if(status <0) perror("ERROR RECV");
+	int id, status;
 
 	status = recv(socket, &id, sizeof(uint32_t), 0);
 	if(status <0) perror("ERROR RECV");
 
-<<<<<<< HEAD
-	printf("[CONFIRMACION DEL RECPCION DEL MENSAJE] id del mensaje en el broker = %d \n", id);
-=======
-
-char* cod_opToString(int cod_op){
-	switch(cod_op){
-	case NEW_POKEMON:
-	case GET_POKEMON:
-		return "get_pokemon";
-	case APPEARED_POKEMON:
-		return "appeared_pokemon";
-	case CATCH_POKEMON:
-		return "catch_pokemon";
-	case CAUGHT_POKEMON:
-		return "caught_pokemon";
-	case LOCALIZED_POKEMON:
-		return "localized_pokemon";
-	}
-	return "error";
->>>>>>> 05e0ea1173aa2785a7276b09142e08d952402512
+	printf("[CONFIRMACION DEL RECPCION DEL MENSAJE] id = %d \n", id);
 }
+
+
 
 
 void generar_log_suscripcion(char* datos[]){
