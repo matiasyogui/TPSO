@@ -18,7 +18,7 @@ static t_list* subs_enviar(t_list* lista_subs, t_list* notificiones_envio);
 static bool existeElemento(t_list* lista, void* elemento);
 static void* serializar_mensaje2(int cod_op, t_mensaje* mensaje_enviar, int* size);
 static t_buffer* armar_buffer_envio(t_mensaje* mensaje, int cod_op);
-
+static bool _verificacion_ACK(void* elemento);
 static void _interruptor_handler(void* elemento);
 
 int iniciar_planificacion_envios(void){
@@ -80,6 +80,10 @@ int detener_planificacion_envios(void){
     return EXIT_SUCCESS;
 }
 
+static bool _verificacion_ACK(void* elemento){
+	return ((t_notificacion_envio*)elemento)->ACK;
+}
+
 
 static void* generar_envio(void* p_cola_mensajes){
 
@@ -118,7 +122,7 @@ static void* generar_envio(void* p_cola_mensajes){
 
 				pthread_cleanup_push((void*)list_destroy, (void*)subs_enviar_por_mensaje);
 
-				if (list_size(subs_enviar_por_mensaje) == 0){
+				if (list_size(subs_enviar_por_mensaje) == 0 && list_all_satisfy(mensaje_enviar->notificiones_envio, _verificacion_ACK)){
 					eliminar_mensaje_id(mensaje_enviar->id, cola_mensajes);
 
 				} else {
