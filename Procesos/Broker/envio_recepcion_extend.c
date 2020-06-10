@@ -64,7 +64,7 @@ void enviar_confirmacion(int socket, int mensaje){
 	offset += sizeof(uint32_t);
 
 	if(send(socket, mensaje_confirmacion, offset, MSG_NOSIGNAL) < 0)
-		perror("[envio_recepcion.c]FALLO SEND");
+		perror("[ENVIO_RECEPCION_EXTEND.C]SEND ERROR");
 
 	free(mensaje_confirmacion);
 }

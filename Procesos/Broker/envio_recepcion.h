@@ -15,6 +15,7 @@
 
 
 void* iniciar_servidor(void);
+void finalizar_listas(void);
 int esperar_cliente(int socket_servidor);
 int server_client(void* socket);
 int process_request(int cliente_fd, int cod_op);

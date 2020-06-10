@@ -18,8 +18,13 @@ pthread_mutex_t mutex_id = PTHREAD_MUTEX_INITIALIZER;
 
 //DECLARACIONES
 static t_list* crear_listas(void);
-static int obtener_id(void);
 static void agregar_elemento(t_list* lista, int index, void* data);
+
+static void borrar_mensaje(void* nodo_mensaje);
+static void limpiar_sublista_mensajes(void* sublista);
+
+static int obtener_id(void);
+
 static t_list* subs_enviar(t_list* lista_subs, t_list* notificiones_envio);
 static bool existeElemento(t_list* lista, void* elemento);
 static void* serializar_mensaje2(int cod_op, t_mensaje* mensaje_enviar, int* size);
@@ -38,13 +43,25 @@ void iniciar_listas(void){
 	LISTA_MENSAJES = crear_listas();
 	LISTA_SUBS = crear_listas();
 
-	for(int i=0; i< CANTIDAD_SUBLISTAS; i++)
+	for(int i=0; i< CANTIDAD_SUBLISTAS; i++){
 		pthread_mutex_init(&MUTEX_SUBLISTAS_MENSAJES[i], NULL);
-
-	for(int j=0; j< CANTIDAD_SUBLISTAS; j++)
-		pthread_mutex_init(&MUTEX_SUBLISTAS_SUSCRIPTORES[j], NULL);
+		pthread_mutex_init(&MUTEX_SUBLISTAS_SUSCRIPTORES[i], NULL);
+	}
 
 	pthread_mutex_init(&mutex_id, NULL);
+}
+
+void finalizar_listas(void){
+
+	destruir_lista_mensajes();
+	destruir_lista_suscriptores();
+
+	pthread_mutex_destroy(&mutex_id);
+
+	for(int i = 0; i < CANTIDAD_SUBLISTAS; i++){
+		pthread_mutex_destroy(&MUTEX_SUBLISTAS_MENSAJES[i]);
+		pthread_mutex_destroy(&MUTEX_SUBLISTAS_SUSCRIPTORES[i]);
+	}
 }
 
 void guardar_mensaje(t_mensaje* mensaje, int cod_op){
@@ -128,7 +145,7 @@ t_notificacion_envio* nodo_notificacion(t_suscriptor* suscriptor){
 ///////////////////////// FUNCIONES PARA ELIMINAR LAS LISTAS /////////////////////////
 
 //TODO
-void borrar_mensaje(void* nodo_mensaje){
+static void borrar_mensaje(void* nodo_mensaje){
 
 	t_mensaje* aux = nodo_mensaje;
 	free(aux->mensaje->stream);
@@ -138,16 +155,16 @@ void borrar_mensaje(void* nodo_mensaje){
 }
 
 
-void limpiar_sublista_mensajes(void* sublista){
+static void limpiar_sublista_mensajes(void* sublista){
 
 	list_clean_and_destroy_elements(sublista, &borrar_mensaje);
 }
 
 
-void destruir_lista_mensajes(t_list* lista_mensajes){
+void destruir_lista_mensajes(void){
 
-	list_iterate(lista_mensajes, &limpiar_sublista_mensajes);
-	list_destroy_and_destroy_elements(lista_mensajes, &free);
+	list_iterate(LISTA_MENSAJES, &limpiar_sublista_mensajes);
+	list_destroy_and_destroy_elements(LISTA_MENSAJES, free);
 }
 
 //TODO
@@ -159,9 +176,9 @@ void borrar_suscriptor(void* suscriptor){
 }
 
 
-void destruir_lista_suscriptores(t_list* lista_suscriptores){
+void destruir_lista_suscriptores(void){
 
-	list_destroy(lista_suscriptores);
+	list_destroy_and_destroy_elements(LISTA_SUBS, (void*)list_destroy);
 }
 
 
