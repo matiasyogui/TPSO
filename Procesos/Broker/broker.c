@@ -13,16 +13,6 @@ int main(void){
 
 	fflush(stdout);
 
-	int status;
-	/*
-	status = pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
-	if(status != 0) printf("error al iniciar el thread del server");
-	*/
-	int cola_mensajes = 0;
-
-	status = pthread_create(&thread_planificador, NULL, (void*)planificar_envios, (void*)&cola_mensajes);
-	if(status != 0) printf("error al iniciar el thread del server");
-
 	iniciar_servidor();
 
 	/*
@@ -121,14 +111,12 @@ void datos_servidor(void){
 
 void finalizar_servidor(void){
 
-	raise(SIGUSR1);
 	config_destroy(CONFIG);
 	log_destroy(LOGGER);
 	close(*SOCKET_SERVER);
 
 	//finalizar_listas();
 	//finalizar_semaforos();
-	pthread_join(thread_planificador, NULL);
 	raise(SIGTERM);
 }
 

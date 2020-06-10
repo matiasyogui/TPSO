@@ -9,6 +9,7 @@
 #define TEAM_H_
 
 #include"utils_team.h"
+#include <signal.h>
 
 
 

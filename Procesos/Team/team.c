@@ -6,6 +6,7 @@
 #include <commons/collections/list.h>
 #include <commons/string.h>
 
+t_list* pokemonesAPedir;
 t_list* lista_id_correlativos;
 
 /*void pasajeBlockAReady(){
@@ -35,12 +36,15 @@ void agregarMensajeLista(int socket, int cod_op){
 	mensajeAGuardar -> id = id_correlativo;
 	mensajeAGuardar -> cod_op = cod_op;
 
-	pthread_mutex_lock(&mListaGlobal);
-	list_add(lista_mensajes, mensajeAGuardar);
-	printf("MENSAJES EN LISTA GLOBAL = %d\n", list_size(lista_mensajes));
-	pthread_mutex_unlock(&mListaGlobal);
+	if(nosInteresaMensaje(mensajeAGuardar)){
 
-	printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id correlativo = %d, size mensaje = %d \n", cod_op, id_correlativo, size);
+		pthread_mutex_lock(&mListaGlobal);
+		list_add(lista_mensajes, mensajeAGuardar);
+		printf("MENSAJES EN LISTA GLOBAL = %d\n", list_size(lista_mensajes));
+		pthread_mutex_unlock(&mListaGlobal);
+
+		printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id correlativo = %d, size mensaje = %d \n", cod_op, id_correlativo, size);
+	}
 
 	free(mensaje);
 }
@@ -202,6 +206,7 @@ void inicializar_listas(){
 
 	objetivoGlobal = list_create();
 	pokemonYaAtrapado = list_create();
+	pokemonesAPedir = list_create();
 
 	lista_id_correlativos = list_create();
 }
@@ -246,7 +251,7 @@ void suscribirse(char* cola){
 			case LOCALIZED_POKEMON:
 
 				agregarMensajeLista(socket, cod_op);
-
+				printf("Se recibio un mensaje\n");
 				break;
 		}
 	}
@@ -256,6 +261,42 @@ void suscribirse(char* cola){
 void finalizar_server(){
 	close(server_team);
 	raise(SIGTERM);
+}
+
+bool nosInteresaMensaje(t_mensajeTeam* msg){
+	void* stream = msg -> buffer -> stream;
+	int size;
+	int offset;
+
+	bool _buscarID(void* elemento){
+		return string_equals_ignore_case((char*) (msg -> id), (char*) elemento);
+	}
+
+	void* pokemon;
+	bool _buscarPokemon(void* elemento){
+		return string_equals_ignore_case((char*) pokemon, (char*)elemento);
+	}
+
+	switch(msg -> cod_op){
+		case APPEARED_POKEMON:
+		case LOCALIZED_POKEMON:
+			offset = 0;
+
+			memcpy(&size, stream, sizeof(int));
+			offset += sizeof(int);
+
+			pokemon = malloc(size);
+			memcpy(pokemon, stream + offset, size);
+
+			return list_any_satisfy(pokemonesAPedir, _buscarPokemon);
+
+		case CAUGHT_POKEMON:
+
+			return list_any_satisfy(lista_id_correlativos, _buscarID);
+
+		default:
+			break;
+	}
 }
 
 
@@ -297,8 +338,6 @@ int main(){
 	pthread_mutex_lock(&semPlanificador);
 
 	pedir_pokemones();
-	pthread_join(tid, NULL);
-
 
 	while(1){
 		pasajeFIFO(listaBlocked,listaReady);

@@ -94,5 +94,7 @@ void pasajeFIFO(t_list* lista1, t_list* lista2);
 void Producer(t_entrenador* ent);
 void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i);
 
+bool nosInteresaMensaje(t_mensajeTeam* msg);
+
 
 #endif /* UTILS_TEAM_H_ */

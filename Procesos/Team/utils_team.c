@@ -30,10 +30,9 @@ void iniciar_servidor(void)
         break;
     }
 
-    if(listen(socket_servidor, SOMAXCONN) < 0){
+    if(listen(socket_servidor, SOMAXCONN) < 0)
     		perror("LISTEN ERROR");
-    		raise(SIGINT);
-    }
+
 
     freeaddrinfo(servinfo);
     server_team = socket_servidor;

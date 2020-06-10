@@ -4,15 +4,6 @@ pthread_t THREAD;
 
 void* iniciar_servidor(void){
 
-	int flag = 1;
-	void _detener_proceso(){
-		printf("servidor_recibio_señar\n");
-		flag = 0;
-		pthread_join(THREAD, NULL);
-	}
-
-	signal(SIGINT, _detener_proceso);
-
 	int socket_servidor;
 
     struct addrinfo hints, *servinfo, *p;
@@ -24,26 +15,26 @@ void* iniciar_servidor(void){
 
     getaddrinfo(IP_SERVER, PUERTO_SERVER, &hints, &servinfo);
 
-    int status;
+    int s;
 
     for (p=servinfo; p != NULL; p = p->ai_next)
     {
         socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if(socket_servidor < 0){perror("SOCKET ERROR"); continue; }
 
-        status = bind(socket_servidor, p->ai_addr, p->ai_addrlen);
-        if(status < 0){perror("BIND ERROR"); close(socket_servidor); continue;}
+        s = bind(socket_servidor, p->ai_addr, p->ai_addrlen);
+        if(s < 0){perror("BIND ERROR"); close(socket_servidor); continue;}
 
         break;
     }
 
-    status = listen(socket_servidor, SOMAXCONN);
+    s = listen(socket_servidor, SOMAXCONN);
     freeaddrinfo(servinfo);
-    if(status < 0){perror("LISTEN ERROR"); raise(SIGINT);}
+    if(s < 0){perror("LISTEN ERROR"); raise(SIGINT);}
 
     SOCKET_SERVER = &socket_servidor;
 
-    while(flag)
+    while(true)
     	esperar_cliente(socket_servidor);
 
     printf("fin2\n");
@@ -65,9 +56,9 @@ void esperar_cliente(int socket_servidor){
 	int* p_socket = malloc(sizeof(int));
 	*p_socket = socket_cliente;
 
-	int status;
-	status = pthread_create(&THREAD, NULL, (void*)server_client, p_socket);
-	if(status != 0) printf("[envio_recepcion.c] FALLO AL CREAR EL THREAD\n");
+	int s;
+	s = pthread_create(&THREAD, NULL, (void*)server_client, p_socket);
+	if(s != 0) printf("[envio_recepcion.c] FALLO AL CREAR EL THREAD\n");
 
 	pthread_detach(THREAD);
 }
@@ -78,8 +69,8 @@ void server_client(int* p_socket){
 	int cod_op, socket = *p_socket;
 	free(p_socket);
 
-	int status = recv(socket, &cod_op, sizeof(uint32_t), 0);
-	if(status < 0){ perror("[envio_recepcion.c] FALLO RECV"); cod_op = -1;}
+	int s = recv(socket, &cod_op, sizeof(uint32_t), 0);
+	if(s < 0){ perror("[envio_recepcion.c] FALLO RECV"); cod_op = -1;}
 
 	process_request(socket, cod_op);
 }
@@ -142,7 +133,7 @@ void* tratar_mensaje(int socket, t_mensaje* mensaje, int cod_op){
 
 	close(socket);
 
-	//enviar_mensaje_suscriptores(mensaje);
+	enviar_mensaje_suscriptores(mensaje);
 
 	return EXIT_SUCCESS;
 }
@@ -166,8 +157,8 @@ void* tratar_suscriptor(int socket){
 	guardar_suscriptor(suscriptor, cod_op);
 
 	informe_lista_subs();
-
-	//enviar_mensajes_suscriptor(suscriptor, cod_op);
+	printf("cod_op = %d\n", cod_op);
+	enviar_mensajes_suscriptor(suscriptor, cod_op);
 
 	return EXIT_SUCCESS;
 }

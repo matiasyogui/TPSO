@@ -28,6 +28,7 @@ typedef struct{
 
 	int id;
 	int id_correlativo;
+	int cod_op;
 	t_buffer* mensaje;
 	t_list* notificiones_envio;
 	pthread_mutex_t mutex;

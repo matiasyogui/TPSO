@@ -1,0 +1,191 @@
+[INFO] 21:30:00:310 gameboy/(11227:11227): Se realizo la conexion al proceso broker
+[INFO] 21:30:00:319 gameboy/(11253:11253): Se realizo la conexion al proceso broker
+[INFO] 21:30:00:332 gameboy/(11614:11614): Se realizo la conexion al proceso broker
+[INFO] 21:30:00:338 gameboy/(11656:11656): Se realizo la conexion al proceso broker
+[INFO] 21:30:00:343 gameboy/(11732:11732): Se realizo la conexion al proceso broker
+[INFO] 21:30:00:346 gameboy/(11768:11768): Se realizo la conexion al proceso broker
+[INFO] 21:30:00:348 gameboy/(11795:11795): Se realizo la conexion al proceso broker
+[INFO] 21:30:00:352 gameboy/(11829:11829): Se realizo la conexion al proceso broker
+[INFO] 21:30:00:354 gameboy/(11865:11865): Se realizo la conexion al proceso broker
+[INFO] 21:30:00:357 gameboy/(11869:11869): Se realizo la conexion al proceso broker
+[INFO] 21:30:36:504 gameboy/(12715:12715): Se realizo la conexion al proceso broker
+[INFO] 21:30:36:506 gameboy/(12722:12722): Se realizo la conexion al proceso broker
+[INFO] 21:30:36:508 gameboy/(12733:12733): Se realizo la conexion al proceso broker
+[INFO] 21:30:36:510 gameboy/(12744:12744): Se realizo la conexion al proceso broker
+[INFO] 21:30:36:515 gameboy/(12752:12752): Se realizo la conexion al proceso broker
+[INFO] 21:30:36:517 gameboy/(12760:12760): Se realizo la conexion al proceso broker
+[INFO] 21:30:36:520 gameboy/(12769:12769): Se realizo la conexion al proceso broker
+[INFO] 21:30:36:522 gameboy/(12787:12787): Se realizo la conexion al proceso broker
+[INFO] 21:30:36:525 gameboy/(12813:12813): Se realizo la conexion al proceso broker
+[INFO] 21:30:36:545 gameboy/(12835:12835): Se realizo la conexion al proceso broker
+[INFO] 21:30:55:851 gameboy/(6864:6864): Se realizo la suscripcion a la cola new_pokemon
+[INFO] 21:30:55:852 gameboy/(6864:6864): Se recibio un mensaje de la cola new_pokemon
+[INFO] 21:30:55:852 gameboy/(6864:6864): Se recibio un mensaje de la cola new_pokemon
+[INFO] 21:30:55:853 gameboy/(6864:6864): Se recibio un mensaje de la cola new_pokemon
+[INFO] 21:30:55:853 gameboy/(6864:6864): Se recibio un mensaje de la cola new_pokemon
+[INFO] 21:31:36:501 gameboy/(21355:21355): Se realizo la suscripcion a la cola appeared_pokemon
+[INFO] 21:51:47:504 gameboy/(22897:22897): Se realizo la conexion al proceso broker
+[INFO] 21:51:47:507 gameboy/(22899:22899): Se realizo la conexion al proceso broker
+[INFO] 21:51:47:508 gameboy/(22901:22901): Se realizo la conexion al proceso broker
+[INFO] 21:51:47:510 gameboy/(22903:22903): Se realizo la conexion al proceso broker
+[INFO] 21:51:47:512 gameboy/(22905:22905): Se realizo la conexion al proceso broker
+[INFO] 21:51:47:516 gameboy/(22907:22907): Se realizo la conexion al proceso broker
+[INFO] 21:51:47:526 gameboy/(22909:22909): Se realizo la conexion al proceso broker
+[INFO] 21:51:47:528 gameboy/(22911:22911): Se realizo la conexion al proceso broker
+[INFO] 21:51:47:530 gameboy/(22913:22913): Se realizo la conexion al proceso broker
+[INFO] 21:51:47:534 gameboy/(22915:22915): Se realizo la conexion al proceso broker
+[INFO] 21:51:51:626 gameboy/(22920:22920): Se realizo la suscripcion a la cola appeared_pokemon
+[INFO] 21:51:51:626 gameboy/(22920:22920): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 21:51:51:626 gameboy/(22920:22920): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 21:52:20:201 gameboy/(22955:22955): Se realizo la conexion al proceso team
+[INFO] 21:52:24:633 gameboy/(22963:22963): Se realizo la suscripcion a la cola appeared_pokemon
+[INFO] 21:52:24:633 gameboy/(22963:22963): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 21:52:31:720 gameboy/(22963:22963): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 21:55:19:553 gameboy/(23109:23109): Se realizo la conexion al proceso broker
+[INFO] 21:55:19:555 gameboy/(23111:23111): Se realizo la conexion al proceso broker
+[INFO] 21:55:19:556 gameboy/(23113:23113): Se realizo la conexion al proceso broker
+[INFO] 21:55:19:558 gameboy/(23115:23115): Se realizo la conexion al proceso broker
+[INFO] 21:55:19:560 gameboy/(23117:23117): Se realizo la conexion al proceso broker
+[INFO] 21:55:19:568 gameboy/(23119:23119): Se realizo la conexion al proceso broker
+[INFO] 21:55:19:569 gameboy/(23121:23121): Se realizo la conexion al proceso broker
+[INFO] 21:55:19:572 gameboy/(23123:23123): Se realizo la conexion al proceso broker
+[INFO] 21:55:19:573 gameboy/(23125:23125): Se realizo la conexion al proceso broker
+[INFO] 21:55:19:574 gameboy/(23127:23127): Se realizo la conexion al proceso broker
+[INFO] 21:55:21:792 gameboy/(23132:23132): Se realizo la suscripcion a la cola appeared_pokemon
+[INFO] 21:55:21:792 gameboy/(23132:23132): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 21:55:21:792 gameboy/(23132:23132): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 21:55:36:343 gameboy/(23153:23153): Se realizo la suscripcion a la cola appeared_pokemon
+[INFO] 21:55:36:346 gameboy/(23153:23153): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 21:58:28:776 gameboy/(23264:23264): Se realizo la conexion al proceso broker
+[INFO] 21:58:28:777 gameboy/(23266:23266): Se realizo la conexion al proceso broker
+[INFO] 21:58:28:779 gameboy/(23268:23268): Se realizo la conexion al proceso broker
+[INFO] 21:58:28:781 gameboy/(23270:23270): Se realizo la conexion al proceso broker
+[INFO] 21:58:28:783 gameboy/(23272:23272): Se realizo la conexion al proceso broker
+[INFO] 21:58:28:785 gameboy/(23274:23274): Se realizo la conexion al proceso broker
+[INFO] 21:58:28:787 gameboy/(23276:23276): Se realizo la conexion al proceso broker
+[INFO] 21:58:28:790 gameboy/(23278:23278): Se realizo la conexion al proceso broker
+[INFO] 21:58:28:792 gameboy/(23280:23280): Se realizo la conexion al proceso broker
+[INFO] 21:58:28:795 gameboy/(23282:23282): Se realizo la conexion al proceso broker
+[INFO] 21:59:45:158 gameboy/(23328:23328): Se realizo la conexion al proceso broker
+[INFO] 21:59:45:160 gameboy/(23330:23330): Se realizo la conexion al proceso broker
+[INFO] 21:59:45:162 gameboy/(23332:23332): Se realizo la conexion al proceso broker
+[INFO] 21:59:45:164 gameboy/(23334:23334): Se realizo la conexion al proceso broker
+[INFO] 21:59:45:170 gameboy/(23336:23336): Se realizo la conexion al proceso broker
+[INFO] 21:59:45:174 gameboy/(23338:23338): Se realizo la conexion al proceso broker
+[INFO] 21:59:45:176 gameboy/(23340:23340): Se realizo la conexion al proceso broker
+[INFO] 21:59:45:178 gameboy/(23342:23342): Se realizo la conexion al proceso broker
+[INFO] 21:59:45:183 gameboy/(23344:23344): Se realizo la conexion al proceso broker
+[INFO] 21:59:45:185 gameboy/(23346:23346): Se realizo la conexion al proceso broker
+[INFO] 22:02:05:894 gameboy/(23528:23528): Se realizo la conexion al proceso broker
+[INFO] 22:02:05:895 gameboy/(23530:23530): Se realizo la conexion al proceso broker
+[INFO] 22:02:05:898 gameboy/(23532:23532): Se realizo la conexion al proceso broker
+[INFO] 22:02:05:900 gameboy/(23534:23534): Se realizo la conexion al proceso broker
+[INFO] 22:02:05:904 gameboy/(23536:23536): Se realizo la conexion al proceso broker
+[INFO] 22:02:05:906 gameboy/(23538:23538): Se realizo la conexion al proceso broker
+[INFO] 22:02:05:910 gameboy/(23540:23540): Se realizo la conexion al proceso broker
+[INFO] 22:02:05:912 gameboy/(23542:23542): Se realizo la conexion al proceso broker
+[INFO] 22:02:05:914 gameboy/(23544:23544): Se realizo la conexion al proceso broker
+[INFO] 22:02:05:921 gameboy/(23546:23546): Se realizo la conexion al proceso broker
+[INFO] 22:02:09:589 gameboy/(23552:23552): Se realizo la conexion al proceso broker
+[INFO] 22:02:09:590 gameboy/(23554:23554): Se realizo la conexion al proceso broker
+[INFO] 22:02:09:593 gameboy/(23556:23556): Se realizo la conexion al proceso broker
+[INFO] 22:02:09:596 gameboy/(23558:23558): Se realizo la conexion al proceso broker
+[INFO] 22:02:09:603 gameboy/(23560:23560): Se realizo la conexion al proceso broker
+[INFO] 22:02:09:606 gameboy/(23562:23562): Se realizo la conexion al proceso broker
+[INFO] 22:02:09:608 gameboy/(23564:23564): Se realizo la conexion al proceso broker
+[INFO] 22:02:09:610 gameboy/(23566:23566): Se realizo la conexion al proceso broker
+[INFO] 22:02:09:625 gameboy/(23568:23568): Se realizo la conexion al proceso broker
+[INFO] 22:02:09:631 gameboy/(23570:23570): Se realizo la conexion al proceso broker
+[INFO] 22:02:29:739 gameboy/(23580:23580): Se realizo la suscripcion a la cola appeared_pokemon
+[INFO] 22:02:29:739 gameboy/(23580:23580): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 22:02:29:739 gameboy/(23580:23580): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 22:02:29:739 gameboy/(23580:23580): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 22:02:29:739 gameboy/(23580:23580): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 22:03:06:292 gameboy/(23602:23602): Se realizo la conexion al proceso broker
+[INFO] 22:03:06:294 gameboy/(23604:23604): Se realizo la conexion al proceso broker
+[INFO] 22:03:06:296 gameboy/(23606:23606): Se realizo la conexion al proceso broker
+[INFO] 22:03:06:298 gameboy/(23608:23608): Se realizo la conexion al proceso broker
+[INFO] 22:03:06:300 gameboy/(23610:23610): Se realizo la conexion al proceso broker
+[INFO] 22:03:06:305 gameboy/(23612:23612): Se realizo la conexion al proceso broker
+[INFO] 22:03:06:307 gameboy/(23614:23614): Se realizo la conexion al proceso broker
+[INFO] 22:03:06:309 gameboy/(23616:23616): Se realizo la conexion al proceso broker
+[INFO] 22:03:06:311 gameboy/(23618:23618): Se realizo la conexion al proceso broker
+[INFO] 22:03:06:313 gameboy/(23620:23620): Se realizo la conexion al proceso broker
+[INFO] 22:03:09:540 gameboy/(23626:23626): Se realizo la conexion al proceso broker
+[INFO] 22:03:09:542 gameboy/(23628:23628): Se realizo la conexion al proceso broker
+[INFO] 22:03:09:544 gameboy/(23630:23630): Se realizo la conexion al proceso broker
+[INFO] 22:03:09:546 gameboy/(23632:23632): Se realizo la conexion al proceso broker
+[INFO] 22:03:09:548 gameboy/(23634:23634): Se realizo la conexion al proceso broker
+[INFO] 22:03:09:556 gameboy/(23636:23636): Se realizo la conexion al proceso broker
+[INFO] 22:03:09:563 gameboy/(23638:23638): Se realizo la conexion al proceso broker
+[INFO] 22:03:09:568 gameboy/(23640:23640): Se realizo la conexion al proceso broker
+[INFO] 22:03:09:572 gameboy/(23642:23642): Se realizo la conexion al proceso broker
+[INFO] 22:03:09:585 gameboy/(23644:23644): Se realizo la conexion al proceso broker
+[INFO] 22:03:11:545 gameboy/(23580:23580): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 22:05:34:977 gameboy/(23796:23796): Se realizo la suscripcion a la cola appeared_pokemon
+[INFO] 22:05:39:819 gameboy/(23799:23799): Se realizo la conexion al proceso broker
+[INFO] 22:05:39:821 gameboy/(23801:23801): Se realizo la conexion al proceso broker
+[INFO] 22:05:39:822 gameboy/(23803:23803): Se realizo la conexion al proceso broker
+[INFO] 22:05:39:824 gameboy/(23805:23805): Se realizo la conexion al proceso broker
+[INFO] 22:05:39:826 gameboy/(23807:23807): Se realizo la conexion al proceso broker
+[INFO] 22:05:39:831 gameboy/(23809:23809): Se realizo la conexion al proceso broker
+[INFO] 22:05:39:835 gameboy/(23811:23811): Se realizo la conexion al proceso broker
+[INFO] 22:05:39:837 gameboy/(23813:23813): Se realizo la conexion al proceso broker
+[INFO] 22:05:39:838 gameboy/(23815:23815): Se realizo la conexion al proceso broker
+[INFO] 22:05:39:840 gameboy/(23817:23817): Se realizo la conexion al proceso broker
+[INFO] 22:05:53:226 gameboy/(23823:23823): Se realizo la conexion al proceso broker
+[INFO] 22:05:53:228 gameboy/(23825:23825): Se realizo la conexion al proceso broker
+[INFO] 22:05:53:230 gameboy/(23827:23827): Se realizo la conexion al proceso broker
+[INFO] 22:05:53:232 gameboy/(23829:23829): Se realizo la conexion al proceso broker
+[INFO] 22:05:53:241 gameboy/(23831:23831): Se realizo la conexion al proceso broker
+[INFO] 22:05:53:243 gameboy/(23833:23833): Se realizo la conexion al proceso broker
+[INFO] 22:05:53:246 gameboy/(23835:23835): Se realizo la conexion al proceso broker
+[INFO] 22:05:53:247 gameboy/(23837:23837): Se realizo la conexion al proceso broker
+[INFO] 22:05:53:249 gameboy/(23839:23839): Se realizo la conexion al proceso broker
+[INFO] 22:05:53:251 gameboy/(23841:23841): Se realizo la conexion al proceso broker
+[INFO] 22:11:27:759 gameboy/(23990:23990): Se realizo la conexion al proceso broker
+[INFO] 22:11:27:761 gameboy/(23992:23992): Se realizo la conexion al proceso broker
+[INFO] 22:11:27:763 gameboy/(23994:23994): Se realizo la conexion al proceso broker
+[INFO] 22:11:27:764 gameboy/(23996:23996): Se realizo la conexion al proceso broker
+[INFO] 22:11:27:767 gameboy/(23998:23998): Se realizo la conexion al proceso broker
+[INFO] 22:11:27:771 gameboy/(24000:24000): Se realizo la conexion al proceso broker
+[INFO] 22:11:27:773 gameboy/(24002:24002): Se realizo la conexion al proceso broker
+[INFO] 22:11:27:782 gameboy/(24004:24004): Se realizo la conexion al proceso broker
+[INFO] 22:11:27:784 gameboy/(24006:24006): Se realizo la conexion al proceso broker
+[INFO] 22:11:27:789 gameboy/(24008:24008): Se realizo la conexion al proceso broker
+[INFO] 22:12:11:79 gameboy/(24063:24063): Se realizo la conexion al proceso broker
+[INFO] 22:12:11:80 gameboy/(24065:24065): Se realizo la conexion al proceso broker
+[INFO] 22:12:11:84 gameboy/(24067:24067): Se realizo la conexion al proceso broker
+[INFO] 22:12:11:86 gameboy/(24069:24069): Se realizo la conexion al proceso broker
+[INFO] 22:12:11:89 gameboy/(24071:24071): Se realizo la conexion al proceso broker
+[INFO] 22:12:11:94 gameboy/(24073:24073): Se realizo la conexion al proceso broker
+[INFO] 22:12:11:95 gameboy/(24075:24075): Se realizo la conexion al proceso broker
+[INFO] 22:12:11:97 gameboy/(24077:24077): Se realizo la conexion al proceso broker
+[INFO] 22:12:11:102 gameboy/(24079:24079): Se realizo la conexion al proceso broker
+[INFO] 22:12:11:105 gameboy/(24081:24081): Se realizo la conexion al proceso broker
+[INFO] 22:12:18:526 gameboy/(24087:24087): Se realizo la conexion al proceso broker
+[INFO] 22:12:18:528 gameboy/(24089:24089): Se realizo la conexion al proceso broker
+[INFO] 22:12:18:530 gameboy/(24091:24091): Se realizo la conexion al proceso broker
+[INFO] 22:12:18:532 gameboy/(24093:24093): Se realizo la conexion al proceso broker
+[INFO] 22:12:18:535 gameboy/(24095:24095): Se realizo la conexion al proceso broker
+[INFO] 22:12:18:538 gameboy/(24097:24097): Se realizo la conexion al proceso broker
+[INFO] 22:12:18:540 gameboy/(24099:24099): Se realizo la conexion al proceso broker
+[INFO] 22:12:18:547 gameboy/(24101:24101): Se realizo la conexion al proceso broker
+[INFO] 22:12:18:549 gameboy/(24103:24103): Se realizo la conexion al proceso broker
+[INFO] 22:12:18:551 gameboy/(24105:24105): Se realizo la conexion al proceso broker
+[INFO] 22:12:22:876 gameboy/(24113:24113): Se realizo la suscripcion a la cola appeared_pokemon
+[INFO] 22:12:22:878 gameboy/(24113:24113): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 22:12:22:878 gameboy/(24113:24113): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 22:12:22:878 gameboy/(24113:24113): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 22:12:22:878 gameboy/(24113:24113): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 22:12:52:373 gameboy/(24113:24113): Se recibio un mensaje de la cola appeared_pokemon
+[INFO] 22:14:23:469 gameboy/(24218:24218): Se realizo la conexion al proceso broker
+[INFO] 22:14:23:471 gameboy/(24220:24220): Se realizo la conexion al proceso broker
+[INFO] 22:14:23:473 gameboy/(24222:24222): Se realizo la conexion al proceso broker
+[INFO] 22:14:23:474 gameboy/(24224:24224): Se realizo la conexion al proceso broker
+[INFO] 22:14:23:476 gameboy/(24226:24226): Se realizo la conexion al proceso broker
+[INFO] 22:14:23:482 gameboy/(24228:24228): Se realizo la conexion al proceso broker
+[INFO] 22:14:23:484 gameboy/(24230:24230): Se realizo la conexion al proceso broker
+[INFO] 22:14:23:489 gameboy/(24232:24232): Se realizo la conexion al proceso broker
+[INFO] 22:14:23:496 gameboy/(24234:24234): Se realizo la conexion al proceso broker
+[INFO] 22:14:23:501 gameboy/(24236:24236): Se realizo la conexion al proceso broker

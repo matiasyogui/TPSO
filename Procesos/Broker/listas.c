@@ -1,29 +1,14 @@
 #include "listas.h"
 
-#define CANTIDAD_SUBLISTAS 6
 
 static int id_basico = 0;
 
-t_list* LISTA_MENSAJES;
-t_list* LISTA_SUBS;
-
-pthread_mutex_t MUTEX_SUBLISTAS_MENSAJES[CANTIDAD_SUBLISTAS];
-pthread_mutex_t MUTEX_SUBLISTAS_SUSCRIPTORES[CANTIDAD_SUBLISTAS];
 pthread_mutex_t mutex_id;
 
 //DECLARACIONES
 static t_list* crear_listas(void);
 static int obtener_id(void);
 static void agregar_elemento(t_list* lista, int index, void* data);
-static t_list* subs_enviar(t_list* lista_subs, t_list* notificiones_envio);
-static bool existeElemento(t_list* lista, void* elemento);
-static void* serializar_mensaje2(int cod_op, t_mensaje* mensaje_enviar, int* size);
-static void* funcion_envio(void* _datos);
-static void* enviar_mensaje(void* datos);
-
-static t_datos* armar_paquete(int cod_op, t_mensaje* mensaje, t_list* subs);
-static t_datos_envio* armar_paquete_datos(t_buffer* buffer, t_list* notificaciones, pthread_mutex_t* mutex);
-static t_buffer* armar_buffer_envio(t_mensaje* mensaje, int cod_op);
 
 
 //CODIGO
@@ -85,10 +70,10 @@ static void agregar_elemento(t_list* lista, int index, void* data){
 ///////////////////////// FUNCIONES LISTA MENSAJES /////////////////////////
 
 
-t_mensaje* nodo_mensaje(int id_correlativo, t_buffer* mensaje){
+t_mensaje* nodo_mensaje(int cod_op, int id_correlativo, t_buffer* mensaje){
 
 	t_mensaje* nodo_mensaje = malloc(sizeof( t_mensaje ));
-
+	nodo_mensaje -> cod_op = cod_op;
 	nodo_mensaje -> id = obtener_id();
 	nodo_mensaje -> id_correlativo = id_correlativo;
 	nodo_mensaje -> mensaje = mensaje;
@@ -239,205 +224,6 @@ static int obtener_id(void){
 
 
 
-void* planificar_envios(void* _cola_mensajes){
 
-	int status;
-	int flag = 1;
-	void _detener_proceso(){
-		printf("planificador recibio señal\n");
-		flag = 0;
-	}
 
-	signal(SIGINT, _detener_proceso);
 
-	int cola_mensajes = *((int*)_cola_mensajes);
-
-	while(flag){
-
-		pthread_mutex_lock(&(MUTEX_SUBLISTAS_MENSAJES[cola_mensajes]));
-			t_list* mensajes_enviar = list_duplicate(list_get(LISTA_MENSAJES, cola_mensajes));
-		pthread_mutex_unlock(&(MUTEX_SUBLISTAS_MENSAJES[cola_mensajes]));
-
-		pthread_mutex_lock(&(MUTEX_SUBLISTAS_SUSCRIPTORES[cola_mensajes]));
-			t_list* lista_subs_enviar = list_duplicate(list_get(LISTA_SUBS, cola_mensajes));
-		pthread_mutex_unlock(&(MUTEX_SUBLISTAS_SUSCRIPTORES[cola_mensajes]));
-
-		if(list_size(mensajes_enviar) == 0) continue;
-
-		pthread_t threads[list_size(mensajes_enviar)];
-
-		//TODO: revisar el caso en el que la lista de subs_enviar_por_mensaje es igual a 0, caso en el que un mensaje ya fue enviado a todos los subs
-		for(int i = 0; i < list_size(mensajes_enviar); i++){
-
-			t_mensaje* mensaje_enviar = list_get(mensajes_enviar, i);
-			t_list* subs_enviar_por_mensaje = subs_enviar(lista_subs_enviar, mensaje_enviar->notificiones_envio);
-
-			t_datos* datos = armar_paquete(cola_mensajes, mensaje_enviar, subs_enviar_por_mensaje);
-
-			int* _i = malloc(sizeof(int));
-			*_i = i;
-			status = pthread_create(&threads[*_i], NULL, (void*)funcion_envio, (void*)datos);
-			if(status != 0) printf("[LISTAS.C] ERROR AL CREAR EL THREAD");
-
-			free(_i);
-		}
-		for(int i = 0; i < list_size(mensajes_enviar); i++)
-			pthread_join(threads[i], NULL);
-
-		list_destroy(mensajes_enviar);
-		list_destroy(lista_subs_enviar);
-	}
-	printf("fin1\n");
-	pthread_exit(NULL);
-}
-
-
-void* funcion_envio(void* _datos){
-
-	t_datos* datos = _datos;
-	t_buffer* stream_enviar = armar_buffer_envio(datos->mensaje, datos->cola_mensajes);
-	pthread_t threads[list_size(datos->lista_subs)];
-
-	t_datos_envio* datos_envio = armar_paquete_datos(stream_enviar, datos->mensaje->notificiones_envio, &(datos->mensaje->mutex));
-
-	if(list_size(datos->lista_subs) == 0 ) pthread_exit(NULL);
-
-	int status;
-	for(int i = 0; i < list_size(datos->lista_subs); i++){
-
-		datos_envio->suscriptor = list_get(datos->lista_subs, i);
-
-		int* _i = malloc(sizeof(int));
-		*_i = i;
-		status = pthread_create(&threads[*_i], NULL, (void*)enviar_mensaje, (void*)datos_envio);
-		if(status != 0) printf("[LISTAS.C] ERROR AL CREAR EL THREAD2");
-
-		free(_i);
-	}
-	free(datos);
-
-	for(int i = 0; i < list_size(datos->lista_subs); i++)
-		pthread_join(threads[i], NULL);
-
-	free(stream_enviar->stream);
-	free(stream_enviar);
-	free(datos->lista_subs);
-	free(datos_envio);
-
-	pthread_exit(NULL);
-}
-
-
-
-void* enviar_mensaje(void* datos){
-
-	t_datos_envio* datos_envio = datos;
-	t_suscriptor* sub = datos_envio->suscriptor;
-
-	int status;
-	int socket = sub->socket;
-
-	status = send(socket, datos_envio->stream_enviar->stream, datos_envio->stream_enviar->size, 0);
-	if(status < 0){perror("FALLO SEND"); pthread_exit(NULL);}
-
-	t_notificacion_envio* notificacion_envio = nodo_notificacion(datos_envio->suscriptor);
-
-	pthread_mutex_lock(datos_envio->mutex_mensaje);
-		list_add(datos_envio->notificaciones_envio, notificacion_envio);
-	pthread_mutex_unlock(datos_envio->mutex_mensaje);
-
-	int confirmacion;
-	status = recv(socket, &confirmacion, sizeof(uint32_t), 0);
-	if(status < 0){perror("FALLO RECV"); /*free(notificacion_envio);*/ pthread_exit(NULL);}
-
-	if(confirmacion)
-		notificacion_envio->ACK = confirmacion;
-	//else
-		// definir que sucederia en un caso contrario
-		//free(datos_envio->mensaje);
-
-	pthread_exit(NULL);
-}
-
-
-
-
-
-
-
-static t_datos* armar_paquete(int cod_op, t_mensaje* mensaje, t_list* subs){
-
-	t_datos* datos = malloc(sizeof(t_datos));
-	datos->cola_mensajes = cod_op;
-	datos->mensaje = mensaje;
-	datos->lista_subs = subs;
-
-	return datos;
-}
-
-static t_datos_envio* armar_paquete_datos(t_buffer* buffer, t_list* notificaciones, pthread_mutex_t* mutex){
-
-	t_datos_envio* datos = malloc(sizeof(t_datos_envio));
-	datos->stream_enviar = buffer;
-	datos->notificaciones_envio = notificaciones;
-	datos->mutex_mensaje = mutex;
-
-	return datos;
-}
-
-
-
-static t_buffer* armar_buffer_envio(t_mensaje* mensaje, int cod_op){
-
-	t_buffer* buffer = malloc(sizeof(t_buffer));
-
-	buffer->stream = serializar_mensaje2(cod_op, mensaje, (int*)(&buffer->size));
-
-	return buffer;
-}
-
-
-
-static t_list* subs_enviar(t_list* lista_subs, t_list* notificiones_envio){
-
-	bool _filtro(void* elemento){
-		return !existeElemento(notificiones_envio, elemento);
-	}
-	return list_filter(lista_subs, _filtro);
-}
-
-static bool existeElemento(t_list* lista, void* elemento){
-
-	bool _igualar(void* otro_elemento){
-		return ((t_notificacion_envio*)otro_elemento)->suscriptor->socket == ((t_suscriptor*)elemento)->socket;
-	}
-	return list_any_satisfy(lista, _igualar);
-}
-
-
-
-
-static void* serializar_mensaje2(int cod_op, t_mensaje* mensaje_enviar, int* size){
-
-	void* stream = malloc(3 * sizeof(uint32_t) + mensaje_enviar->mensaje->size);
-
-	int offset = 0;
-
-	memcpy(stream + offset, &(cod_op), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	if(mensaje_enviar -> id_correlativo != -1)
-		memcpy(stream + offset, &(mensaje_enviar->id_correlativo), sizeof(uint32_t));
-	else
-		memcpy(stream + offset, &(mensaje_enviar->id), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(stream + offset, &(mensaje_enviar->mensaje->size), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(stream + offset, mensaje_enviar->mensaje->stream, mensaje_enviar->mensaje->size);
-	offset += mensaje_enviar->mensaje->size;
-
-	*size = offset;
-	return stream;
-}
