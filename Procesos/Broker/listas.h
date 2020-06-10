@@ -1,12 +1,11 @@
 #ifndef LISTAS_H_
 #define LISTAS_H_
 
-#include <stdbool.h>
-#include <pthread.h>
+
 #include <cosas_comunes.h>
 #include <commons/collections/list.h>
 #include <commons/collections/queue.h>
-#include <signal.h>
+
 #include "variables_globales.h"
 
 ///////////////////////// FUNCIONES CREACION DE LISTAS /////////////////////////
@@ -24,9 +23,7 @@ t_notificacion_envio* nodo_notificacion(t_suscriptor* suscriptor);
 
 ///////////////////////// FUNCIONES PARA ELIMINAR LAS LISTAS /////////////////////////
 
-//mensajes
 void destruir_lista_mensajes(void);
-//suscritores
 void destruir_lista_suscriptores(void);
 
 ///////////////////////// FUNCIONES PARA MOSTRAR LAS LISTAS /////////////////////////
@@ -36,6 +33,6 @@ void informe_lista_subs(void);
 
 ////////////////////////////////////////
 
-void* planificar_envios(void* _cola_mensajes);
+int obtener_datos_envios(t_list** lista_mensajes, t_list** lista_subs, int cola_mensajes);
 
 #endif /* LISTAS_H_ */

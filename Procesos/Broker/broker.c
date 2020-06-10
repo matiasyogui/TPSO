@@ -1,9 +1,10 @@
 #include "broker.h"
 
-pthread_t thread_server, thread_planificador;
+pthread_t thread_server;
 
 void datos_servidor(void);
 void finalizar_servidor(void);
+void detener_servidor(void);
 
 
 int main(void){
@@ -17,11 +18,9 @@ int main(void){
 	fflush(stdout);
 
 	s = pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
-	if(s != 0) printf("[BROKER.C] PTHREAD_CREATE ERROR");
+	if (s != 0) printf("[BROKER.C] PTHREAD_CREATE ERROR");
 
-	//int cola_mensajes = 0;
-	//s = pthread_create(&thread_planificador, NULL, (void*)planificar_envios, (void*)&cola_mensajes);
-	//if(status != 0) printf("error al iniciar el thread del planificador");
+	iniciar_planificacion_envios();
 
 	pthread_join(thread_server, NULL);
 
@@ -45,13 +44,11 @@ void datos_servidor(void){
 
 void finalizar_servidor(void){
 
-	int s;
+	detener_servidor();
+	printf("Se detuvo al servidro con exito\n");
 
-	s = pthread_cancel(thread_server);
-	if(s != 0) perror("[BROKER.C] PTHREAD_CANCEL ERROR");
-
-	s = pthread_join(thread_server, NULL);
-	if(s != 0) perror("[BROKER.C] PTHREAD_JOIN ERROR");
+	detener_planificacion_envios();
+	printf("Se detuvo al planificador con exito\n");
 
 	finalizar_listas();
 
@@ -60,7 +57,16 @@ void finalizar_servidor(void){
 	raise(SIGTERM);
 }
 
+void detener_servidor(void){
 
+	int s;
+
+	s = pthread_cancel(thread_server);
+	if (s != 0) perror("[BROKER.C] PTHREAD_CANCEL ERROR");
+
+	s = pthread_join(thread_server, NULL);
+	if (s != 0) perror("[BROKER.C] PTHREAD_JOIN ERROR");
+}
 
 
 

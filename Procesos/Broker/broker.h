@@ -8,6 +8,7 @@
 #include "envio_recepcion.h"
 #include "listas.h"
 #include "memoria.h"
+#include "planificador.h"
 
 
 #endif /* BROKER_H_ */
