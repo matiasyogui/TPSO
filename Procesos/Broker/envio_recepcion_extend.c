@@ -4,15 +4,15 @@
 t_buffer* recibir_mensaje(int cliente_fd){
 
 	t_buffer* buffer = malloc(sizeof(t_buffer));
-	int status;
+	int s;
 
-	status = recv(cliente_fd, &(buffer->size), sizeof(uint32_t), 0);
-	if(status < 0){	free(buffer); return NULL;}
+	s = recv(cliente_fd, &(buffer->size), sizeof(uint32_t), 0);
+	if(s < 0){	free(buffer); 	return NULL;}
 
 	buffer->stream = malloc(buffer->size);
 
-	status = recv(cliente_fd, buffer->stream, buffer->size, 0);
-	if(status < 0){	free(buffer); free(buffer->stream); return NULL;}
+	s = recv(cliente_fd, buffer->stream, buffer->size, 0);
+	if(s < 0){	free(buffer); 	free(buffer->stream); 	return NULL;}
 
 	return buffer;
 }
@@ -21,22 +21,22 @@ t_buffer* recibir_mensaje(int cliente_fd){
 t_mensaje* generar_nodo_mensaje(int socket, bool EsCorrelativo, int cod_op){
 
 	int id_correlativo, size;
-	int status;
+	int s;
 
 	if(EsCorrelativo){
-		status = recv(socket, &id_correlativo, sizeof(uint32_t), 0);
-		if(status < 0) return NULL;
+		s = recv(socket, &id_correlativo, sizeof(uint32_t), 0);
+		if(s < 0) 	return NULL;
 	}
 	else
 		id_correlativo = -1;
 
-	status = recv(socket, &size, sizeof(uint32_t), 0);
-	if(status < 0){	return NULL; }
+	s = recv(socket, &size, sizeof(uint32_t), 0);
+	if(s < 0)	return NULL;
 
 	void* stream = malloc(size);
 
-	status = recv(socket, stream, size, 0);
-	if(status < 0){	free(stream); return NULL;}
+	s = recv(socket, stream, size, 0);
+	if(s < 0){	free(stream);	return NULL;}
 
 	t_buffer* mensaje = malloc(sizeof(t_buffer));
 	mensaje -> size = size;

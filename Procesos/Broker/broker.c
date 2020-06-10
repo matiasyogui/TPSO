@@ -16,12 +16,13 @@ int main(void){
 
 	fflush(stdout);
 
-	int status, cola_mensajes = 0;
+	int s;
 
-	status = pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
-	if(status != 0) printf("error al iniciar el thread del server");
+	s = pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
+	if(s != 0) printf("error al iniciar el thread del server");
+	//int cola_mensajes = 0;
 
-	//status = pthread_create(&thread_planificador, NULL, (void*)planificar_envios, (void*)&cola_mensajes);
+	//s = pthread_create(&thread_planificador, NULL, (void*)planificar_envios, (void*)&cola_mensajes);
 	//if(status != 0) printf("error al iniciar el thread del planificador");
 
 	while(1);
@@ -45,15 +46,17 @@ void datos_servidor(void){
 
 
 void finalizar_servidor(void){
-	int status;
+	int s;
 
 	printf("esperando finalizacion del thread servidor\n");
 
-	status = pthread_cancel(thread_server);
-	if(status != 0 ) perror("fallo cancel 1\n");
+	s = pthread_cancel(thread_server);
+	if(s != 0 ) perror("fallo cancel 1\n");
+	printf("se hico el cancel\n");
 
-	status = pthread_join(thread_server, NULL);
-	if(status != 0 ) perror("fallo join 1\n");
+	s = pthread_join(thread_server, NULL);
+	if(s != 0 ) perror("fallo join 1\n");
+	printf("se hico el join\n");
 
 	printf("fin");
 

@@ -1,11 +1,11 @@
 #include "envio_recepcion.h"
 
-#define cant_threads 1
+#define cant_threads 2
 
 pthread_t THREADS[cant_threads];
 
 pthread_mutex_t mutex_cola = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t cond= PTHREAD_COND_INITIALIZER;
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 t_queue* cola_clientes;
 
@@ -16,35 +16,38 @@ void detener_thread(void* p_socket);
 
 
 void detener_thread(void* p_socket){
-	int status;
+	int s;
 
 	printf("intentando detener \n");
 
     for(int i = 0; i < cant_threads; i++){
-    	status = pthread_cancel(THREADS[i]);
-    	if(status != 0 ) perror("fallo cancel 2\n");
+    	s = pthread_cancel(THREADS[i]);
+    	if(s != 0 ) perror("fallo cancel 2\n");
     	printf("2. %d\n", i);
     }
     printf("haciendo el join de los threads\n");
-    for(int i = 0; i< cant_threads; i++){
+    for(int i = 0; i < cant_threads; i++){
 
-    	status = pthread_join(THREADS[i], NULL);
-    	if(status != 0 ) perror("fallo join 2\n");
+    	s = pthread_join(THREADS[i], NULL);
+    	if(s != 0 ) perror("fallo join 2\n");
     	printf("3. %d\n",i);
     }
 
     printf("se detuvo el threads\n");
 
     close(*((int*)p_socket));
-
     queue_destroy_and_destroy_elements(cola_clientes, free);
+
     printf("se detuvo el thread\n");
 }
 
 void* iniciar_servidor(void){
-
+	int old_state;
+	int socket_servidor, s;
 	cola_clientes = queue_create();
-	int socket_servidor, status;
+
+	s = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_state);
+	if( s != 0) perror("fallo setcancelsate");
 
     struct addrinfo hints, *servinfo, *p;
 
@@ -60,20 +63,23 @@ void* iniciar_servidor(void){
         socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if(socket_servidor < 0){perror("SOCKET ERROR"); continue; }
 
-        status = bind(socket_servidor, p->ai_addr, p->ai_addrlen);
-        if(status < 0){perror("BIND ERROR"); close(socket_servidor); continue;}
+        s = bind(socket_servidor, p->ai_addr, p->ai_addrlen);
+        if(s < 0){perror("BIND ERROR"); close(socket_servidor); continue;}
 
         break;
     }
 
-    status = listen(socket_servidor, SOMAXCONN);
+    s = listen(socket_servidor, SOMAXCONN);
     freeaddrinfo(servinfo);
-    if(status < 0){perror("LISTEN ERROR"); raise(SIGINT);}
+    if(s < 0){perror("LISTEN ERROR"); raise(SIGINT);}
 
     for(int i = 0; i < cant_threads; i++){
-    	status = pthread_create(&THREADS[i], NULL, funcion_thread, NULL);
-    	if(status != 0) printf("ERROR AL CREAR EL THREAD");
+    	s = pthread_create(&THREADS[i], NULL, funcion_thread, NULL);
+    	if(s != 0) printf("ERROR AL CREAR EL THREAD");
     }
+
+	s = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_state);
+	if( s != 0) perror("fallo setcancelsate");
 
     pthread_cleanup_push(detener_thread, &socket_servidor);
 
@@ -114,14 +120,14 @@ int esperar_cliente(int socket_servidor){
 }
 
 void _algo(void* elemento){
-		printf("eliminando subproceso\n");
+	printf("eliminando subproceso\n");
 }
 
 
 void* funcion_thread(){
 
 	pthread_cleanup_push(_algo, NULL);
-
+	int s, old_state;
 	while(true){
 
 		int* p_cliente;
@@ -139,9 +145,13 @@ void* funcion_thread(){
 
 		pthread_testcancel();
 
-		if(p_cliente != NULL)
+		if(p_cliente != NULL){
+			s = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_state);
+			if( s != 0) perror("fallo setcancelsate");
 			server_client(p_cliente);
-
+			s = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_state);
+			if( s != 0) perror("fallo setcancelsate");
+		}
 	}
 	pthread_cleanup_pop(1);
 	pthread_exit(0);
@@ -153,8 +163,8 @@ int server_client(void* p_socket){
 	int cod_op, socket = *((int*)p_socket);
 	free(p_socket);
 
-	int status = recv(socket, &cod_op, sizeof(uint32_t), 0);
-	if(status < 0){ perror("[envio_recepcion.c] FALLO RECV"); return EXIT_FAILURE;}
+	int s = recv(socket, &cod_op, sizeof(uint32_t), 0);
+	if(s < 0){ perror("[envio_recepcion.c] FALLO RECV"); return EXIT_FAILURE;}
 
 	process_request(socket, cod_op);
 

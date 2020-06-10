@@ -244,7 +244,7 @@ static int obtener_id(void){
 
 void* planificar_envios(void* _cola_mensajes){
 
-	int status;
+	int s;
 
 	int cola_mensajes = *((int*)_cola_mensajes);
 
@@ -270,8 +270,8 @@ void* planificar_envios(void* _cola_mensajes){
 
 			t_datos* datos = armar_paquete(cola_mensajes, mensaje_enviar, subs_enviar_por_mensaje);
 
-			status = pthread_create(&threads[i], NULL, (void*)funcion_envio, (void*)datos);
-			if(status != 0) printf("[LISTAS.C] ERROR AL CREAR EL THREAD");
+			s = pthread_create(&threads[i], NULL, (void*)funcion_envio, (void*)datos);
+			if(s != 0) printf("[LISTAS.C] ERROR AL CREAR EL THREAD");
 
 		}
 		for(int i = 0; i < list_size(mensajes_enviar); i++)
@@ -295,13 +295,13 @@ void* funcion_envio(void* _datos){
 
 	if(list_size(datos->lista_subs) == 0 ) pthread_exit(NULL);
 
-	int status;
+	int s;
 	for(int i = 0; i < list_size(datos->lista_subs); i++){
 
 		datos_envio->suscriptor = list_get(datos->lista_subs, i);
 
-		status = pthread_create(&threads[i], NULL, (void*)enviar_mensaje, (void*)datos_envio);
-		if(status != 0) printf("[LISTAS.C] ERROR AL CREAR EL THREAD2");
+		s = pthread_create(&threads[i], NULL, (void*)enviar_mensaje, (void*)datos_envio);
+		if(s != 0) printf("[LISTAS.C] ERROR AL CREAR EL THREAD2");
 
 	}
 	free(datos);
@@ -323,21 +323,23 @@ void* enviar_mensaje(void* datos){
 	t_datos_envio* datos_envio = datos;
 	t_suscriptor* sub = datos_envio->suscriptor;
 
-	int status;
+	int s;
 	int socket = sub->socket;
 
-	status = send(socket, datos_envio->stream_enviar->stream, datos_envio->stream_enviar->size, 0);
-	if(status < 0){perror("FALLO SEND"); pthread_exit(NULL);}
+	s = send(socket, datos_envio->stream_enviar->stream, datos_envio->stream_enviar->size, 0);
+	if(s < 0){perror("FALLO SEND"); pthread_exit(NULL);}
 
 	t_notificacion_envio* notificacion_envio = nodo_notificacion(datos_envio->suscriptor);
 
 	pthread_mutex_lock(datos_envio->mutex_mensaje);
-		list_add(datos_envio->notificaciones_envio, notificacion_envio);
+
+	list_add(datos_envio->notificaciones_envio, notificacion_envio);
+
 	pthread_mutex_unlock(datos_envio->mutex_mensaje);
 
 	int confirmacion;
-	status = recv(socket, &confirmacion, sizeof(uint32_t), 0);
-	if(status < 0){perror("FALLO RECV"); /*free(notificacion_envio);*/ pthread_exit(NULL);}
+	s = recv(socket, &confirmacion, sizeof(uint32_t), 0);
+	if(s < 0){perror("FALLO RECV"); /*free(notificacion_envio);*/ pthread_exit(NULL);}
 
 	if(confirmacion)
 		notificacion_envio->ACK = confirmacion;
