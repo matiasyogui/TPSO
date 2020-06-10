@@ -37,6 +37,9 @@ void datos_servidor(void){
 	IP_SERVER = config_get_string_value(CONFIG, "IP_BROKER");
 	PUERTO_SERVER = config_get_string_value(CONFIG, "PUERTO_BROKER");
 
+	pthread_cond_init(&cond_comun, NULL);
+	pthread_mutex_init(&mutex_comun, NULL);
+
 	iniciar_listas();
 	//iniciar_memoria();
 }
@@ -45,12 +48,15 @@ void datos_servidor(void){
 void finalizar_servidor(void){
 
 	detener_servidor();
-	printf("Se detuvo al servidro con exito\n");
+	printf("Se detuvo al servidor con exito\n");
 
 	detener_planificacion_envios();
 	printf("Se detuvo al planificador con exito\n");
 
 	finalizar_listas();
+
+	pthread_cond_destroy(&cond_comun);
+	pthread_mutex_destroy(&mutex_comun);
 
 	config_destroy(CONFIG);
 	log_destroy(LOGGER);

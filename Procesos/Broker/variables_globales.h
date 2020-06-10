@@ -19,6 +19,8 @@ int* SOCKET_SERVER;
 t_config* CONFIG;
 t_log* LOGGER;
 
+pthread_cond_t cond_comun;
+pthread_mutex_t mutex_comun;
 
 ///////////////////////////ADMIN_MENSAJES.H////////////////////////
 

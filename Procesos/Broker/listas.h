@@ -23,6 +23,8 @@ t_notificacion_envio* nodo_notificacion(t_suscriptor* suscriptor);
 
 ///////////////////////// FUNCIONES PARA ELIMINAR LAS LISTAS /////////////////////////
 
+void eliminar_mensaje_id(int id, int cod_op);
+
 void destruir_lista_mensajes(void);
 void destruir_lista_suscriptores(void);
 

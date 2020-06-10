@@ -88,6 +88,8 @@ static void* generar_envio(void* p_cola_mensajes){
 
 	printf("Administrando la cola %d\n", cola_mensajes);
 
+	pthread_cleanup_push(_interruptor_handler, &mutex_comun);
+
 	while (true) {
 
 		pthread_testcancel();
@@ -100,12 +102,12 @@ static void* generar_envio(void* p_cola_mensajes){
 		pthread_cleanup_push((void*)list_destroy, (void*)mensajes_enviar);
 		pthread_cleanup_push((void*)list_destroy, (void*)lista_subs_enviar);
 
-		if (list_size(mensajes_enviar) == 0 || list_size(lista_subs_enviar) == 0){
+		pthread_mutex_lock(&mutex_comun);
+		if (list_size(mensajes_enviar) == 0 || list_size(lista_subs_enviar) == 0)
+			pthread_cond_wait(&cond_comun, &mutex_comun);
 
-			printf("Entro en reposo\n");
-			usleep(500);	//definir una mejor condicion de espera
+		else {
 
-		} else {
 			pthread_testcancel();
 
 			for (int i = 0; i < list_size(mensajes_enviar); i++) {
@@ -114,8 +116,10 @@ static void* generar_envio(void* p_cola_mensajes){
 
 				t_list* subs_enviar_por_mensaje = subs_enviar(lista_subs_enviar, mensaje_enviar->notificiones_envio);
 
+				pthread_cleanup_push((void*)list_destroy, (void*)subs_enviar_por_mensaje);
+
 				if (list_size(subs_enviar_por_mensaje) == 0){
-					/* caso en el que comprobamos los ack y eliminamos el mensaje */
+					eliminar_mensaje_id(mensaje_enviar->id, cola_mensajes);
 
 				} else {
 
@@ -134,8 +138,11 @@ static void* generar_envio(void* p_cola_mensajes){
 						pthread_mutex_unlock(&mutex_cola_tareas);
 					}
 				}
+
+				pthread_cleanup_pop(1);
 			}
 		}
+		pthread_mutex_unlock(&mutex_comun);
 
 		pthread_cleanup_pop(1);
 
@@ -144,8 +151,9 @@ static void* generar_envio(void* p_cola_mensajes){
 		pthread_testcancel();
 
 		printf("Entro en reposo2\n");
-		usleep(300);	//definir una mejor condicion de espera
 	}
+
+	pthread_cleanup_pop(2);
 
 	return EXIT_SUCCESS;
 }

@@ -10,12 +10,24 @@ static int obtener_cod_op(t_buffer* buffer, int* tiempo);
 
 int tratar_mensaje(int socket, int cod_op, bool esCorrelativo){
 
+	int s, old_state;
 	t_mensaje* mensaje;
+
+	s = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_state);
+	if (s != 0) perror("[ENVIO_RECEPCION_EXTEND.C] PTHREAD_SETCANCELSTATE ERROR");
 
 	if ((mensaje = generar_nodo_mensaje(socket, cod_op, esCorrelativo)) == NULL)
 		return EXIT_FAILURE;
 
+	pthread_mutex_lock(&mutex_comun);
+
 	guardar_mensaje(mensaje, cod_op);
+	pthread_cond_broadcast(&cond_comun);
+
+	pthread_mutex_unlock(&mutex_comun);
+
+	s = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_state);
+	if (s != 0) perror("[ENVIO_RECEPCION_EXTEND.C] PTHREAD_SETCANCELSTATE ERROR");
 
 	informe_lista_mensajes();
 
@@ -29,20 +41,32 @@ int tratar_mensaje(int socket, int cod_op, bool esCorrelativo){
 
 int tratar_suscriptor(int socket){
 
+	int tiempo, old_state, s;
 	t_buffer* mensaje;
 
 	if ((mensaje = recibir_mensaje(socket)) == NULL) {
 		enviar_confirmacion(socket, false);
 		return EXIT_FAILURE;
 	}
-	int tiempo;
+
 	int cod_op = obtener_cod_op(mensaje, &tiempo);
+
+	s = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_state);
+	if (s != 0) perror("[ENVIO_RECEPCION_EXTEND.C] PTHREAD_SETCANCELSTATE ERROR");
 
 	t_suscriptor* suscriptor = nodo_suscriptor(socket);
 
-	enviar_confirmacion(suscriptor->socket, true);
+	pthread_mutex_lock(&mutex_comun);
 
 	guardar_suscriptor(suscriptor, cod_op);
+	pthread_cond_broadcast(&cond_comun);
+
+	pthread_mutex_unlock(&mutex_comun);
+
+	s = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_state);
+	if (s != 0) perror("[ENVIO_RECEPCION_EXTEND.C] PTHREAD_SETCANCELSTATE ERROR");
+
+	enviar_confirmacion(suscriptor->socket, true);
 
 	informe_lista_subs();
 
