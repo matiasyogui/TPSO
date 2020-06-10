@@ -9,8 +9,17 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 t_queue* cola_clientes;
 
+static int esperar_cliente(int socket_servidor);
+static void manejador_interrupcion(void* elemento);
+static int server_client(void* p_socket);
+static int process_request(int cliente_fd, int cod_op);
+
+
 static void* funcion_thread();
+static void manejador_interrupcion(void* elemento);
 static void detener_servidor(void* p_socket);
+
+
 
 void* iniciar_servidor(void){
 
@@ -39,7 +48,7 @@ void* iniciar_servidor(void){
         if(s < 0){perror("[ENVIO_RECEPCION.C] SOCKET ERROR"); continue; }
 
         s = bind(socket_servidor, p->ai_addr, p->ai_addrlen);
-        if(s < 0){perror("[ENVIO_RECEPCION.C] BIND ERROR"); close(socket_servidor); continue;}
+        if(s < 0){perror("[ENVIO_RECEPCION.C] BIND ERROR");	close(socket_servidor); continue;}
 
         break;
     }
@@ -51,7 +60,9 @@ void* iniciar_servidor(void){
     if(s < 0){perror("[ENVIO_RECEPCION.C] LISTEN ERROR"); raise(SIGINT);}
 
     while(1){
+
     	esperar_cliente(socket_servidor);
+
     	pthread_testcancel();
     }
 
@@ -61,7 +72,7 @@ void* iniciar_servidor(void){
 }
 
 
-int esperar_cliente(int socket_servidor){
+static int esperar_cliente(int socket_servidor){
 
 	struct sockaddr_in dir_cliente;
 
@@ -70,7 +81,7 @@ int esperar_cliente(int socket_servidor){
 	int socket_cliente;
 
 	socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion);
-	if(socket_cliente < 0){	perror("[ENVIO_RECEPCION.C] ACCEPT ERROR"); 	return EXIT_FAILURE;}
+	if(socket_cliente < 0){perror("[ENVIO_RECEPCION.C] ACCEPT ERROR");	return EXIT_FAILURE;}
 
 	int* p_socket = malloc(sizeof(int));
 	*p_socket = socket_cliente;
@@ -86,14 +97,15 @@ int esperar_cliente(int socket_servidor){
 	return EXIT_SUCCESS;
 }
 
-static void _algo(void* elemento){
+
+static void manejador_interrupcion(void* elemento){
 	pthread_mutex_unlock(elemento);
 }
 
 
 static void* funcion_thread(){
 
-	pthread_cleanup_push(_algo, &mutex_cola);
+	pthread_cleanup_push(manejador_interrupcion, &mutex_cola);
 	int* p_cliente;
 
 	while(true){
@@ -124,13 +136,13 @@ static void* funcion_thread(){
 }
 
 
-int server_client(void* p_socket){
+static int server_client(void* p_socket){
 
 	int cod_op, socket = *((int*)p_socket);
 	free(p_socket);
 
 	int s = recv(socket, &cod_op, sizeof(uint32_t), 0);
-	if(s < 0){ perror("[ENVIO_RECEPCION.C] RECV ERROR"); return EXIT_FAILURE;}
+	if(s < 0){perror("[ENVIO_RECEPCION.C] RECV ERROR"); return EXIT_FAILURE;}
 
 	process_request(socket, cod_op);
 
@@ -138,9 +150,7 @@ int server_client(void* p_socket){
 }
 
 
-int process_request(int cliente_fd, int cod_op){
-
-	t_mensaje* mensaje;
+static int process_request(int cliente_fd, int cod_op){
 
 	switch(cod_op){
 
@@ -148,10 +158,7 @@ int process_request(int cliente_fd, int cod_op){
 		case CATCH_POKEMON:
 		case GET_POKEMON:
 
-			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, false)) == NULL)
-				return EXIT_FAILURE;
-
-			tratar_mensaje(cliente_fd, mensaje, cod_op);
+			tratar_mensaje(cliente_fd, cod_op, false);
 
 			printf("se recibio un mensaje\n");
 
@@ -161,10 +168,7 @@ int process_request(int cliente_fd, int cod_op){
 		case CAUGHT_POKEMON:
 		case LOCALIZED_POKEMON:
 
-			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, true)) == NULL)
-				return EXIT_FAILURE;
-
-			tratar_mensaje(cliente_fd, mensaje, cod_op);
+			tratar_mensaje(cliente_fd, cod_op, true);
 
 			printf("se recibio un mensaje\n");
 
@@ -192,46 +196,6 @@ int process_request(int cliente_fd, int cod_op){
 }
 
 
-int tratar_mensaje(int socket, t_mensaje* mensaje, int cod_op){
-
-	guardar_mensaje(mensaje, cod_op);
-
-	informe_lista_mensajes();
-
-	enviar_confirmacion(socket, mensaje->id);
-
-	close(socket);
-
-	//enviar_mensaje_suscriptores(mensaje);
-
-	return EXIT_SUCCESS;
-}
-
-
-int tratar_suscriptor(int socket){
-
-	t_buffer* mensaje;
-
-	if((mensaje = recibir_mensaje(socket)) == NULL){
-		enviar_confirmacion(socket, false);
-		return EXIT_FAILURE;
-	}
-	int tiempo;
-	int cod_op = obtener_cod_op(mensaje, &tiempo);
-
-	t_suscriptor* suscriptor = nodo_suscriptor(socket);
-
-	enviar_confirmacion(suscriptor->socket, true);
-
-	guardar_suscriptor(suscriptor, cod_op);
-
-	//informe_lista_subs();
-
-	//enviar_mensajes_suscriptor(suscriptor, cod_op);
-
-	return EXIT_SUCCESS;
-}
-
 
 static void detener_servidor(void* p_socket){
 
@@ -252,6 +216,5 @@ static void detener_servidor(void* p_socket){
     pthread_cond_destroy(&cond);
     pthread_mutex_destroy(&mutex_cola);
 }
-
 
 

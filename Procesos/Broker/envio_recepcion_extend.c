@@ -1,48 +1,104 @@
 #include "envio_recepcion.h"
 
+static t_buffer* recibir_mensaje(int socket_cliente);
+static t_mensaje* generar_nodo_mensaje(int socket, bool EsCorrelativo, int cod_op);
 
-t_buffer* recibir_mensaje(int cliente_fd){
 
-	t_buffer* buffer = malloc(sizeof(t_buffer));
+static int enviar_confirmacion(int socket, int mensaje);
+static int obtener_cod_op(t_buffer* buffer, int* tiempo);
+
+
+
+int tratar_mensaje(int socket, int cod_op, bool esCorrelativo){
+
+	t_mensaje* mensaje;
+
+	if((mensaje = generar_nodo_mensaje(socket, cod_op, esCorrelativo)) == NULL)
+		return EXIT_FAILURE;
+
+	guardar_mensaje(mensaje, cod_op);
+
+	informe_lista_mensajes();
+
+	enviar_confirmacion(socket, mensaje->id);
+
+	close(socket);
+
+	//enviar_mensaje_suscriptores(mensaje);
+
+	return EXIT_SUCCESS;
+}
+
+
+int tratar_suscriptor(int socket){
+
+	t_buffer* mensaje;
+
+	if((mensaje = recibir_mensaje(socket)) == NULL){
+		enviar_confirmacion(socket, false);
+		return EXIT_FAILURE;
+	}
+	int tiempo;
+	int cod_op = obtener_cod_op(mensaje, &tiempo);
+
+	t_suscriptor* suscriptor = nodo_suscriptor(socket);
+
+	enviar_confirmacion(suscriptor->socket, true);
+
+	guardar_suscriptor(suscriptor, cod_op);
+
+	//informe_lista_subs();
+
+	//enviar_mensajes_suscriptor(suscriptor, cod_op);
+
+	return EXIT_SUCCESS;
+}
+
+
+
+
+
+
+static t_buffer* recibir_mensaje(int cliente_fd){
+
 	int s;
+	t_buffer* buffer = malloc(sizeof(t_buffer));
 
 	s = recv(cliente_fd, &(buffer->size), sizeof(uint32_t), 0);
-	if(s < 0){	free(buffer); 	return NULL;}
+	if(s < 0){free(buffer); return NULL;}
 
 	buffer->stream = malloc(buffer->size);
 
 	s = recv(cliente_fd, buffer->stream, buffer->size, 0);
-	if(s < 0){	free(buffer); 	free(buffer->stream); 	return NULL;}
+	if(s < 0){free(buffer); free(buffer->stream); return NULL;}
 
 	return buffer;
 }
 
 
-t_mensaje* generar_nodo_mensaje(int socket, bool EsCorrelativo, int cod_op){
+static t_mensaje* generar_nodo_mensaje(int socket, bool EsCorrelativo, int cod_op){
 
-	int id_correlativo, size;
 	int s;
+	int id_correlativo;
+
+	t_buffer* mensaje = malloc(sizeof(t_buffer));
 
 	if(EsCorrelativo){
 		s = recv(socket, &id_correlativo, sizeof(uint32_t), 0);
-		if(s < 0) 	return NULL;
+		if(s < 0){perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL;}
 	}
 	else
 		id_correlativo = -1;
 
-	s = recv(socket, &size, sizeof(uint32_t), 0);
-	if(s < 0)	return NULL;
+	s = recv(socket, &(mensaje->size), sizeof(uint32_t), 0);
+	if(s < 0){free(mensaje); perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL;}
 
-	void* stream = malloc(size);
+	mensaje->stream = malloc(mensaje->size);
 
-	s = recv(socket, stream, size, 0);
-	if(s < 0){	free(stream);	return NULL;}
+	s = recv(socket, mensaje->stream, mensaje->size, 0);
+	if(s < 0){free(mensaje->stream); free(mensaje); perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL;}
 
-	t_buffer* mensaje = malloc(sizeof(t_buffer));
-	mensaje -> size = size;
-	mensaje -> stream = stream;
-
-	printf("cod_op = %d, id_correlativo = %d, mensaje_size = %d\n", cod_op, id_correlativo, size);
+	printf("cod_op = %d, id_correlativo = %d, mensaje_size = %d\n", cod_op, id_correlativo, mensaje->size);
 
 	t_mensaje* mensaje1 = nodo_mensaje(id_correlativo, mensaje);
 
@@ -50,27 +106,24 @@ t_mensaje* generar_nodo_mensaje(int socket, bool EsCorrelativo, int cod_op){
 }
 
 
-void enviar_confirmacion(int socket, int mensaje){
+static int enviar_confirmacion(int socket, int mensaje){
 
-	void* mensaje_confirmacion = malloc( 2 * sizeof(uint32_t));
-	uint32_t cod_op = CONFIRMACION;
+	int s;
 
-	int offset = 0;
+	void* mensaje_enviar = malloc(sizeof(uint32_t));
 
-	memcpy(mensaje_confirmacion + offset, &(cod_op), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
+	memcpy(mensaje_enviar, &mensaje, sizeof(uint32_t));
 
-	memcpy(mensaje_confirmacion + offset, &mensaje, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
+	s = send(socket, mensaje_enviar, sizeof(uint32_t), 0);
+	if(s < 0){perror("[ENVIO_RECEPCION_EXTEND.C]SEND ERROR"); free(mensaje_enviar); return EXIT_FAILURE;}
 
-	if(send(socket, mensaje_confirmacion, offset, MSG_NOSIGNAL) < 0)
-		perror("[ENVIO_RECEPCION_EXTEND.C]SEND ERROR");
+	free(mensaje_enviar);
 
-	free(mensaje_confirmacion);
+	return EXIT_SUCCESS;
 }
 
 
-int obtener_cod_op(t_buffer* buffer, int* tiempo){
+static int obtener_cod_op(t_buffer* buffer, int* tiempo){
 
 	int cod_op, offset = 0;
 
@@ -78,10 +131,9 @@ int obtener_cod_op(t_buffer* buffer, int* tiempo){
 	offset += sizeof(uint32_t);
 
 	memcpy(tiempo, buffer->stream + offset, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
 
 	free(buffer->stream);
 	free(buffer);
 	return cod_op;
 }
-
-

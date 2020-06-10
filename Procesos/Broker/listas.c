@@ -151,6 +151,7 @@ static void borrar_mensaje(void* nodo_mensaje){
 	free(aux->mensaje->stream);
 	free(aux->mensaje);
 	list_destroy(aux->notificiones_envio);
+	pthread_mutex_destroy(&aux->mutex);
 	free(aux);
 }
 

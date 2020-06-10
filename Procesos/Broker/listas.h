@@ -12,6 +12,7 @@
 ///////////////////////// FUNCIONES CREACION DE LISTAS /////////////////////////
 
 void iniciar_listas(void);
+void finalizar_listas(void);
 void guardar_mensaje(t_mensaje* mensaje, int cod_op);
 void guardar_suscriptor(t_suscriptor* suscriptor, int cod_op);
 

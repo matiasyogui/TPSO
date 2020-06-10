@@ -8,13 +8,13 @@ void finalizar_servidor(void);
 
 int main(void){
 
+	int s;
+
 	datos_servidor();
 
 	signal(SIGINT, (void*)finalizar_servidor);
 
 	fflush(stdout);
-
-	int s;
 
 	s = pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
 	if(s != 0) printf("[BROKER.C] PTHREAD_CREATE ERROR");
@@ -48,10 +48,10 @@ void finalizar_servidor(void){
 	int s;
 
 	s = pthread_cancel(thread_server);
-	if(s != 0 ) perror("[BROKER.C] PTHREAD_CANCEL ERROR");
+	if(s != 0) perror("[BROKER.C] PTHREAD_CANCEL ERROR");
 
 	s = pthread_join(thread_server, NULL);
-	if(s != 0 ) perror("[BROKER.C] PTHREAD_JOIN ERROR");
+	if(s != 0) perror("[BROKER.C] PTHREAD_JOIN ERROR");
 
 	finalizar_listas();
 

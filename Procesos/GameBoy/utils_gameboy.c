@@ -55,7 +55,7 @@ void esperando_respuestas(int socket, char* modo){
 
 static void modo_suscriptor(int socket){
 
-	int status;
+	int s;
 	int cod_op, size, id_mensaje, estado;
 	void* datos;
 
@@ -66,15 +66,15 @@ static void modo_suscriptor(int socket){
 
 	while(1){
 
-		status = recv(socket, &cod_op, sizeof(uint32_t), 0);
-		if(status < 0){	perror("[gameboy.c : 28]FALLO RECV"); continue;}
+		s = recv(socket, &cod_op, sizeof(uint32_t), 0);
+		if(s < 0){perror("[gameboy.c : 28]FALLO RECV"); continue;}
 
 		switch(cod_op){
 
 			case CONFIRMACION:
 
-				status = recv(socket, &estado, sizeof(uint32_t), 0);
-				if(status < 0) continue;
+				s = recv(socket, &estado, sizeof(uint32_t), 0);
+				if(s < 0){perror("[UTILS_GAMEBOY.C] RECV ERROR"); continue;}
 
 				printf("[CONFIRMACION DE SUSCRIPCION] estado = %d \n", estado);
 
@@ -82,16 +82,16 @@ static void modo_suscriptor(int socket){
 
 			case NEW_POKEMON...CAUGHT_POKEMON:
 
-				status = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
-				if(status < 0){	_manejo_error(); continue;}
+				s = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
+				if(s < 0){perror("[UTILS_GAMEBOY.C] RECV ERROR");	_manejo_error(); continue;}
 
-				status = recv(socket, &size, sizeof(uint32_t), 0);
-				if(status < 0){	_manejo_error(); continue;}
+				s = recv(socket, &size, sizeof(uint32_t), 0);
+				if(s < 0){perror("[UTILS_GAMEBOY.C] RECV ERROR");	_manejo_error(); continue;}
 
 				datos = malloc(size);
 
-				status = recv(socket, datos, size, 0);
-				if(status < 0){	_manejo_error(); continue;}
+				s = recv(socket, datos, size, 0);
+				if(s < 0){perror("[UTILS_GAMEBOY.C] RECV ERROR");	_manejo_error(); continue;}
 
 				printf("[MENSAJE DEL BROKER]cod_op_mensaje = %d, id_mensaje = %d, size mensaje = %d \n", cod_op, id_mensaje, size);
 
@@ -107,13 +107,10 @@ static void modo_suscriptor(int socket){
 
 static void modo_emisor(int socket){
 
-	int cod_op, id, status;
+	int id, s;
 
-	status = recv(socket, &cod_op, sizeof(uint32_t), 0);
-	if(status <0) perror("ERROR RECV");
-
-	status = recv(socket, &id, sizeof(uint32_t), 0);
-	if(status <0) perror("ERROR RECV");
+	s = recv(socket, &id, sizeof(uint32_t), 0);
+	if(s < 0) perror("[UTILS_GAMEBOY.C]ERROR RECV");
 
 	printf("[CONFIRMACION DEL RECPCION DEL MENSAJE] id del mensaje en el broker = %d \n", id);
 }
@@ -130,8 +127,8 @@ void generar_log_suscripcion(char* datos[]){
 void enviar_confirmacion(int socket){
 
 	int confirmacion = 1;
-	int status;
+	int s;
 
-	status = send(socket, (void*)&confirmacion, sizeof(uint32_t), 0);
-	if(status < 0) printf("ERROR SEND");
+	s = send(socket, (void*)&confirmacion, sizeof(uint32_t), 0);
+	if(s < 0) printf("ERROR SEND");
 }
