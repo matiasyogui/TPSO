@@ -57,7 +57,7 @@ void* stream_suscripcion(char* datos[], int* size){
 
 
 void suscribirse(char* cola){
-	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
+	int socket = crear_conexion("127.0.0.1", "4444");
 
 	char *datos[] = {cola, "-1"};
 
@@ -67,20 +67,20 @@ void suscribirse(char* cola){
 	send(socket, mensajeAEnviar, size, 0);
 
 	int cod_op, id_correlativo;
+	bool status;
 	void* buffer;
+
+	recv(socket, &status, sizeof(uint32_t), 0);
+	printf(" status = %d\n", status);
 
 	while(1){
 		if(recv(socket, &cod_op, sizeof(uint32_t), 0 ) < 0){
 			perror("FALLO RECV");
 			continue;
 		}
-	recv(socket, &id_correlativo, sizeof(uint32_t), 0);
+		recv(socket, &id_correlativo, sizeof(uint32_t), 0);
 
 		switch(cod_op){
-
-			case CONFIRMACION:
-				printf("[CONFIRMACION DE SUSCRIPCION]cod_op = %d, mi id de suscriptor= %d \n", cod_op, id_correlativo);
-				break;
 
 			case NEW_POKEMON:
 				recv(socket, &size, sizeof(int), 0);
@@ -119,6 +119,8 @@ void leer_archivo_configuracion(){
 
 
 int main(){
+
+	//leer_archivo_configuracion();
 	
 	pthread_t tid;
 
@@ -127,8 +129,6 @@ int main(){
 	pthread_create(&tid, NULL, (void*)suscribirse, "new_pokemon");
 	pthread_create(&tid, NULL, (void*)suscribirse, "catch_pokemon");
 	pthread_create(&tid, NULL, (void*)suscribirse, "get_pokemon");
-
-	leer_archivo_config();
 
 
 	pthread_join(tid, NULL);
