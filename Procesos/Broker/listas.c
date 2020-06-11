@@ -130,11 +130,14 @@ t_notificacion_envio* nodo_notificacion(t_suscriptor* suscriptor){
 
 
 ///////////////////////// FUNCIONES PARA ELIMINAR LAS LISTAS /////////////////////////
+
+
 void eliminar_mensaje_id(int id, int cod_op){
 
 	bool _busqueda_por_id(void*elemento){
 		return ((t_mensaje*)elemento)->id == id;
 	}
+
 	pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
 
 	t_list* lista_mensajes = list_get(LISTA_MENSAJES, cod_op);
@@ -143,6 +146,7 @@ void eliminar_mensaje_id(int id, int cod_op){
 
 	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
 }
+
 
 static void borrar_mensaje(void* nodo_mensaje){
 

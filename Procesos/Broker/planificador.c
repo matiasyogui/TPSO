@@ -48,7 +48,7 @@ int detener_planificacion_envios(void){
 
 	int s;
 
-    for(int i = 0; i < CANTIDAD_SUBLISTAS; i++) {
+    for (int i = 0; i < CANTIDAD_SUBLISTAS; i++) {
 
     	s = pthread_cancel(thread_gestionEnvios[i]);
     	if (s != 0 ) perror("[LISTAS.C] PTHREAD_CANCEL ERROR");
@@ -66,7 +66,7 @@ int detener_planificacion_envios(void){
     	if (s != 0 ) perror("[LISTAS.C] PTHREAD_JOIN ERROR");
     }
 
-    for (int i = 0; i < CANTIDAD_SUBLISTAS; i++) {
+    for (int i = 0; i < CANTIDAD_SUBPROCESOS; i++) {
 
         s = pthread_join(thread_envio[i], NULL);
         if (s != 0 ) perror("[LISTAS.C] PTHREAD_JOIN ERROR");
@@ -80,6 +80,7 @@ int detener_planificacion_envios(void){
     return EXIT_SUCCESS;
 }
 
+
 static bool _verificacion_ACK(void* elemento){
 	return ((t_notificacion_envio*)elemento)->ACK;
 }
@@ -89,8 +90,6 @@ static void* generar_envio(void* p_cola_mensajes){
 
 	int cola_mensajes = *((int*)p_cola_mensajes);
 	free(p_cola_mensajes);
-
-	printf("Administrando la cola %d\n", cola_mensajes);
 
 	pthread_cleanup_push(_interruptor_handler, &mutex_comun);
 
@@ -166,6 +165,7 @@ static void* generar_envio(void* p_cola_mensajes){
 static void _interruptor_handler(void* elemento){
 	pthread_mutex_unlock(elemento);
 }
+
 
 static void* _controlador_envios(void){
 

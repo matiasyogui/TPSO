@@ -91,7 +91,7 @@ static void modo_suscriptor(int socket){
 				datos = malloc(size);
 
 				s = recv(socket, datos, size, 0);
-				if (s < 0) { perror("[UTILS_GAMEBOY.C] RECV ERROR");	_manejo_error(); continue; }
+				if (s < 0) { perror("[UTILS_GAMEBOY.C] RECV ERROR"); _manejo_error(); continue; }
 
 				printf("[MENSAJE DEL BROKER]cod_op_mensaje = %d, id_mensaje = %d, size mensaje = %d \n", cod_op, id_mensaje, size);
 
@@ -128,8 +128,7 @@ void generar_log_suscripcion(char* datos[]){
 
 void enviar_confirmacion(int socket){
 
-	int confirmacion = 1;
-	int s;
+	int s, confirmacion = 1;
 
 	s = send(socket, (void*)&confirmacion, sizeof(uint32_t), 0);
 	if (s < 0) printf("ERROR SEND");
