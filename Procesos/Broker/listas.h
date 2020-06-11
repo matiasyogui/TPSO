@@ -11,8 +11,10 @@
 
 t_list* LISTA_SUBS;
 t_list* LISTA_MENSAJES;
+
 pthread_mutex_t MUTEX_SUBLISTAS_MENSAJES[CANTIDAD_SUBLISTAS];
 pthread_mutex_t MUTEX_SUBLISTAS_SUSCRIPTORES[CANTIDAD_SUBLISTAS];
+
 ///////////////////////// FUNCIONES CREACION DE LISTAS /////////////////////////
 void iniciar_listas(void);
 

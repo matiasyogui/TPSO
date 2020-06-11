@@ -1,7 +1,7 @@
 #include "utils_gameboy.h"
 
-static void modo_suscriptor(int socket);
-static void modo_emisor(int socket);
+static int modo_suscriptor(int socket);
+static int modo_emisor(int socket);
 static char* comprobar_proceso(char *proceso);
 void enviar_confirmacion(int socket);
 
@@ -53,7 +53,7 @@ void esperando_respuestas(int socket, char* modo){
 }
 
 
-static void modo_suscriptor(int socket){
+static int modo_suscriptor(int socket){
 
 	int status;
 	int cod_op, size, id_mensaje, estado;
@@ -64,55 +64,54 @@ static void modo_suscriptor(int socket){
 		send(socket, &error, sizeof(uint32_t), 0);
 	}
 
-	while(1){
+	status = recv(socket, &estado, sizeof(uint32_t), 0);
+	if(status < 0) return EXIT_FAILURE;
+
+	printf("[CONFIRMACION DE SUSCRIPCION] estado = %d \n", estado);
+
+	while(true){
 
 		status = recv(socket, &cod_op, sizeof(uint32_t), 0);
-		if(status < 0){	perror("[gameboy.c : 28]FALLO RECV"); continue;}
+		if(status < 0){	perror("[GAMEBOY.C] FALLO RECV"); return EXIT_FAILURE; }
 
 		switch(cod_op){
-
-			case CONFIRMACION:
-
-				status = recv(socket, &estado, sizeof(uint32_t), 0);
-				if(status < 0) continue;
-
-				printf("[CONFIRMACION DE SUSCRIPCION] estado = %d \n", estado);
-
-			break;
 
 			case NEW_POKEMON...CAUGHT_POKEMON:
 
 				status = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
-				if(status < 0){	_manejo_error(); continue;}
+				if(status < 0) { _manejo_error(); return EXIT_FAILURE; }
 
 				status = recv(socket, &size, sizeof(uint32_t), 0);
-				if(status < 0){	_manejo_error(); continue;}
+				if(status < 0) { _manejo_error(); return EXIT_FAILURE; }
 
 				datos = malloc(size);
 
 				status = recv(socket, datos, size, 0);
-				if(status < 0){	_manejo_error(); continue;}
+				if(status < 0){	_manejo_error(); free(datos); return EXIT_FAILURE; }
 
 				printf("[MENSAJE DEL BROKER]cod_op_mensaje = %d, id_mensaje = %d, size mensaje = %d \n", cod_op, id_mensaje, size);
 
 				log_info(LOGGER, "Se recibio un mensaje de la cola %s", cod_opToString(cod_op));
 
-				enviar_confirmacion(socket);
+				//enviar_confirmacion(socket);
 
 			break;
 		}
 	}
+	return EXIT_SUCCESS;
 }
 
 
-static void modo_emisor(int socket){
+static int modo_emisor(int socket){
 
 	int id, status;
 
 	status = recv(socket, &id, sizeof(uint32_t), 0);
-	if(status <0) perror("ERROR RECV");
+	if(status < 0) { perror("ERROR RECV"); return EXIT_FAILURE; }
 
 	printf("[CONFIRMACION DEL RECPCION DEL MENSAJE] id = %d \n", id);
+
+	return EXIT_SUCCESS;
 }
 
 
