@@ -18,7 +18,7 @@ t_buffer* recibir_mensaje(int cliente_fd){
 }
 
 
-t_mensaje* generar_nodo_mensaje(int socket, bool EsCorrelativo, int cod_op){
+t_mensaje* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
 
 	int id_correlativo, size, s;
 
@@ -58,7 +58,7 @@ void enviar_confirmacion(int socket, int mensaje){
 	offset += sizeof(uint32_t);
 
 	s = send(socket, mensaje_confirmacion, offset, MSG_NOSIGNAL);
-	if (s < 0)	perror("[envio_recepcion.c] FALLO SEND");
+	if (s < 0) perror("[envio_recepcion.c] FALLO SEND");
 
 	free(mensaje_confirmacion);
 }

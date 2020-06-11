@@ -19,7 +19,6 @@ int main(void){
 	t_mensaje* mensaje = nodo_mensaje(1, NULL);
 	guardar_mensaje(mensaje, 0);
 
-
 	t_suscriptor* sub1 = nodo_suscriptor(1);
 	t_suscriptor* sub2 = nodo_suscriptor(2);
 	t_suscriptor* sub3 = nodo_suscriptor(3);
@@ -31,7 +30,6 @@ int main(void){
 	guardar_suscriptor(sub3, 0);
 	guardar_suscriptor(sub4, 0);
 	guardar_suscriptor(sub5, 0);
-
 
 	t_notificacion_envio* noti1 = nodo_notificacion(sub1);
 	t_notificacion_envio* noti4 = nodo_notificacion(sub4);
@@ -68,7 +66,6 @@ int main(void){
 
 	printf("memoria = %s\n", (char*)memoria);
 
-
 	void* stream2 = pedir_memoria(strlen(palabra2));
 	dump_memoria();
 	memcpy(stream2, palabra2, strlen(palabra2));
@@ -80,8 +77,6 @@ int main(void){
 	memcpy(stream3, palabra3, strlen(palabra3));
 
 	printf("memoria = %s\n", (char*)memoria);
-
-
 
 	eliminar_particion(stream2);
 
@@ -113,7 +108,7 @@ void finalizar_servidor(void){
 
 	config_destroy(CONFIG);
 	log_destroy(LOGGER);
-	close(*SOCKET_SERVER);
+	//cerrar_servidor();
 
 	//finalizar_listas();
 	//finalizar_semaforos();

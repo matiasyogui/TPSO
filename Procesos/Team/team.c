@@ -7,6 +7,7 @@
 #include <commons/string.h>
 
 t_list* pokemonesAPedir;
+t_list* pokemonAPedirSinRepetidos;
 t_list* lista_id_correlativos;
 
 /*void pasajeBlockAReady(){
@@ -30,7 +31,6 @@ void agregarMensajeLista(int socket, int cod_op){
 	t_mensajeTeam* mensajeAGuardar = malloc(sizeof(t_mensajeTeam));
 	mensajeAGuardar -> buffer = malloc(sizeof(t_buffer));
 	mensajeAGuardar -> buffer -> size = size;
-	mensajeAGuardar -> buffer -> stream = malloc(size);
 	mensajeAGuardar -> buffer -> stream = mensaje;
 
 	mensajeAGuardar -> id = id_correlativo;
@@ -40,11 +40,13 @@ void agregarMensajeLista(int socket, int cod_op){
 
 		pthread_mutex_lock(&mListaGlobal);
 		list_add(lista_mensajes, mensajeAGuardar);
+		fflush(stdout);
 		printf("MENSAJES EN LISTA GLOBAL = %d\n", list_size(lista_mensajes));
+		fflush(stdout);
 		pthread_mutex_unlock(&mListaGlobal);
 
-		printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id correlativo = %d, size mensaje = %d \n", cod_op, id_correlativo, size);
 	}
+	printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id correlativo = %d, size mensaje = %d \n", cod_op, id_correlativo, size);
 
 	free(mensaje);
 }
@@ -127,20 +129,18 @@ void enviarGet(void* elemento){
 
 
 	//esperamos respuesta del broker
-	int cod_op2, id_mensaje;
-	recv(socket, &cod_op2, sizeof(uint32_t), 0);
+	int id_mensaje;
 	recv(socket, &id_mensaje, sizeof(uint32_t), 0);
-	printf("[CONFIRMACION DE RECEPCION DE MENSAJE]cod_op = %d, mi id de suscriptor= %d \n", cod_op2, id_mensaje);
+	printf("[CONFIRMACION DE RECEPCION DE MENSAJE] mi id del mensaje = %d \n", id_mensaje);
 
 	list_add(lista_id_correlativos, id_mensaje);
 }
 
 void pedir_pokemones(){
-	t_list* pokemonesAPedir = list_create();
 
 	pokemonesAPedir = list_filter(objetivoGlobal, igualdadListas);
 
-	t_list* pokemonAPedirSinRepetidos = listaSinRepetidos(pokemonesAPedir);
+	pokemonAPedirSinRepetidos = listaSinRepetidos(pokemonesAPedir);
 
 	for(int i = 0; i< list_size(pokemonAPedirSinRepetidos); i++){
 		printf("pokemon = %s\n", (char*)list_get(pokemonAPedirSinRepetidos, i));
@@ -207,6 +207,7 @@ void inicializar_listas(){
 	objetivoGlobal = list_create();
 	pokemonYaAtrapado = list_create();
 	pokemonesAPedir = list_create();
+	pokemonAPedirSinRepetidos = list_create();
 
 	lista_id_correlativos = list_create();
 }
@@ -220,31 +221,28 @@ void eliminar_listas(){
 }
 
 
-void suscribirse(char* cola){
-	// suscriptor + cola + tiempo;
-	int socket = crear_conexion("127.0.0.1", "4444");
+int suscribirse(char* cola){
 
+	int socket = crear_conexion("127.0.0.1", "4444");
 	char *datos[] = {"suscriptor", cola, "-1"};
 
 	t_paquete* paquete_enviar = armar_paquete2(datos);
 
 	enviar_mensaje(paquete_enviar, socket);
 
-	int cod_op, id_correlativo;
+	int cod_op, id_correlativo, s;
+	bool confirmacion_suscripcion;
 
+	s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
+	if ( s < 0) { perror("RECV ERROR"); return EXIT_FAILURE; }
+	else printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", confirmacion_suscripcion);
 
 	while(1){
-		if(recv(socket, &cod_op, sizeof(uint32_t), 0 ) < 0){
-			perror("FALLO RECV");
-			continue;
-		}
+
+		s = recv(socket, &cod_op, sizeof(uint32_t), 0 );
+		if (s < 0) { perror("FALLO RECV"); continue; }
+
 		switch(cod_op){
-
-			case CONFIRMACION:
-				recv(socket, &id_correlativo, sizeof(uint32_t), 0);
-
-				printf("[CONFIRMACION DE SUSCRIPCION]cod_op = %d, mi id de suscriptor= %d \n", cod_op, id_correlativo);
-				break;
 
 			case APPEARED_POKEMON:
 			case CAUGHT_POKEMON:
@@ -255,6 +253,7 @@ void suscribirse(char* cola){
 				break;
 		}
 	}
+	return EXIT_SUCCESS;
 }
 
 
@@ -264,20 +263,22 @@ void finalizar_server(){
 }
 
 bool nosInteresaMensaje(t_mensajeTeam* msg){
+
 	void* stream = msg -> buffer -> stream;
 	int size;
 	int offset;
 
 	bool _buscarID(void* elemento){
-		return string_equals_ignore_case((char*) (msg -> id), (char*) elemento);
+		return msg->id == (int)elemento;
 	}
 
 	void* pokemon;
-	bool _buscarPokemon(void* elemento){
-		return string_equals_ignore_case((char*) pokemon, (char*)elemento);
-	}
+
+
+	printf("cod_op = %s\n", cod_opToString(msg->cod_op));
 
 	switch(msg -> cod_op){
+
 		case APPEARED_POKEMON:
 		case LOCALIZED_POKEMON:
 			offset = 0;
@@ -288,7 +289,13 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			pokemon = malloc(size);
 			memcpy(pokemon, stream + offset, size);
 
-			return list_any_satisfy(pokemonesAPedir, _buscarPokemon);
+			bool _buscarPokemon(void* elemento){
+				printf("--------- pokemon = %s, elemento = %s\n", (char*)pokemon, (char*)elemento);
+				fflush(stdout);
+				return string_equals_ignore_case((char*) pokemon, (char*)elemento);
+			}
+			printf("pokemons a pedir %d\n", list_size(pokemonAPedirSinRepetidos));
+			return list_any_satisfy(pokemonAPedirSinRepetidos, _buscarPokemon);
 
 		case CAUGHT_POKEMON:
 
@@ -338,6 +345,8 @@ int main(){
 	pthread_mutex_lock(&semPlanificador);
 
 	pedir_pokemones();
+
+	pthread_join(tid, NULL);
 
 	while(1){
 		pasajeFIFO(listaBlocked,listaReady);

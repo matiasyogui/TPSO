@@ -1,10 +1,12 @@
 #include "envio_recepcion.h"
 
 pthread_t THREAD;
+int socket_servidor;
 
+void cerrar_servidor(void){
+	close(socket_servidor);
+}
 void* iniciar_servidor(void){
-
-	int socket_servidor;
 
     struct addrinfo hints, *servinfo, *p;
 
@@ -23,7 +25,7 @@ void* iniciar_servidor(void){
         if (socket_servidor < 0) { perror("SOCKET ERROR"); continue; }
 
         s = bind(socket_servidor, p->ai_addr, p->ai_addrlen);
-        if (s < 0)  { perror("BIND ERROR"); close(socket_servidor); continue;}
+        if (s < 0) { perror("BIND ERROR"); close(socket_servidor); continue; }
 
         break;
     }
@@ -32,12 +34,9 @@ void* iniciar_servidor(void){
     freeaddrinfo(servinfo);
     if (s < 0) { perror("LISTEN ERROR"); raise(SIGINT);}
 
-    SOCKET_SERVER = &socket_servidor;
-
     while (true)
     	esperar_cliente(socket_servidor);
 
-    printf("fin2\n");
     pthread_exit(0);
 }
 
@@ -70,7 +69,7 @@ void server_client(int* p_socket){
 	free(p_socket);
 
 	int s = recv(socket, &cod_op, sizeof(uint32_t), 0);
-	if (s < 0) { perror("[envio_recepcion.c] FALLO RECV"); cod_op = -1; }
+	if (s < 0) { perror("[envio_recepcion.c] RECV ERROR"); cod_op = -1; }
 
 	process_request(socket, cod_op);
 }
@@ -79,6 +78,8 @@ void server_client(int* p_socket){
 void process_request(int cliente_fd, int cod_op){
 
 	t_mensaje* mensaje;
+
+	printf("cod_op = %d\n", cod_op);
 
 	switch(cod_op){
 
@@ -156,9 +157,7 @@ void* tratar_suscriptor(int socket){
 
 	guardar_suscriptor(suscriptor, cod_op);
 
-	informe_lista_subs();
-
-	printf("cod_op = %d\n", cod_op);
+	//informe_lista_subs();
 
 	enviar_mensajes_suscriptor(suscriptor, cod_op);
 

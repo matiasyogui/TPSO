@@ -155,7 +155,7 @@ void informe_lista_mensajes(void){
 
 	for(int i=0; i < list_size(LISTA_MENSAJES); i++){
 
-		printf("Mensajes del tipo: %d\n", i);
+		printf("Mensajes del tipo %s\n", cod_opToString(i));
 
 		t_list* list_tipo_mensaje = list_get(LISTA_MENSAJES, i);
 
