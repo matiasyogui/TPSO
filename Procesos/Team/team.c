@@ -1,23 +1,77 @@
 #include "serializar_mensajes.h"
-
-#include <cosas_comunes.h>
-#include <pthread.h>
+#include <semaphore.h>
 #include "team.h"
-#include <commons/collections/list.h>
-#include <commons/string.h>
-
+t_list* pokemonesAPedir;
+t_list* pokemonAPedirSinRepetidos;
 t_list* lista_id_correlativos;
 
-/*void pasajeBlockAReady(){
-	while(1){
+void inicializar_listas();
+void eliminar_listas();
+
+pthread_mutex_t mBlockAReady;
+sem_t sem_entrenador_disponible, sem_cant_mensajes;
+
+/*
+void pasajeBlockAReady(){
+
+	while(true){
+
 		pthread_mutex_lock(&mBlockAReady);
+
+		// Se saca el primer mensaje
+		pthread_mutex_lock(&mListaGlobal);
+
+		t_mensajeTeam* mensaje = list_remove(lista_mensajes, 0);
+
+		pthread_mutex_unlock(&mListaGlobal);
+
+		//algoritmo de cercania para saber que entrenador desbloquear
+		//guardar mensaje en el entrenador
+		//pasar el entrenador a ready( solo se debe desbloquear 1 )
+
 
 		if()
 			entrenador -> mensaje = list_take(lista_mensajes, 0);
 	}
-} */
+}*/
+
+
+void* elegirtSiguienteMensaje(){
+
+	while(true){
+
+		sem_wait(&sem_cant_mensajes);
+
+		pthread_mutex_lock(&mListaGlobal);
+
+		t_mensajeTeam* mensaje = list_get(lista_mensajes, 0);
+
+		pthread_mutex_unlock(&mListaGlobal);
+
+		switch(mensaje->cod_op){
+
+		case APPEARED_POKEMON:
+		case LOCALIZED_POKEMON:
+
+			sem_wait(&sem_entrenador_disponible);
+
+			pthread_mutex_unlock(&mBlockAReady);
+
+
+
+			return NULL;
+
+		case CAUGHT_POKEMON:
+
+			return NULL;
+		}
+	}
+	return NULL;
+}
+
 
 void agregarMensajeLista(int socket, int cod_op){
+
 	int id_correlativo, size;
 	void* mensaje;
 
@@ -29,17 +83,21 @@ void agregarMensajeLista(int socket, int cod_op){
 	t_mensajeTeam* mensajeAGuardar = malloc(sizeof(t_mensajeTeam));
 	mensajeAGuardar -> buffer = malloc(sizeof(t_buffer));
 	mensajeAGuardar -> buffer -> size = size;
-	mensajeAGuardar -> buffer -> stream = malloc(size);
 	mensajeAGuardar -> buffer -> stream = mensaje;
 
 	mensajeAGuardar -> id = id_correlativo;
 	mensajeAGuardar -> cod_op = cod_op;
 
-	pthread_mutex_lock(&mListaGlobal);
-	list_add(lista_mensajes, mensajeAGuardar);
-	printf("MENSAJES EN LISTA GLOBAL = %d\n", list_size(lista_mensajes));
-	pthread_mutex_unlock(&mListaGlobal);
+	if(nosInteresaMensaje(mensajeAGuardar)){
 
+		pthread_mutex_lock(&mListaGlobal);
+
+		list_add(lista_mensajes, mensajeAGuardar);
+		sem_post(&sem_cant_mensajes);
+
+		pthread_mutex_unlock(&mListaGlobal);
+
+	}
 	printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id correlativo = %d, size mensaje = %d \n", cod_op, id_correlativo, size);
 
 	free(mensaje);
@@ -94,6 +152,7 @@ t_list* listaSinRepetidos(t_list* lista){
 	return list_filter(lista, _buscarElemento);
 }
 
+
 void enviarGet(void* elemento){
 
 	int cod_op = GET_POKEMON;
@@ -123,20 +182,19 @@ void enviarGet(void* elemento){
 
 
 	//esperamos respuesta del broker
-	int cod_op2, id_mensaje;
-	recv(socket, &cod_op2, sizeof(uint32_t), 0);
+	int id_mensaje;
 	recv(socket, &id_mensaje, sizeof(uint32_t), 0);
-	printf("[CONFIRMACION DE RECEPCION DE MENSAJE]cod_op = %d, mi id de suscriptor= %d \n", cod_op2, id_mensaje);
+	printf("[CONFIRMACION DE RECEPCION DE MENSAJE] mi id del mensaje = %d \n", id_mensaje);
 
 	list_add(lista_id_correlativos, id_mensaje);
 }
 
+
 void pedir_pokemones(){
-	t_list* pokemonesAPedir = list_create();
 
 	pokemonesAPedir = list_filter(objetivoGlobal, igualdadListas);
 
-	t_list* pokemonAPedirSinRepetidos = listaSinRepetidos(pokemonesAPedir);
+	pokemonAPedirSinRepetidos = listaSinRepetidos(pokemonesAPedir);
 
 	for(int i = 0; i< list_size(pokemonAPedirSinRepetidos); i++){
 		printf("pokemon = %s\n", (char*)list_get(pokemonAPedirSinRepetidos, i));
@@ -145,6 +203,7 @@ void pedir_pokemones(){
 	list_iterate(pokemonAPedirSinRepetidos, enviarGet);
 }
 
+
 void element_destroyer(void* elemento){
 	t_entrenador* ent = (t_entrenador*) elemento;
 	free(ent->objetivo);
@@ -152,6 +211,7 @@ void element_destroyer(void* elemento){
 	free(ent->posicion);
 	free(ent->semaforo);
 }
+
 
 /*
 void algortimoCercano(void* elemento, int posicionPokemonx, int posicionPokemony){
@@ -184,96 +244,107 @@ t_entrenador* elegirEntrenadorXCercania(int posx, int posy){
 		return ((t_entrenador*) elemento) -> cercania == entrenadorElegido -> cercania;
 	}
 
-	if()
+	if(1)
 		list_filter(listaMapeada, _mismaCercania);
 
 	return entrenadorElegido;
 }
 */
 
-void inicializar_listas(){
 
-	listaReady = list_create();
-	listaExecute = list_create();
-	listaBlocked = list_create();
-	listaExit = list_create();
+int suscribirse(char* cola){
 
-	lista_mensajes = list_create();
-
-	objetivoGlobal = list_create();
-	pokemonYaAtrapado = list_create();
-
-	lista_id_correlativos = list_create();
-}
-
-void eliminar_listas(){
-
-	list_destroy_and_destroy_elements(listaReady, free);
-	list_destroy_and_destroy_elements(listaExecute, free);
-	list_destroy_and_destroy_elements(listaBlocked, free);
-	list_destroy_and_destroy_elements(listaExit, free);
-}
-
-
-void suscribirse(char* cola){
-	// suscriptor + cola + tiempo;
 	int socket = crear_conexion("127.0.0.1", "4444");
-
 	char *datos[] = {"suscriptor", cola, "-1"};
 
 	t_paquete* paquete_enviar = armar_paquete2(datos);
 
 	enviar_mensaje(paquete_enviar, socket);
 
-	int cod_op, id_correlativo;
+	int cod_op, s;
+	bool confirmacion_suscripcion;
 
+	s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
+	if ( s < 0) { perror("RECV ERROR"); return EXIT_FAILURE; }
+	else printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", confirmacion_suscripcion);
 
 	while(1){
-		if(recv(socket, &cod_op, sizeof(uint32_t), 0 ) < 0){
-			perror("FALLO RECV");
-			continue;
-		}
+
+		s = recv(socket, &cod_op, sizeof(uint32_t), 0 );
+		if (s < 0) { perror("FALLO RECV"); continue; }
+
 		switch(cod_op){
-
-			case CONFIRMACION:
-				recv(socket, &id_correlativo, sizeof(uint32_t), 0);
-
-				printf("[CONFIRMACION DE SUSCRIPCION]cod_op = %d, mi id de suscriptor= %d \n", cod_op, id_correlativo);
-				break;
 
 			case APPEARED_POKEMON:
 			case CAUGHT_POKEMON:
 			case LOCALIZED_POKEMON:
 
 				agregarMensajeLista(socket, cod_op);
-
+				printf("Se recibio un mensaje\n");
 				break;
 		}
 	}
+	return EXIT_SUCCESS;
 }
 
 
-void finalizar_server(){
-	close(server_team);
-	raise(SIGTERM);
+bool nosInteresaMensaje(t_mensajeTeam* msg){
+
+	void* stream = msg -> buffer -> stream;
+	int size;
+	int offset;
+
+	bool _buscarID(void* elemento){
+		return msg->id == (int)elemento;
+	}
+
+	void* pokemon;
+
+
+	printf("cod_op = %s\n", cod_opToString(msg->cod_op));
+
+	switch(msg -> cod_op){
+
+		case APPEARED_POKEMON:
+		case LOCALIZED_POKEMON:
+			offset = 0;
+
+			memcpy(&size, stream, sizeof(int));
+			offset += sizeof(int);
+
+			pokemon = malloc(size);
+			memcpy(pokemon, stream + offset, size);
+
+			bool _buscarPokemon(void* elemento){
+				printf("--------- pokemon = %s, elemento = %s\n", (char*)pokemon, (char*)elemento);
+				fflush(stdout);
+				return string_equals_ignore_case((char*) pokemon, (char*)elemento);
+			}
+			printf("pokemons a pedir %d\n", list_size(pokemonAPedirSinRepetidos));
+			return list_any_satisfy(pokemonAPedirSinRepetidos, _buscarPokemon);
+
+		case CAUGHT_POKEMON:
+
+			return list_any_satisfy(lista_id_correlativos, _buscarID);
+	}
+
+	return false;
 }
 
 
 int main(){
 
-	signal(SIGINT, (void*)finalizar_server);
 	pthread_mutex_init(&mListaGlobal, NULL);
 
 	inicializar_listas();
 
-	pthread_t tid;
-	pthread_create(&tid, NULL, (void*)suscribirse, "appeared_pokemon");
-	pthread_create(&tid, NULL, (void*)suscribirse, "caught_pokemon");
-	pthread_create(&tid, NULL, (void*)suscribirse, "localized_pokemon");
+	pthread_t tid[4];
+	pthread_create(&tid[1], NULL, (void*)suscribirse, "appeared_pokemon");
+	pthread_create(&tid[2], NULL, (void*)suscribirse, "caught_pokemon");
+	pthread_create(&tid[3], NULL, (void*)suscribirse, "localized_pokemon");
 
-	pthread_create(&tid, NULL, (void*)iniciar_servidor, NULL);
+	pthread_create(&tid[4], NULL, (void*)iniciar_servidor, NULL);
 
-	//LEO ARCHIVO DE CONFIGURACION
 	leer_archivo_configuracion();
 
 	pthread_mutex_init(&semPlanificador,NULL);
@@ -282,13 +353,15 @@ int main(){
 	t_entrenador* entrenadores[cantEntrenadores];
 	pthread_t* hilos[cantEntrenadores];
 
-	//setteo entrenadores y asigno hilo a c/entrenador
+	sem_init(&sem_entrenador_disponible, 0, cantEntrenadores);
+	sem_init(&sem_cant_mensajes, 0, 0);
+
 	for(i=0;i<cantEntrenadores;i++){
 		setteoEntrenador(entrenadores[i], hilos[i], i);
 	}
 
 	pthread_t blockAReady;
-	pthread_mutex_t mBlockAReady;
+
 
 	pthread_mutex_init(&mBlockAReady, NULL);
 	pthread_mutex_lock(&mBlockAReady);
@@ -297,18 +370,19 @@ int main(){
 	pthread_mutex_lock(&semPlanificador);
 
 	pedir_pokemones();
-	pthread_join(tid, NULL);
 
+	pthread_join(tid[4], NULL);
 
-	while(1){
+	while(true){
+
 		pasajeFIFO(listaBlocked,listaReady);
 		entrenadorActual = list_remove(listaReady, 0);
-		printf("se saca de blocked el entrenador con posicion %d y %d\n", entrenadorActual->posicion->posx, entrenadorActual->posicion->posy);
+		printf("Se saca de blocked el entrenador con posicion %d y %d\n", entrenadorActual->posicion->posx, entrenadorActual->posicion->posy);
 
 		printf("Se desbloquea el hilo\n");
 		pthread_mutex_unlock(entrenadorActual->semaforo);
 		pthread_mutex_lock(&semPlanificador);
-		printf("termina hilo\n");
+		printf("Termina hilo\n");
 
 		list_add(listaBlocked,entrenadorActual);
 	}
@@ -325,8 +399,37 @@ int main(){
 		free(entrenadores[i]-> pokemones);
 		free(entrenadores[i]);
 	}
+
 	return EXIT_SUCCESS;
 }
+
+
+void inicializar_listas(){
+
+	listaReady = list_create();
+	listaExecute = list_create();
+	listaBlocked = list_create();
+	listaExit = list_create();
+
+	lista_mensajes = list_create();
+
+	objetivoGlobal = list_create();
+	pokemonYaAtrapado = list_create();
+	pokemonesAPedir = list_create();
+	pokemonAPedirSinRepetidos = list_create();
+
+	lista_id_correlativos = list_create();
+}
+
+
+void eliminar_listas(){
+
+	list_destroy_and_destroy_elements(listaReady, free);
+	list_destroy_and_destroy_elements(listaExecute, free);
+	list_destroy_and_destroy_elements(listaBlocked, free);
+	list_destroy_and_destroy_elements(listaExit, free);
+}
+
 
 void leer_archivo_configuracion(){
 

@@ -1,58 +1,70 @@
 #ifndef VARIABLES_GLOBALES_H_
 #define VARIABLES_GLOBALES_H_
 
+#include <cosas_comunes.h>
 #include <commons/collections/list.h>
-#include <stdbool.h>
 
 ///////////////////////////broker.h////////////////////////
+
 char* IP_SERVER;
 char* PUERTO_SERVER;
 
 int* SOCKET_SERVER;
 
-#define CANTIDAD_SUBLISTAS 6
-
-t_list* LISTA_MENSAJES;
-t_list* LISTA_SUBS;
-
-
-t_config* CONFIG;
 t_log* LOGGER;
-
-pthread_mutex_t MUTEX_SUBLISTAS_MENSAJES[CANTIDAD_SUBLISTAS];
-pthread_mutex_t MUTEX_SUBLISTAS_SUSCRIPTORES[CANTIDAD_SUBLISTAS];
-
+t_config* CONFIG;
 
 ///////////////////////////ADMIN_MENSAJES.H////////////////////////
-pthread_mutex_t mutex_id;
+
 
 typedef struct{
 
-	int id;
 	int socket;
 
 }t_suscriptor;
+
 
 typedef struct{
 
 	int id;
 	int id_correlativo;
 	int cod_op;
-
 	t_buffer* mensaje;
-
-	t_list* subs_envie_msg;  // tratar con las confirmacions de los suscriptores que recibieron el mensaje
+	t_list* notificiones_envio;
 	pthread_mutex_t mutex;
 
 }t_mensaje;
 
 
+typedef struct{
+
+	t_suscriptor* suscriptor;
+	bool ACK;
+
+}t_notificacion_envio;
+
+
+
+typedef struct{
+
+	int cola_mensajes;
+	t_mensaje* mensaje;
+	t_list* lista_subs;
+
+}t_datos;
+
+typedef struct{
+
+	t_list* notificaciones_envio;
+	pthread_mutex_t* mutex_mensaje;
+	t_suscriptor* suscriptor;
+	t_buffer* stream_enviar;
+
+}t_datos_envio;
 
 
 
 
-/////////////////////////envio_recepcion.h///////////////////////////////
-pthread_t THREAD;
 
 
 #endif /* VARIABLES_GLOBALES_H_ */

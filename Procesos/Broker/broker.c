@@ -1,43 +1,58 @@
 #include "broker.h"
 
-#include <string.h>
-
+pthread_t thread_server, thread_planificador;
 void datos_servidor(void);
 void finalizar_servidor(void);
-void inicializar_listas(void);
-void inicializar_semaforos(void);
 
-
-void imprimir(char* palabra)
-{
-	printf("\n");
-	for(int i=0; i<10; i++)
-	{
-		if(palabra[i]=='\0') {
-			printf("fin");
-		}
-		else {
-			printf("%c", palabra[i]);
-		}
-
-	}
-	printf("\n");
-}
 
 int main(void){
 
-	//datos_servidor();
+
+	datos_servidor();
 
 	//signal(SIGINT, (void*)finalizar_servidor);
 
 	//fflush(stdout);
+
 	//iniciar_servidor();
 
 
-	configuracion = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Broker/broker.config"); // recordatorio sacarlo de aqui
+	/*
+	t_mensaje* mensaje = nodo_mensaje(1, NULL);
+	guardar_mensaje(mensaje, 0);
 
-	iniciar_memoria();
+	t_suscriptor* sub1 = nodo_suscriptor(1);
+	t_suscriptor* sub2 = nodo_suscriptor(2);
+	t_suscriptor* sub3 = nodo_suscriptor(3);
+	t_suscriptor* sub4 = nodo_suscriptor(4);
+	t_suscriptor* sub5 = nodo_suscriptor(5);
 
+	guardar_suscriptor(sub1, 0);
+	guardar_suscriptor(sub2, 0);
+	guardar_suscriptor(sub3, 0);
+	guardar_suscriptor(sub4, 0);
+	guardar_suscriptor(sub5, 0);
+
+	t_notificacion_envio* noti1 = nodo_notificacion(sub1);
+	t_notificacion_envio* noti4 = nodo_notificacion(sub4);
+
+	add_notificacion_envio(mensaje, noti1);
+	add_notificacion_envio(mensaje, noti4);
+
+	t_list* lista_filtrada = subs_enviar(mensaje->notificiones_envio);
+
+	printf("1. nodo %d, socket \n",  !existeElemento(mensaje->notificiones_envio, sub3));
+
+	for(int i = 0; i < list_size(lista_filtrada); i++){
+
+		t_suscriptor* nodo = list_get(lista_filtrada, i);
+
+		printf(" nodo %d, socket \n", nodo -> socket);
+	}
+	*/
+
+/*
+	dump_memoria();
 
 	char* palabra1 = "hola|";
 	char* palabra2 = "hormiga|";
@@ -83,6 +98,7 @@ int main(void){
 
 
 	printf("\n\nchau\n\n");
+*/
 	return 0;
 }
 
@@ -96,44 +112,28 @@ void datos_servidor(void){
 	IP_SERVER = config_get_string_value(CONFIG, "IP_BROKER");
 	PUERTO_SERVER = config_get_string_value(CONFIG, "PUERTO_BROKER");
 
-	inicializar_listas();
+	iniciar_listas();
 
-	inicializar_semaforos();
+	
+	configuracion = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Broker/broker.config"); // recordatorio sacarlo de aqui
 
+	iniciar_memoria();
 }
 
 
-
 void finalizar_servidor(void){
-	//finalizar_listas();
-	//finalizar_semaforos();
 
 	config_destroy(CONFIG);
 	log_destroy(LOGGER);
-	close(*SOCKET_SERVER);
+	//cerrar_servidor();
 
+	//finalizar_listas();
+	//finalizar_semaforos();
 	raise(SIGTERM);
 }
 
 
-void inicializar_listas(void){
 
-	LISTA_MENSAJES = crear_listas();
-	LISTA_SUBS = crear_listas();
-}
-
-
-void inicializar_semaforos(void){
-
-	for(int i=0; i< CANTIDAD_SUBLISTAS; i++)
-		pthread_mutex_init(&MUTEX_SUBLISTAS_MENSAJES[i], NULL);
-
-	for(int i=0; i< CANTIDAD_SUBLISTAS; i++)
-		pthread_mutex_init(&MUTEX_SUBLISTAS_SUSCRIPTORES[i], NULL);
-
-	//admin_mensajes.h
-	pthread_mutex_init(&mutex_id, NULL);
-}
 
 
 

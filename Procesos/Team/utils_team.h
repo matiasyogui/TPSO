@@ -18,23 +18,33 @@
 
 int server_team;
 
-typedef enum
-{
+
+typedef enum{
+
 	MENSAJE=1
+
 }op_code;
 
-typedef struct{
-	int posx;
-	int posy;
-}t_posicion;
 
 typedef struct{
+
+	int posx;
+	int posy;
+
+}t_posicion;
+
+
+typedef struct{
+
 	int id;
 	int cod_op;
 	t_buffer* buffer;
+
 }t_mensajeTeam;
 
+
 typedef struct{
+
 	t_posicion* posicion;
 	pthread_mutex_t* semaforo;
 	int cercania;
@@ -43,9 +53,9 @@ typedef struct{
 	char** pokemones;
 	int idCorrelativo;
 	t_mensajeTeam* mensaje;
+	bool estaDisponible;
+
 }t_entrenador;
-
-
 
 
 pthread_t thread;
@@ -76,8 +86,8 @@ char* IP_BROKER;
 int ESTIMACION_INICIAL;
 int PUERTO_BROKER;
 char* LOG_FILE;
-int i;
 int mensajeActual;
+int i;
 
 void* recibir_buffer(int*, int);
 
@@ -93,6 +103,8 @@ void leer_mensaje(t_buffer* buffer);
 void pasajeFIFO(t_list* lista1, t_list* lista2);
 void Producer(t_entrenador* ent);
 void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i);
+
+bool nosInteresaMensaje(t_mensajeTeam* msg);
 
 
 #endif /* UTILS_TEAM_H_ */

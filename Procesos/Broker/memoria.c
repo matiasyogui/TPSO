@@ -39,8 +39,6 @@ void* algoritmo_primer_ajuste(int size, int* numero_particion)
 	}
 	return NULL;
 }
-
-
 void* algoritmo_mejor_ajuste(int size, int* numero_particion)
 {
 	bool que_pase_el_primero = true;
@@ -90,7 +88,6 @@ void iniciar_memoria(){
 	obtener_datos();
 
 	inicio_memoria = malloc(TAMANO_MEMORIA);
-
 	particiones = list_create();
 
 	t_particion* inicio = malloc(sizeof(t_particion));
@@ -98,7 +95,6 @@ void iniciar_memoria(){
 	inicio -> fin_particion = inicio_memoria;
 
 	list_add(particiones, inicio);
-
 
 	t_particion* fin = malloc(sizeof(t_particion));
 	fin -> inicio_particion = inicio_memoria + TAMANO_MEMORIA;
@@ -108,6 +104,7 @@ void iniciar_memoria(){
 
 	printf("la memoria se ha iniciado  \n");
 }
+
 
 
 void* pedir_memoria(int size){
@@ -148,6 +145,11 @@ void eliminar_particion(void* particion){
 
 	list_remove_and_destroy_element(particiones, numero_particion_eliminar, free);
 }
+
+
+
+
+
 
 
 
