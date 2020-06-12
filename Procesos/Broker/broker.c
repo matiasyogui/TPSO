@@ -1,21 +1,19 @@
 #include "broker.h"
 
-pthread_t thread_server, thread_planificador;
+pthread_t thread_server;
 void datos_servidor(void);
 void finalizar_servidor(void);
 
 
 int main(void){
 
-
 	datos_servidor();
 
-	//signal(SIGINT, (void*)finalizar_servidor);
+	signal(SIGINT, (void*)finalizar_servidor);
 
-	//fflush(stdout);
+	fflush(stdout);
 
-	//iniciar_servidor();
-
+	iniciar_servidor();
 
 	/*
 	t_mensaje* mensaje = nodo_mensaje(1, NULL);
@@ -99,6 +97,7 @@ int main(void){
 
 	printf("\n\nchau\n\n");
 */
+
 	return 0;
 }
 
@@ -113,9 +112,6 @@ void datos_servidor(void){
 	PUERTO_SERVER = config_get_string_value(CONFIG, "PUERTO_BROKER");
 
 	iniciar_listas();
-
-	
-	configuracion = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Broker/broker.config"); // recordatorio sacarlo de aqui
 
 	iniciar_memoria();
 }

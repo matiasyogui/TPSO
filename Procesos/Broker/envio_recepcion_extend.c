@@ -87,7 +87,7 @@ void enviar_mensajes_suscriptor(t_suscriptor* suscriptor, int cod_op){
 
 	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
 
-	for (int i = 0; i< list_size(mensajes_duplicados); i++){
+	for (int i = 0; i < list_size(mensajes_duplicados); i++){
 
 		int size = 0;
 

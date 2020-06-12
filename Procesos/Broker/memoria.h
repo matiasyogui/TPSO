@@ -1,19 +1,12 @@
 #ifndef MEMORIA_H_
 #define MEMORIA_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <commons/collections/list.h>
-#include <commons/string.h>
-//#include "variables_globales.h"
-#include <commons/config.h>
-
-
+#include "variables_globales.h"
 
 
 //-------------  ESTRUCTURAS  ----------------------------
+
+
 typedef struct
 {
 	void* inicio_particion;
@@ -21,14 +14,10 @@ typedef struct
 } t_particion;
 
 
-
-
 //------------  VARIABLES  --------------------------------
-t_config* configuracion;// = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Broker/broker.config"); // recordatorio sacarlo de aqui
 
 void* inicio_memoria; /* la memoria */
 t_list* particiones;  /* para la manipulacion de memoria */
-
 
 
 int TAMANO_MEMORIA;

@@ -3,13 +3,13 @@
 // --------------- FUNCIONES QUE NECESITA LA MEMORIA PERO NO SON VISIBLE PARA EL USUARIO  -----------------
 void obtener_datos(){
 
-	TAMANO_MEMORIA = config_get_int_value(configuracion, "TAMANO_MEMORIA");
-	TAMANO_MINIMO_PARTICION = config_get_int_value(configuracion, "TAMANO_MINIMO_PARTICION");
-	FRECUENCIA_COMPACTACION = config_get_int_value(configuracion, "FRECUENCIA_COMPACTACION");
+	TAMANO_MEMORIA = config_get_int_value(CONFIG, "TAMANO_MEMORIA");
+	TAMANO_MINIMO_PARTICION = config_get_int_value(CONFIG, "TAMANO_MINIMO_PARTICION");
+	FRECUENCIA_COMPACTACION = config_get_int_value(CONFIG, "FRECUENCIA_COMPACTACION");
 
-	ALGORITMO_MEMORIA = config_get_string_value(configuracion, "ALGORITMO_MEMORIA");
-	ALGORITMO_REEMPLAZO = config_get_string_value(configuracion, "ALGORITMO_REEMPLAZO");
-	ALGORITMO_PARTICION_LIBRE = config_get_string_value(configuracion, "ALGORITMO_PARTICION_LIBRE");
+	ALGORITMO_MEMORIA = config_get_string_value(CONFIG, "ALGORITMO_MEMORIA");
+	ALGORITMO_REEMPLAZO = config_get_string_value(CONFIG, "ALGORITMO_REEMPLAZO");
+	ALGORITMO_PARTICION_LIBRE = config_get_string_value(CONFIG, "ALGORITMO_PARTICION_LIBRE");
 
 }
 
@@ -39,6 +39,8 @@ void* algoritmo_primer_ajuste(int size, int* numero_particion)
 	}
 	return NULL;
 }
+
+
 void* algoritmo_mejor_ajuste(int size, int* numero_particion)
 {
 	bool que_pase_el_primero = true;
@@ -60,7 +62,6 @@ void* algoritmo_mejor_ajuste(int size, int* numero_particion)
 			particion_libre = primera_particion->fin_particion;
 			*numero_particion = i+1;
 		}
-
 	}
 
 	return particion_libre;
@@ -83,8 +84,10 @@ void* busqueda_particion_libre(int size, int* numero_particion){
 	return NULL;
 }
 
+
 // -------------------------------  FUNCIONES DE LA MEMORIA  ----------------------------------
 void iniciar_memoria(){
+
 	obtener_datos();
 
 	inicio_memoria = malloc(TAMANO_MEMORIA);
@@ -102,7 +105,6 @@ void iniciar_memoria(){
 
 	list_add(particiones, fin);
 
-	printf("la memoria se ha iniciado  \n");
 }
 
 
@@ -128,6 +130,7 @@ void* pedir_memoria(int size){
 	}
 }
 
+
 int numero_particion(void* particion_buscada){
 
 	for(int i = 0; i < (list_size(particiones)-1); i++ ){
@@ -139,18 +142,13 @@ int numero_particion(void* particion_buscada){
 	return -1;
 }
 
+
 void eliminar_particion(void* particion){
 
 	int numero_particion_eliminar = numero_particion(particion);
 
 	list_remove_and_destroy_element(particiones, numero_particion_eliminar, free);
 }
-
-
-
-
-
-
 
 
 
@@ -184,7 +182,7 @@ void dump_memoria(){
 
 		}
 	}
-	//printf("\n////////////////////////////////////////////////////////////////////////////////////\n\n");
+	printf("\n////////////////////////////////////////////////////////////////////////////////////\n\n");
 }
 
 
