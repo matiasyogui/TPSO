@@ -8,55 +8,81 @@ void inicializar_listas(void);
 void inicializar_semaforos(void);
 
 
+void imprimir(char* palabra)
+{
+	printf("\n");
+	for(int i=0; i<10; i++)
+	{
+		if(palabra[i]=='\0') {
+			printf("fin");
+		}
+		else {
+			printf("%c", palabra[i]);
+		}
+
+	}
+	printf("\n");
+}
+
 int main(void){
 
-	datos_servidor();
+	//datos_servidor();
 
-	signal(SIGINT, (void*)finalizar_servidor);
+	//signal(SIGINT, (void*)finalizar_servidor);
 
-	fflush(stdout);
-	iniciar_servidor();
+	//fflush(stdout);
+	//iniciar_servidor();
 
-	/*
-	dump_memoria();
+
+	configuracion = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Broker/broker.config"); // recordatorio sacarlo de aqui
+
+	iniciar_memoria();
+
 
 	char* palabra1 = "hola|";
 	char* palabra2 = "hormiga|";
 	char* palabra3 = "murcielago|";
-	char* palabra4 = "no sirve";
-	char* palabra5 = "este tp";
+	char* palabra4 = "NO|";
+	char* palabra5 = "sirve|";
+	char* palabra6 = "este|";
+	char* palabra7 = "tp|";
+	char* palabra8 = "volar|";
 
-	void* stream = pedir_memoria(strlen(palabra1));
-	dump_memoria();
-	void* memoria = stream;
 
-	memcpy(stream, palabra1, strlen(palabra1));
-
-	printf("memoria = %s\n", (char*)memoria);
-
+	void* stream1 = pedir_memoria(strlen(palabra1));
+	memcpy(stream1, palabra1, strlen(palabra1));
 
 	void* stream2 = pedir_memoria(strlen(palabra2));
-	dump_memoria();
 	memcpy(stream2, palabra2, strlen(palabra2));
 
-	printf("memoria = %s\n", (char*)memoria);
-
 	void* stream3 = pedir_memoria(strlen(palabra3));
-	dump_memoria();
 	memcpy(stream3, palabra3, strlen(palabra3));
 
-	printf("memoria = %s\n", (char*)memoria);
+	void* stream4 = pedir_memoria(strlen(palabra4));
+	memcpy(stream4, palabra4, strlen(palabra4));
 
+	void* stream5 = pedir_memoria(strlen(palabra5));
+	memcpy(stream5, palabra5, strlen(palabra5));
+
+	void* stream6 = pedir_memoria(strlen(palabra6));
+	memcpy(stream6, palabra6, strlen(palabra6));
+
+	void* stream7 = pedir_memoria(strlen(palabra7));
+	memcpy(stream7, palabra7, strlen(palabra7));
 
 
 	eliminar_particion(stream2);
+	eliminar_particion(stream3);
+	eliminar_particion(stream5);
+	eliminar_particion(stream6);
 
-	char* palabra6 = "volaaaar|";
-	void* stream6 = pedir_memoria(strlen(palabra6));
-	memcpy(stream6, palabra6, strlen(palabra6));
-	printf("memoria = %s\n", (char*)memoria);
-	*/
+	void* stream8 = pedir_memoria(strlen(palabra8));
+	memcpy(stream8, palabra8, strlen(palabra8));
 
+	dump_memoria();
+
+
+	printf("\n\nchau\n\n");
 	return 0;
 }
 
@@ -73,6 +99,7 @@ void datos_servidor(void){
 	inicializar_listas();
 
 	inicializar_semaforos();
+
 }
 
 
@@ -93,7 +120,6 @@ void inicializar_listas(void){
 
 	LISTA_MENSAJES = crear_listas();
 	LISTA_SUBS = crear_listas();
-	//iniciar_memoria();
 }
 
 
@@ -108,8 +134,6 @@ void inicializar_semaforos(void){
 	//admin_mensajes.h
 	pthread_mutex_init(&mutex_id, NULL);
 }
-
-
 
 
 
