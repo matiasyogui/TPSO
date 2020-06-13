@@ -107,7 +107,7 @@ void* armar_mensaje(int cod_op, char* datos[], void*(armar_stream)(char*[], int*
 
 	void* mensaje = armar_stream(datos, size);
 
-	void* stream = malloc( 2 * sizeof(uint32_t) + *size);
+	void* stream = malloc(2 * sizeof(uint32_t) + *size);
 
 	int offset = 0;
 

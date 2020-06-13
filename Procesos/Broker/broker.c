@@ -31,7 +31,9 @@ static void datos_servidor(void){
 	CONFIG = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Broker/broker.config");
 
 	char* ruta_log = config_get_string_value(CONFIG, "LOG_FILE");
-	LOGGER = iniciar_logger(ruta_log, "broker", 1, LOG_LEVEL_INFO);
+	LOGGER = iniciar_logger(ruta_log, "broker", 0, LOG_LEVEL_INFO);
+
+	pthread_mutex_init(&mutex_log, NULL);
 
 	iniciar_datos_servidor();
 	iniciar_listas();
@@ -57,6 +59,8 @@ static void finalizar_servidor(void){
 
 	config_destroy(CONFIG);
 	log_destroy(LOGGER);
+
+	pthread_mutex_destroy(&mutex_log);
 
 	raise(SIGTERM);
 }

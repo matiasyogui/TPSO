@@ -19,13 +19,19 @@ int tratar_mensaje(int socket, int cod_op, bool esCorrelativo){
 
 	guardar_mensaje(mensaje, cod_op);
 
+	pthread_mutex_lock(&mutex_log);
+
+	log_info(LOGGER, "Llego un mensaje a la cola %s", cod_opToString(cod_op));
+
+	pthread_mutex_unlock(&mutex_log);
+
 	enviar_confirmacion(socket, mensaje->id);
 
 	cargar_tarea(MENSAJE, mensaje);
 
 	close(socket);
 
-	informe_lista_mensajes();
+	//informe_lista_mensajes();
 
 	return EXIT_SUCCESS;
 }
@@ -46,8 +52,13 @@ int tratar_suscriptor(int socket){
 
 	guardar_suscriptor(suscriptor, cod_op);
 
-	enviar_confirmacion(suscriptor->socket, true);
+	pthread_mutex_lock(&mutex_log);
 
+	log_info(LOGGER, "Un proceso se suscribio a la cola %s", cod_opToString(cod_op));
+
+	pthread_mutex_unlock(&mutex_log);
+
+	enviar_confirmacion(suscriptor->socket, true);
 
 	cargar_tarea(SUSCRIPCION, suscriptor);
 
@@ -73,7 +84,7 @@ static t_mensaje* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativ
 
 	t_mensaje* mensaje1 = nodo_mensaje(cod_op, id_correlativo, mensaje);
 
-	//printf("Cod_op = %d, Id_correlativo = %d, Mensaje_size = %d\n", cod_op, id_correlativo, mensaje->size);
+	printf("Cod_op = %d, Id_correlativo = %d, Mensaje_size = %d\n", cod_op, id_correlativo, mensaje->size);
 
 	return mensaje1;
 }

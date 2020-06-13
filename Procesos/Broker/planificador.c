@@ -32,13 +32,13 @@ int iniciar_planificacion_envios(void){
 	for (int i = 0; i < GESTORES_TAREAS; i++) {
 
 		s = pthread_create(&thread_gestionTareas[i], NULL, (void*)_gestion_tareas, NULL);
-		if (s != 0) { perror("[LISTAS.C] PTHREAD_CREATE ERROR"); }
+		if (s != 0) perror("[LISTAS.C] PTHREAD_CREATE ERROR");
 	}
 
 	for (int i = 0; i < GESTORES_ENVIO; i++) {
 
 		s = pthread_create(&thread_gestionEnvios[i], NULL, (void*)_gestion_envios, NULL);
-		if (s != 0) { perror("[LISTAS.C] PTHREAD_CREATE ERROR"); }
+		if (s != 0) perror("[LISTAS.C] PTHREAD_CREATE ERROR");
 	}
 
 	return EXIT_SUCCESS;
@@ -199,6 +199,12 @@ static int realizar_envio(t_envio* envio){
 
 	free(stream);
 
+	pthread_mutex_lock(&mutex_log);
+
+	log_info(LOGGER, "Se envio un mensaje a un suscriptor con socket = %d", suscriptor->socket);
+
+	pthread_mutex_unlock(&mutex_log);
+
 	t_notificacion_envio* notificacion = cargar_notificacion_envio(mensaje, suscriptor);
 
 	bool confirmacion;
@@ -206,7 +212,15 @@ static int realizar_envio(t_envio* envio){
 	s = recv(suscriptor->socket, &confirmacion, sizeof(bool), 0);
 	if (s < 0) { perror("RECV ERROR"); return EXIT_FAILURE; }
 
-	if (confirmacion) notificacion->ACK = confirmacion;
+	if (confirmacion){
+		notificacion->ACK = confirmacion;
+
+		pthread_mutex_lock(&mutex_log);
+
+		log_info(LOGGER, "Se recibio el ACK del suscriptor con socket = %d, para el mensaje con id = %d", suscriptor->socket, mensaje->id);
+
+		pthread_mutex_unlock(&mutex_log);
+	}
 	else return EXIT_FAILURE;
 
 	return EXIT_SUCCESS;

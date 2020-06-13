@@ -88,7 +88,6 @@ void* iniciar_servidor(void){
 
 static int esperar_cliente(int socket_servidor){
 
-	int s;
 	struct sockaddr_in dir_cliente;
 
 	socklen_t tam_direccion = sizeof(struct sockaddr_in);
@@ -108,6 +107,12 @@ static int esperar_cliente(int socket_servidor){
 	pthread_cond_signal(&cond);
 
 	pthread_mutex_unlock(&mutex_cola);
+
+	pthread_mutex_lock(&mutex_log);
+
+	log_info(LOGGER, "Un proceso se conecto al broker");
+
+	pthread_mutex_unlock(&mutex_log);
 
 	return EXIT_SUCCESS;
 }
