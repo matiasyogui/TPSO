@@ -45,6 +45,11 @@ desc: dado una particion de memoria la "elimina"
 */
 void eliminar_particion(void* particion);
 /*
+name: guardar
+desc: guarda el dato dentro de la particion dada
+*/
+void guardar(void* particion, char* dato);
+/*
 name: dump_memoria
 desc: describe toda la informacion de la memoria
 */

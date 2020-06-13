@@ -8,13 +8,13 @@ void finalizar_servidor(void);
 int main(void){
 
 	datos_servidor();
-
+/*
 	signal(SIGINT, (void*)finalizar_servidor);
 
 	fflush(stdout);
 
 	iniciar_servidor();
-
+*/
 	/*
 	t_mensaje* mensaje = nodo_mensaje(1, NULL);
 	guardar_mensaje(mensaje, 0);
@@ -52,52 +52,46 @@ int main(void){
 /*
 	dump_memoria();
 
-	char* palabra1 = "hola|";
-	char* palabra2 = "hormiga|";
-	char* palabra3 = "murcielago|";
-	char* palabra4 = "NO|";
-	char* palabra5 = "sirve|";
-	char* palabra6 = "este|";
-	char* palabra7 = "tp|";
-	char* palabra8 = "volar|";
+	char* palabra1 = "1111pikachu";
+	char* palabra2 = "1111charmander";
+	char* palabra3 = "1111pikachu11112222";
+	char* palabra4 = "1111squirtle11112222";
+	char* palabra5 = "1111";
+	char* palabra6 = "0000";
+	char* palabra7 = "1111bulbasaur11112222";
+	char* palabra8 = "1111charmander11112222";
+	char* palabra9 = "1111pichu";
+	char* palabra10 = "1111raichu";
 
 
-	void* stream1 = pedir_memoria(strlen(palabra1));
-	memcpy(stream1, palabra1, strlen(palabra1));
-
-	void* stream2 = pedir_memoria(strlen(palabra2));
-	memcpy(stream2, palabra2, strlen(palabra2));
-
+	//void* stream1 = pedir_memoria(strlen(palabra1));
+	//guardar(stream1, palabra1);
+	//void* stream2 = pedir_memoria(strlen(palabra2));
+	//guardar(stream2, palabra2);
 	void* stream3 = pedir_memoria(strlen(palabra3));
-	memcpy(stream3, palabra3, strlen(palabra3));
-
+	guardar(stream3, palabra3);
 	void* stream4 = pedir_memoria(strlen(palabra4));
-	memcpy(stream4, palabra4, strlen(palabra4));
-
+	guardar(stream4, palabra4);
 	void* stream5 = pedir_memoria(strlen(palabra5));
-	memcpy(stream5, palabra5, strlen(palabra5));
-
+	guardar(stream5, palabra5);
 	void* stream6 = pedir_memoria(strlen(palabra6));
-	memcpy(stream6, palabra6, strlen(palabra6));
-
+	guardar(stream6, palabra6);
 	void* stream7 = pedir_memoria(strlen(palabra7));
-	memcpy(stream7, palabra7, strlen(palabra7));
-
-
-	eliminar_particion(stream2);
-	eliminar_particion(stream3);
-	eliminar_particion(stream5);
-	eliminar_particion(stream6);
-
+	guardar(stream7, palabra7);
 	void* stream8 = pedir_memoria(strlen(palabra8));
-	memcpy(stream8, palabra8, strlen(palabra8));
+	guardar(stream8, palabra8);
+	void* stream9 = pedir_memoria(strlen(palabra9));
+	guardar(stream9, palabra9);
+	void* stream10 = pedir_memoria(strlen(palabra10));
+	guardar(stream10, palabra10);
+	//eliminar_particion(stream8);
 
 	dump_memoria();
 
 
 	printf("\n\nchau\n\n");
-*/
 
+*/
 	return 0;
 }
 
