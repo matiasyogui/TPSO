@@ -17,8 +17,8 @@ void guardar_suscriptor(t_suscriptor* suscriptor, int cod_op);
 
 ///////////////////////// FUNCIONES LISTA MENSAJES /////////////////////////
 
-t_mensaje* nodo_mensaje(int id_correlativo, t_buffer* mensaje);
-t_suscriptor* nodo_suscriptor(int socket);
+t_mensaje* nodo_mensaje(int cod_op, int id_correlativo, t_buffer* mensaje);
+t_suscriptor* nodo_suscriptor(int cod_op, int socket);
 t_notificacion_envio* nodo_notificacion(t_suscriptor* suscriptor);
 
 ///////////////////////// FUNCIONES PARA ELIMINAR LAS LISTAS /////////////////////////
@@ -36,5 +36,6 @@ void informe_lista_subs(void);
 ////////////////////////////////////////
 
 int obtener_datos_envios(t_list** lista_mensajes, t_list** lista_subs, int cola_mensajes);
-
+t_list* obtener_lista_suscriptores(int cod_op);
+t_list* obtener_lista_mensajes(int cod_op);
 #endif /* LISTAS_H_ */

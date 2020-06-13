@@ -93,10 +93,11 @@ static void agregar_elemento(t_list* lista, int index, void* data){
 ///////////////////////// FUNCIONES LISTA MENSAJES /////////////////////////
 
 
-t_mensaje* nodo_mensaje(int id_correlativo, t_buffer* mensaje){
+t_mensaje* nodo_mensaje(int cod_op, int id_correlativo, t_buffer* mensaje){
 
 	t_mensaje* nodo_mensaje = malloc(sizeof( t_mensaje ));
 
+	nodo_mensaje -> cod_op = cod_op;
 	nodo_mensaje -> id = obtener_id();
 	nodo_mensaje -> id_correlativo = id_correlativo;
 	nodo_mensaje -> mensaje = mensaje;
@@ -108,11 +109,12 @@ t_mensaje* nodo_mensaje(int id_correlativo, t_buffer* mensaje){
 }
 
 
-t_suscriptor* nodo_suscriptor(int socket){
+t_suscriptor* nodo_suscriptor(int cod_op, int socket){
 
 	t_suscriptor* nodo_suscriptor = malloc(sizeof(t_suscriptor));
 
-	nodo_suscriptor->socket = socket;
+	nodo_suscriptor -> cod_op = cod_op;
+	nodo_suscriptor -> socket = socket;
 
 	return nodo_suscriptor;
 }
@@ -182,7 +184,11 @@ void borrar_suscriptor(void* suscriptor){
 
 void destruir_lista_suscriptores(void){
 
-	list_destroy_and_destroy_elements(LISTA_SUBS, (void*)list_destroy);
+	void _limpiar_sublista(void* elemento){
+		list_destroy_and_destroy_elements(elemento, free);
+	}
+
+	list_destroy_and_destroy_elements(LISTA_SUBS, (void*)_limpiar_sublista);
 }
 
 
@@ -195,7 +201,7 @@ void informe_lista_mensajes(void){
 
 	for(int i=0; i < list_size(LISTA_MENSAJES); i++){
 
-		printf("Mensajes del tipo: %d\n", i);
+		printf("Mensajes del tipo %s\n", cod_opToString(i));
 
 		t_list* list_tipo_mensaje = list_get(LISTA_MENSAJES, i);
 
@@ -226,7 +232,7 @@ void informe_lista_subs(void){
 
 	for(int i=0; i < list_size(LISTA_SUBS); i++){
 
-		printf("Suscriptores de la cola: %d\n", i);
+		printf("Suscriptores de la cola %s\n", cod_opToString(i));
 
 		t_list* list_tipo_mensaje = list_get(LISTA_SUBS, i);
 
@@ -262,19 +268,37 @@ static int obtener_id(void){
 
 int obtener_datos_envios(t_list** lista_mensajes, t_list** lista_subs, int cola_mensajes){
 
-	pthread_mutex_lock(&(MUTEX_SUBLISTAS_MENSAJES[cola_mensajes]));
+	*lista_mensajes = obtener_lista_mensajes(cola_mensajes);
 
-	*lista_mensajes = list_duplicate(list_get(LISTA_MENSAJES, cola_mensajes));
-
-	pthread_mutex_unlock(&(MUTEX_SUBLISTAS_MENSAJES[cola_mensajes]));
-
-	pthread_mutex_lock(&(MUTEX_SUBLISTAS_SUSCRIPTORES[cola_mensajes]));
-
-	*lista_subs = list_duplicate(list_get(LISTA_SUBS, cola_mensajes));
-
-	pthread_mutex_unlock(&(MUTEX_SUBLISTAS_SUSCRIPTORES[cola_mensajes]));
+	*lista_subs = obtener_lista_suscriptores(cola_mensajes);
 
 	return EXIT_SUCCESS;
+}
+
+
+t_list* obtener_lista_suscriptores(int cod_op){
+
+	pthread_mutex_lock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
+
+	t_list* lista_subs = list_duplicate(list_get(LISTA_SUBS, cod_op));
+
+	pthread_mutex_unlock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
+
+	return lista_subs;
+
+}
+
+
+t_list* obtener_lista_mensajes(int cod_op){
+
+	pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
+
+	t_list* lista_mensajes = list_duplicate(list_get(LISTA_MENSAJES, cod_op));
+
+	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
+
+	return lista_mensajes;
+
 }
 
 

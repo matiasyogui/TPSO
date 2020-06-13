@@ -12,6 +12,7 @@
 #include "variables_globales.h"
 #include "listas.h"
 
+void iniciar_datos_servidor(void);
 
 void* iniciar_servidor(void);
 

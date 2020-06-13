@@ -64,21 +64,17 @@ static void modo_suscriptor(int socket){
 		send(socket, &error, sizeof(uint32_t), 0);
 	}
 
+	s = recv(socket, &estado, sizeof(uint32_t), 0);
+	if (s < 0) perror("[UTILS_GAMEBOY.C] RECV ERROR");
+
+	printf("[CONFIRMACION DE SUSCRIPCION] estado = %d \n", estado);
+
 	while(1){
 
 		s = recv(socket, &cod_op, sizeof(uint32_t), 0);
 		if (s < 0) { perror("[gameboy.c : 28]FALLO RECV"); continue; }
 
 		switch(cod_op){
-
-			case CONFIRMACION:
-
-				s = recv(socket, &estado, sizeof(uint32_t), 0);
-				if (s < 0) { perror("[UTILS_GAMEBOY.C] RECV ERROR"); continue; }
-
-				printf("[CONFIRMACION DE SUSCRIPCION] estado = %d \n", estado);
-
-			break;
 
 			case NEW_POKEMON...CAUGHT_POKEMON:
 

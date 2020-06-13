@@ -1,13 +1,18 @@
 #include "envio_recepcion.h"
 
-#define cant_threads 20
+#define GESTORES_CLIENTES 10
 
-pthread_t THREADS[cant_threads];
+char* IP_SERVER;
+char* PUERTO_SERVER;
+
+pthread_t THREADS[GESTORES_CLIENTES];
 
 pthread_mutex_t mutex_cola = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 t_queue* cola_clientes;
+
+int socket_servidor;
 
 static int esperar_cliente(int socket_servidor);
 static void _interruptor_handler(void* elemento);
@@ -15,21 +20,30 @@ static int server_client(void* p_socket);
 static int process_request(int cliente_fd, int cod_op);
 
 
-static void* funcion_thread();
+static void* _gestor_clientes();
 static void _interruptor_handler(void* elemento);
 static void detener_servidor(void* p_socket);
 
 
+void iniciar_datos_servidor(void){
+
+	int s;
+
+	IP_SERVER = config_get_string_value(CONFIG, "IP_BROKER");
+	PUERTO_SERVER = config_get_string_value(CONFIG, "PUERTO_BROKER");
+
+	cola_clientes = queue_create();
+
+    for (int i = 0; i < GESTORES_CLIENTES; i++) {
+    	s = pthread_create(&THREADS[i], NULL, _gestor_clientes, NULL);
+    	if (s != 0) printf("[ENVIO_RECEPCION.C] PTHREAD_CREATE ERROR");
+    }
+}
+
 
 void* iniciar_servidor(void){
 
-	int socket_servidor, s;
-	cola_clientes = queue_create();
-
-    for (int i = 0; i < cant_threads; i++) {
-    	s = pthread_create(&THREADS[i], NULL, funcion_thread, NULL);
-    	if (s != 0) printf("[ENVIO_RECEPCION.C] PTHREAD_CREATE ERROR");
-    }
+	int s;
 
     pthread_cleanup_push(detener_servidor, &socket_servidor);
 
@@ -42,13 +56,13 @@ void* iniciar_servidor(void){
 
     getaddrinfo(IP_SERVER, PUERTO_SERVER, &hints, &servinfo);
 
-    for (p=servinfo; p != NULL; p = p->ai_next) {
+    for (p = servinfo; p != NULL; p = p->ai_next) {
 
         s = socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (s < 0) { perror("[ENVIO_RECEPCION.C] SOCKET ERROR"); continue; }
 
         s = bind(socket_servidor, p->ai_addr, p->ai_addrlen);
-        if (s < 0) { perror("[ENVIO_RECEPCION.C] BIND ERROR");	close(socket_servidor); continue; }
+        if (s < 0) { perror("[ENVIO_RECEPCION.C] BIND ERROR"); close(socket_servidor); continue; }
 
         break;
     }
@@ -103,10 +117,11 @@ static void _interruptor_handler(void* elemento){
 }
 
 
-static void* funcion_thread(){
+static void* _gestor_clientes(){
 
-	pthread_cleanup_push(_interruptor_handler, &mutex_cola);
 	int* p_cliente;
+	int s, old_state;
+	pthread_cleanup_push(_interruptor_handler, &mutex_cola);
 
 	while (true) {
 
@@ -114,22 +129,26 @@ static void* funcion_thread(){
 
 		pthread_mutex_lock(&mutex_cola);
 
-		if ((p_cliente = queue_pop(cola_clientes)) == NULL ) {
+		p_cliente = queue_pop(cola_clientes);
+		if (p_cliente == NULL ) {
 
 			pthread_cond_wait(&cond, &mutex_cola);
-
 			p_cliente = queue_pop(cola_clientes);
-
 		}
+
 		pthread_mutex_unlock(&mutex_cola);
 
-		pthread_testcancel();
+		s = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_state);
+		if (s != 0) perror("[PLANIFICADOR.C] PTHREAD_SETCANCELSTATE ERROR");
 
-		if (p_cliente != NULL) {
-
+		if (p_cliente != NULL)
 			server_client(p_cliente);
-		}
+
+		s = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_state);
+		if (s != 0) perror("[PLANIFICADOR.C] PTHREAD_SETCANCELSTATE ERROR");
+
 	}
+
 	pthread_cleanup_pop(1);
 
 	pthread_exit(0);
@@ -188,6 +207,7 @@ static int process_request(int cliente_fd, int cod_op){
 
 			return EXIT_FAILURE;
 		}
+
 	return EXIT_SUCCESS;
 }
 
@@ -197,16 +217,19 @@ static void detener_servidor(void* p_socket){
 
 	int s;
 
-    for(int i = 0; i < cant_threads; i++){
+    for(int i = 0; i < GESTORES_CLIENTES; i++){
+
     	s = pthread_cancel(THREADS[i]);
     	if (s != 0 ) perror("[ENVIO_RECEPCION.C] PTHREAD_CANCEL ERROR");
     }
-    for(int i = 0; i < cant_threads; i++){
+
+    for(int i = 0; i < GESTORES_CLIENTES; i++){
+
     	s = pthread_join(THREADS[i], NULL);
     	if (s != 0 ) perror("[ENVIO_RECEPCION.C] PTHREAD_JOIN ERROR");
     }
 
-    close(*((int*)p_socket));
+    close(socket_servidor);
     queue_destroy_and_destroy_elements(cola_clientes, free);
 
     pthread_cond_destroy(&cond);
