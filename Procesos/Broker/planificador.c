@@ -189,7 +189,7 @@ static int realizar_envio(t_envio* envio){
 	t_suscriptor* suscriptor = envio -> suscriptor;
 	free(envio);
 
-	printf("enviando un mensaje id_mensaje = %d, size = %d\n", mensaje->id, mensaje->mensaje->size);
+	//printf("enviando un mensaje id_mensaje = %d, size = %d\n", mensaje->id, mensaje->mensaje->size);
 
 	int s, size;
 	void* stream = serializar_mensaje(mensaje, &size);
