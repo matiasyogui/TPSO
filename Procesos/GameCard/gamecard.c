@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <dirent.h>
 #include <sys/mount.h>
 #include "servidor.h"
+
 
 void* mensaje_suscripcion(int cod_op, char* datos[], int *size);
 void* stream_suscripcion(char* datos[], int* size);
@@ -106,11 +108,14 @@ void suscribirse(char* cola){
 void leer_archivo_configuracion(){
 
 	t_config* config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/GameCard/gamecard.config");
+	char * auxPuntoMontaje;
 
 	TIEMPO_DE_REINTENTO_CONEXION = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
 	TIEMPO_DE_REINTENTO_OPERACION = config_get_int_value(config,"TIEMPO_DE_REINTENTO_OPERACION");
 	TIEMPO_RETARDO_OPERACION = config_get_int_value(config,"TIEMPO_RETARDO_OPERACION");
-	PUNTO_MONTAJE_TALLGRASS = config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
+	auxPuntoMontaje=config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
+	PUNTO_MONTAJE_TALLGRASS = malloc(strlen(auxPuntoMontaje)+1);
+	strcpy(PUNTO_MONTAJE_TALLGRASS,auxPuntoMontaje);
 	IP_BROKER = config_get_string_value(config,"IP_BROKER");
 	PUERTO_BROKER = config_get_int_value(config,"PUERTO_BROKER");
 
@@ -118,10 +123,43 @@ void leer_archivo_configuracion(){
 }
 
 
+t_list* listarTallGrassArchivos(char*direc) {
+  DIR *d;
+  struct dirent *dir;
+  d = opendir(direc);
+  t_list *listaDeTablas = list_create();
+  if (d != NULL)
+  {
+    while ((dir = readdir(d)) != NULL) {
+//    	if (!string_contains(dir->d_name,".")){
+    	printf("archivo %s\n",dir->d_name);
+    	char* nombreTabla = malloc(sizeof(strlen(dir->d_name)+1));
+    	strcpy(nombreTabla,dir->d_name);
+    	list_add(listaDeTablas,nombreTabla);
+//    	}
+
+    }
+    closedir(dir);
+    closedir(d);
+    return listaDeTablas;
+  } else return listaDeTablas;
+
+}
+
+void crear_TallGrass(){
+	printf("PUNTO MONTAJE=%s\n",PUNTO_MONTAJE_TALLGRASS);
+	printf("IP=%s\n",IP_BROKER);
+
+	t_list *lista = listarTallGrassArchivos(PUNTO_MONTAJE_TALLGRASS);
+
+}
+
 int main(){
 
-	//leer_archivo_configuracion();
+	leer_archivo_configuracion();
 	
+	crear_TallGrass();
+
 	pthread_t tid;
 
 	pthread_create(&tid, NULL, (void*)iniciar_servidor, NULL);
