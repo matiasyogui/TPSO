@@ -5,25 +5,21 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include <commons/string.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdarg.h>
+#include <commons/string.h>
 #include <cosas_comunes.h>
 
 #include "gameboy.h"
 
-t_paquete* armar_paquete(char** datos);
-
-void enviar_mensaje(t_paquete* paquete, int conexion);
-
-void leer_mensaje(void* stream);
-
-t_paquete* paquete_enviar(char** argumentos, char**key);
-
-t_paquete* paquete_suscriptor(char** datos);
-
 void inicializar_archivos();
+
 void obtener_direcciones_envio(char* proceso);
+
+void enviar_mensaje(void* mensaje, int bytes_enviar, int conexion);
+
+void esperando_respuestas(int socket, char* modo);
+
+void generar_log_suscripcion(char* datos[]);
 
 #endif /* UTILS_GAMEBOY_H_ */

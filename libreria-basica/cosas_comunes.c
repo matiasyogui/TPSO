@@ -12,10 +12,14 @@ int crear_conexion(char *ip, char* puerto){
 
 	getaddrinfo(ip, puerto, &hints, &server_info);
 
-	int socket_cliente = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
+	int socket_cliente;
+	int status;
 
-	if(connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen) == -1)
-		perror("[FALLO EL CONNECT()]");
+	status = socket_cliente = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
+	if(status < 0) perror("[cosas_comunes.c] FALLO SOCKET");
+
+	status = connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen);
+	if(status < 0) perror("[cosas_comunes.c] FALLO CONNECT");
 
 	freeaddrinfo(server_info);
 
@@ -23,12 +27,9 @@ int crear_conexion(char *ip, char* puerto){
 }
 
 
-
 void liberar_conexion(int socket_cliente){
 	close(socket_cliente);
 }
-
-
 
 
 t_log* iniciar_logger(char* archivo, char *nombre_programa, int es_consola_activa, t_log_level detalle){
@@ -39,19 +40,18 @@ t_log* iniciar_logger(char* archivo, char *nombre_programa, int es_consola_activ
 		printf("No se pudo inicializar el logger\n");
 		exit(-1);
 	}
-
 	return logger;
 }
+
 
 t_config* leer_config(char* ruta){
 
 	t_config * config = config_create(ruta);
 
-	if(config == NULL ){
+	if(config == NULL){
 		printf("No se pudo inicializar el config\n");
 		exit(-1);
 	}
-
 	return config;
 }
 
@@ -64,9 +64,7 @@ void terminar_programa(int conexion, t_log* logger, t_config* config){
 }
 
 
-
-
-int tipo_mensaje(char* tipo_mensaje){
+int codigo_operacion(char* tipo_mensaje){
 
 	if(string_equals_ignore_case(tipo_mensaje, "NEW_POKEMON") == 1)
 		return NEW_POKEMON;
@@ -93,6 +91,33 @@ int tipo_mensaje(char* tipo_mensaje){
 	exit(-1);
 }
 
+
+char* cod_opToString(int cod_op){
+
+	switch(cod_op){
+
+	case NEW_POKEMON:
+		return "new_pokemon";
+
+	case GET_POKEMON:
+		return "get_pokemon";
+
+	case APPEARED_POKEMON:
+		return "appeared_pokemon";
+
+	case CATCH_POKEMON:
+		return "catch_pokemon";
+
+	case CAUGHT_POKEMON:
+		return "caught_pokemon";
+
+	case LOCALIZED_POKEMON:
+		return "localized_pokemon";
+	}
+	return "error";
+}
+
+
 char* obtener_key(char* dato, char* proceso){
 
 	char* key = string_new();
@@ -103,6 +128,7 @@ char* obtener_key(char* dato, char* proceso){
 
 	return key;
 }
+
 
 int obtener_tamanio(char** datos){
 
@@ -115,7 +141,9 @@ int obtener_tamanio(char** datos){
 	return size;
 }
 
+
 int cant_elementos(char** array){
+
 	int cant = 0;
 	while(*array != NULL){
 		array++; 
@@ -125,27 +153,24 @@ int cant_elementos(char** array){
 }
 
 
-
-
-//revisar la estructura del stream = codigo_msj + tamaño_stream + [tamaño_string + string]*
 void *serializar_paquete(t_paquete* paquete, int *bytes){
 
-	void* stream = malloc( sizeof(int) * 2 + paquete -> buffer -> size );
+	void* stream = malloc( 2 * sizeof(int) + paquete->buffer->size );
 
 	int offset=0;
 
-	memcpy(stream + offset, &(paquete -> codigo_operacion), sizeof(int));
+	memcpy(stream + offset, &(paquete->codigo_operacion), sizeof(int));
 	offset += sizeof(int);
 
-	memcpy(stream + offset, &(paquete -> buffer -> size), sizeof(int));
+	memcpy(stream + offset, &(paquete->buffer->size), sizeof(int));
 	offset += sizeof(int);
 
-	memcpy(stream + offset, paquete -> buffer -> stream, paquete -> buffer -> size);
-	offset += paquete -> buffer -> size;
+	memcpy(stream + offset, paquete->buffer->stream, paquete->buffer->size);
+	offset += paquete->buffer->size;
 
 	*bytes = offset;
 
-	printf("[serializar_paquete] tamaño del stream a enviar = %d\n", *bytes);
-
 	return stream;
 }
+
+

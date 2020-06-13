@@ -1,17 +1,18 @@
 #ifndef COSAS_COMUNES_H_
 #define COSAS_COMUNES_H_
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<signal.h>
-#include<unistd.h>
-#include<sys/socket.h>
-#include<netdb.h>
-#include<string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <string.h>
+#include <inttypes.h>
+
 #include <commons/string.h>
 #include <commons/config.h>
 #include <commons/log.h>
-#include <inttypes.h>
 
 typedef enum{
 
@@ -21,7 +22,10 @@ typedef enum{
 	CATCH_POKEMON,
 	CAUGHT_POKEMON,
 	LOCALIZED_POKEMON,
-	SUSCRIPTOR
+
+	SUSCRIPTOR,
+
+	CONFIRMACION
 
 }message_code;
 
@@ -38,17 +42,6 @@ typedef struct{
 	t_buffer* buffer;
 
 }t_paquete;
-
-typedef enum{
-
-	BROKER = 1,
-	TEAM = 2,
-	GAMECARD =3,
-
-}n_proceso;
-
-
-#endif /* COSAS_COMUNES_H_ */
 
 
 
@@ -68,7 +61,10 @@ t_config* leer_config(char* ruta);
 void terminar_programa(int conexion, t_log* logger, t_config* config);
 
 //DEVULVE EL TIPO DE MENSAJE APARTIR DE UN STRING
-int tipo_mensaje(char* tipo_mensaje);
+int codigo_operacion(char* tipo_mensaje);
+
+//APARTIR DE UN COD_OP TE DEVUELVE EL STRING DEL TIPO DE MENSAJE
+char* cod_opToString(int cod_op);
 
 //ME DEVUELVE UN STRING PARA USARLO EN UN CONFIG
 char* obtener_key(char* dato, char* proceso);
@@ -81,3 +77,5 @@ int cant_elementos(char** array);
 
 //SERIALIZA UN PAQUETE Y DEVUELVE UN PUNTERO VOID A UN STREAM
 void *serializar_paquete(t_paquete* paquete, int *bytes);
+
+#endif /* COSAS_COMUNES_H_ */

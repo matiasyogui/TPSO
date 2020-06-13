@@ -1,47 +1,35 @@
 #ifndef ENVIO_RECEPCION_H_
 #define ENVIO_RECEPCION_H_
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<sys/socket.h>
-#include<unistd.h>
-#include<netdb.h>
-#include<commons/log.h>
-#include<commons/collections/list.h>
-#include<string.h>
-#include<pthread.h>
+#include <commons/collections/list.h>
+#include <pthread.h>
+#include <errno.h>
+#include <signal.h>
 
 #include <cosas_comunes.h>
-#include "admin_mensajes.h"
-#include "broker.h"
 
+#include "variables_globales.h"
+#include "listas.h"
 
-int id_basico;
-int* socket_server;
+void cerrar_servidor(void);
 
-
-pthread_t thread;
-pthread_mutex_t mutex;
-
-
-void iniciar_servidor();
+void* iniciar_servidor(void);
 void esperar_cliente(int socket_servidor);
-void serve_client(int* socket);
-void process_request(int cod_op, int cliente_fd);
-
+void server_client(int* socket);
+void process_request(int cliente_fd, int cod_op);
 
 t_buffer* recibir_mensaje(int socket_cliente);
-void leer_mensaje(t_buffer* buffer);
+t_mensaje* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo);
+
+void* tratar_suscriptor(int socket);
+int obtener_cod_op(t_buffer* buffer, int* tiempo);
 
 
-int obtener_id();
-void* serializar_nodo_mensaje(t_mensaje* nodo_mensaje, int* bytes);
+void* tratar_mensaje(int socket, t_mensaje* mensaje, int cod_op);
+void enviar_confirmacion(int socket, int mensaje);
 
-
-void agregar_suscriber(t_list* lista_subs, int cola_a_suscribirse, int socket);
-t_paquete* crear_paquete(int cod_op, t_buffer* payload);
-
-
-void enviar_confirmacion(t_suscriptor* suscriptor);
+void enviar_mensaje_suscriptores(t_mensaje* mensaje);
+void enviar_mensajes_suscriptor(t_suscriptor* suscriptor, int cod_op);
+void* serializar_mensaje2(int cod_op, t_mensaje* mensaje_enviar, int* size);
 
 #endif /* ENVIO_RECEPCION_H_ */
