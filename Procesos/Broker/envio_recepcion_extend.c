@@ -1,70 +1,120 @@
 #include "envio_recepcion.h"
 
+static t_buffer* recibir_mensaje(int socket_cliente);
+static t_mensaje* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo);
 
-t_buffer* recibir_mensaje(int cliente_fd){
+static int enviar_confirmacion(int socket, int mensaje);
+static int obtener_cod_op(t_buffer* buffer, int* tiempo);
 
-	t_buffer* buffer = malloc(sizeof(t_buffer));
-	int s;
 
-	s = recv(cliente_fd, &(buffer->size), sizeof(uint32_t), 0);
-	if(s < 0){ free(buffer); return NULL;}
+static void cargar_tarea(tipo_tarea tipo, void* contenido);
+static t_tarea* generar_nueva_tarea(tipo_tarea tipo, void* contenido);
 
-	buffer->stream = malloc(buffer->size);
 
-	s = recv(cliente_fd, buffer->stream, buffer->size, 0);
-	if(s < 0){ free(buffer); free(buffer->stream); return NULL;}
 
-	return buffer;
+int tratar_mensaje(int socket, int cod_op, bool esCorrelativo){
+
+	t_mensaje* mensaje = generar_nodo_mensaje(socket, cod_op, esCorrelativo);
+	if (mensaje == NULL) return EXIT_FAILURE;
+
+	guardar_mensaje(mensaje, cod_op);
+
+	enviar_confirmacion(socket, mensaje->id);
+
+	cargar_tarea(MENSAJE, mensaje);
+
+	close(socket);
+
+	informe_lista_mensajes();
+
+	return EXIT_SUCCESS;
 }
 
 
-t_mensaje* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
+int tratar_suscriptor(int socket){
 
-	int id_correlativo, size, s;
+	int tiempo;
 
-	if(EsCorrelativo){
+	t_buffer* mensaje = recibir_mensaje(socket);
+	if (mensaje == NULL) { enviar_confirmacion(socket, false); return EXIT_FAILURE; }
+
+	int cod_op = obtener_cod_op(mensaje, &tiempo);
+
+	t_suscriptor* suscriptor = nodo_suscriptor(cod_op, socket);
+
+	//printf("cod_op = %d, socket = %d, suscriptor = %p\n", suscriptor->cod_op, suscriptor->socket, suscriptor);
+
+	guardar_suscriptor(suscriptor, cod_op);
+
+	enviar_confirmacion(suscriptor->socket, true);
+
+
+	cargar_tarea(SUSCRIPCION, suscriptor);
+
+	informe_lista_subs();
+
+	return EXIT_SUCCESS;
+}
+
+
+
+static t_mensaje* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
+
+	int s, id_correlativo;
+
+	if (EsCorrelativo) {
+
 		s = recv(socket, &id_correlativo, sizeof(uint32_t), 0);
-		if(s < 0) return NULL;
-	}
-	else
-		id_correlativo = -1;
+		if (s < 0) { perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
 
-	s = recv(socket, &size, sizeof(uint32_t), 0);
-	if(s < 0){ perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
+	} else id_correlativo = -1;
 
-	void* stream = malloc(size);
-
-	s = recv(socket, stream, size, 0);
-	if(s < 0){ perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); free(stream); return NULL;}
-
-	t_buffer* mensaje = malloc(sizeof(t_buffer));
-	mensaje -> size = size;
-	mensaje -> stream = stream;
-
-	printf("cod_op = %d, id_correlativo = %d, mensaje_size = %d\n", cod_op, id_correlativo, size);
+	t_buffer* mensaje = recibir_mensaje(socket);
 
 	t_mensaje* mensaje1 = nodo_mensaje(cod_op, id_correlativo, mensaje);
+
+	//printf("Cod_op = %d, Id_correlativo = %d, Mensaje_size = %d\n", cod_op, id_correlativo, mensaje->size);
 
 	return mensaje1;
 }
 
 
-void enviar_confirmacion(int socket, int mensaje){
+static int enviar_confirmacion(int socket, int mensaje){
 
-	int s, offset = 0;
-	void* mensaje_confirmacion = malloc(2 * sizeof(uint32_t));
+	int s;
+	void* mensaje_enviar = malloc(sizeof(uint32_t));
 
-	memcpy(mensaje_confirmacion + offset, &mensaje, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
+	memcpy(mensaje_enviar, &mensaje, sizeof(uint32_t));
 
-	s = send(socket, mensaje_confirmacion, offset, MSG_NOSIGNAL);
-	if (s < 0) perror("[envio_recepcion.c] FALLO SEND");
+	s = send(socket, mensaje_enviar, sizeof(uint32_t), 0);
+	if (s < 0) { perror("[ENVIO_RECEPCION_EXTEND.C]SEND ERROR"); free(mensaje_enviar); return EXIT_FAILURE; }
 
-	free(mensaje_confirmacion);
+	free(mensaje_enviar);
+
+	return EXIT_SUCCESS;
 }
 
 
-int obtener_cod_op(t_buffer* buffer, int* tiempo){
+
+
+static t_buffer* recibir_mensaje(int cliente_fd){
+
+	int s;
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+
+	s = recv(cliente_fd, &(buffer->size), sizeof(uint32_t), 0);
+	if (s < 0) { free(buffer); perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
+
+	buffer->stream = malloc(buffer->size);
+
+	s = recv(cliente_fd, buffer->stream, buffer->size, 0);
+	if (s < 0) { free(buffer); free(buffer->stream); perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
+
+	return buffer;
+}
+
+
+static int obtener_cod_op(t_buffer* buffer, int* tiempo){
 
 	int cod_op, offset = 0;
 
@@ -72,6 +122,7 @@ int obtener_cod_op(t_buffer* buffer, int* tiempo){
 	offset += sizeof(uint32_t);
 
 	memcpy(tiempo, buffer->stream + offset, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
 
 	free(buffer->stream);
 	free(buffer);
@@ -79,91 +130,28 @@ int obtener_cod_op(t_buffer* buffer, int* tiempo){
 }
 
 
-void enviar_mensajes_suscriptor(t_suscriptor* suscriptor, int cod_op){
 
-	pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
 
-		t_list* mensajes_duplicados = list_duplicate(list_get(LISTA_MENSAJES, cod_op));
+static t_tarea* generar_nueva_tarea(tipo_tarea tipo, void* contenido){
 
-	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
+	t_tarea* tarea = malloc(sizeof(t_tarea));
+	tarea -> tipo = tipo;
+	tarea -> contenido = contenido;
 
-	for (int i = 0; i < list_size(mensajes_duplicados); i++){
-
-		int size = 0;
-
-		t_mensaje* mensaje = list_get(mensajes_duplicados, i);
-
-		void* stream_enviar = serializar_mensaje2(cod_op, mensaje, &size);
-
-		if(send(suscriptor -> socket, stream_enviar, size, 0) < 0){
-			perror("fallo send");
-			continue;
-		}
-		pthread_mutex_lock(&(mensaje->mutex));
-
-		list_add(mensaje->notificiones_envio, suscriptor);
-
-		free(stream_enviar);
-	}
-	list_destroy(mensajes_duplicados);
+	return tarea;
 }
 
 
-void enviar_mensaje_suscriptores(t_mensaje* mensaje){
+static void cargar_tarea(tipo_tarea tipo, void* contenido){
 
-	int size;
-	void* stream_enviar = serializar_mensaje2(mensaje->cod_op, mensaje, &size);
+	pthread_mutex_lock(&mutex_cola_tareas);
 
-	pthread_mutex_lock(&MUTEX_SUBLISTAS_SUSCRIPTORES[mensaje->cod_op]);
+	queue_push(cola_tareas, (void*)generar_nueva_tarea(tipo, contenido));
 
-	t_list* lista_subs = list_duplicate( list_get(LISTA_SUBS, mensaje->cod_op) );
+	pthread_cond_signal(&cond_cola_tareas);
 
-	pthread_mutex_unlock(&MUTEX_SUBLISTAS_SUSCRIPTORES[mensaje->cod_op]);
+	pthread_mutex_unlock(&mutex_cola_tareas);
 
-	for(int i = 0; i < list_size(lista_subs); i++){
-
-		t_suscriptor* suscriptor = list_get(lista_subs, i);
-
-		if( send(suscriptor->socket, stream_enviar, size, MSG_NOSIGNAL) < 0){
-			perror("[envio_recepcion.c] FALLO SEND");
-			continue;
-		}
-		// en que momento recibimos la confirmacion
-		pthread_mutex_lock(&(mensaje->mutex));
-
-		list_add(mensaje->notificiones_envio, suscriptor);
-
-		pthread_mutex_unlock(&(mensaje->mutex));
-	}
-
-	list_destroy(lista_subs);
-
-	free(stream_enviar);
 }
 
-
-void* serializar_mensaje2(int cod_op, t_mensaje* mensaje_enviar, int* size){
-
-	void* stream = malloc(3 * sizeof(uint32_t) + mensaje_enviar->mensaje->size);
-
-	int offset = 0;
-
-	memcpy(stream + offset, &(cod_op), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	if (mensaje_enviar -> id_correlativo != -1)
-		memcpy(stream + offset, &(mensaje_enviar->id_correlativo), sizeof(uint32_t));
-	else
-		memcpy(stream + offset, &(mensaje_enviar->id), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(stream + offset, &(mensaje_enviar->mensaje->size), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(stream + offset, mensaje_enviar->mensaje->stream, mensaje_enviar->mensaje->size);
-	offset += mensaje_enviar->mensaje->size;
-
-	*size = offset;
-	return stream;
-}
 

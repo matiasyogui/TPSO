@@ -15,7 +15,7 @@ void inicializar_archivos(){
 
 static char* comprobar_proceso(char *proceso){
 
-	if(string_equals_ignore_case(proceso, "SUSCRIPTOR") == 1)
+	if (string_equals_ignore_case(proceso, "SUSCRIPTOR") == 1)
 		return "broker";
 	return proceso;
 }
@@ -37,7 +37,7 @@ void obtener_direcciones_envio(char* proceso){
 
 void enviar_mensaje(void* mensaje, int bytes_enviar, int socket_cliente){
 
-	if(send(socket_cliente, mensaje, bytes_enviar, 0) < 0){
+	if (send(socket_cliente, mensaje, bytes_enviar, 0) < 0) {
 		perror("[utils_gameboy.c] FALLO EL SEND");
 		exit(-1);
 	}
@@ -47,7 +47,7 @@ void enviar_mensaje(void* mensaje, int bytes_enviar, int socket_cliente){
 
 void esperando_respuestas(int socket, char* modo){
 
-	if(string_equals_ignore_case(modo, "SUSCRIPTOR") == 1)
+	if (string_equals_ignore_case(modo, "SUSCRIPTOR") == 1)
 			modo_suscriptor(socket);
 	modo_emisor(socket);
 }
@@ -55,7 +55,7 @@ void esperando_respuestas(int socket, char* modo){
 
 static int modo_suscriptor(int socket){
 
-	int status;
+	int s;
 	int cod_op, size, id_mensaje, estado;
 	void* datos;
 
@@ -64,36 +64,37 @@ static int modo_suscriptor(int socket){
 		send(socket, &error, sizeof(uint32_t), 0);
 	}
 
-	status = recv(socket, &estado, sizeof(uint32_t), 0);
-	if(status < 0) return EXIT_FAILURE;
+	s = recv(socket, &estado, sizeof(uint32_t), 0);
+	if (s < 0) perror("[UTILS_GAMEBOY.C] RECV ERROR");
 
 	printf("[CONFIRMACION DE SUSCRIPCION] estado = %d \n", estado);
 
 	while(true){
 
-		status = recv(socket, &cod_op, sizeof(uint32_t), 0);
-		if(status < 0){	perror("[GAMEBOY.C] FALLO RECV"); return EXIT_FAILURE; }
+		s = recv(socket, &cod_op, sizeof(uint32_t), 0);
+		if (s < 0) { perror("[gameboy.c : 28]FALLO RECV"); continue; }
 
 		switch(cod_op){
 
 			case NEW_POKEMON...CAUGHT_POKEMON:
 
-				status = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
-				if(status < 0) { _manejo_error(); return EXIT_FAILURE; }
+				s = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
+				if (s < 0) { perror("[UTILS_GAMEBOY.C] RECV ERROR"); _manejo_error(); continue; }
 
-				status = recv(socket, &size, sizeof(uint32_t), 0);
-				if(status < 0) { _manejo_error(); return EXIT_FAILURE; }
+				s = recv(socket, &size, sizeof(uint32_t), 0);
+				if (s < 0) { perror("[UTILS_GAMEBOY.C] RECV ERROR"); _manejo_error(); continue; }
 
 				datos = malloc(size);
 
-				status = recv(socket, datos, size, 0);
-				if(status < 0){	_manejo_error(); free(datos); return EXIT_FAILURE; }
+				s = recv(socket, datos, size, 0);
+				if (s < 0) { perror("[UTILS_GAMEBOY.C] RECV ERROR"); _manejo_error(); continue; }
+
 
 				printf("[MENSAJE DEL BROKER]cod_op_mensaje = %d, id_mensaje = %d, size mensaje = %d \n", cod_op, id_mensaje, size);
 
 				log_info(LOGGER, "Se recibio un mensaje de la cola %s", cod_opToString(cod_op));
 
-				//enviar_confirmacion(socket);
+				enviar_confirmacion(socket);
 
 			break;
 		}
@@ -102,14 +103,17 @@ static int modo_suscriptor(int socket){
 }
 
 
+
 static int modo_emisor(int socket){
 
-	int id, status;
+	int s;
+	int* id = malloc(sizeof(int));
 
-	status = recv(socket, &id, sizeof(uint32_t), 0);
-	if(status < 0) { perror("ERROR RECV"); return EXIT_FAILURE; }
+	s = recv(socket, id, sizeof(uint32_t), 0);
+	if (s < 0){ perror("[UTILS_GAMEBOY.C]ERROR RECV"); return EXIT_FAILURE; }
 
-	printf("[CONFIRMACION DEL RECPCION DEL MENSAJE] id = %d \n", id);
+	printf("[CONFIRMACION DEL RECPCION DEL MENSAJE] id del mensaje en el broker = %d \n", *id);
+	free(id);
 
 	return EXIT_SUCCESS;
 }
@@ -119,7 +123,7 @@ static int modo_emisor(int socket){
 
 void generar_log_suscripcion(char* datos[]){
 
-	if(string_equals_ignore_case(datos[0], "suscriptor"))
+	if (string_equals_ignore_case(datos[0], "suscriptor"))
 		log_info(LOGGER, "Se realizo la suscripcion a la cola %s", datos[1]);
 	else
 		log_info(LOGGER, "Se realizo la conexion al proceso %s", datos[0]);
@@ -127,9 +131,8 @@ void generar_log_suscripcion(char* datos[]){
 
 void enviar_confirmacion(int socket){
 
-	int confirmacion = 1;
-	int status;
+	int s, confirmacion = 1;
 
-	status = send(socket, (void*)&confirmacion, sizeof(uint32_t), 0);
-	if(status < 0) printf("ERROR SEND");
+	s = send(socket, (void*)&confirmacion, sizeof(uint32_t), 0);
+	if (s < 0) printf("ERROR SEND");
 }

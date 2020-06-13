@@ -1,15 +1,16 @@
 #ifndef VARIABLES_GLOBALES_H_
 #define VARIABLES_GLOBALES_H_
 
+
+#define CANTIDAD_SUBLISTAS 6
+
+#include <stdbool.h>
+#include <pthread.h>
+#include <signal.h>
 #include <cosas_comunes.h>
 #include <commons/collections/list.h>
+#include <commons/collections/queue.h>
 
-///////////////////////////broker.h////////////////////////
-
-char* IP_SERVER;
-char* PUERTO_SERVER;
-
-int* SOCKET_SERVER;
 
 t_log* LOGGER;
 t_config* CONFIG;
@@ -17,18 +18,24 @@ t_config* CONFIG;
 ///////////////////////////ADMIN_MENSAJES.H////////////////////////
 
 
+t_queue* cola_tareas;
+pthread_mutex_t mutex_cola_tareas;
+pthread_cond_t cond_cola_tareas;
+
+
 typedef struct{
 
 	int socket;
+	uint32_t cod_op;
 
 }t_suscriptor;
 
 
 typedef struct{
 
-	int id;
-	int id_correlativo;
-	int cod_op;
+	uint32_t cod_op;
+	uint32_t id;
+	uint32_t id_correlativo;
 	t_buffer* mensaje;
 	t_list* notificiones_envio;
 	pthread_mutex_t mutex;
@@ -44,27 +51,28 @@ typedef struct{
 }t_notificacion_envio;
 
 
+typedef enum{
+
+	MENSAJE,
+	SUSCRIPCION
+
+}tipo_tarea;
+
 
 typedef struct{
 
-	int cola_mensajes;
+	tipo_tarea tipo;
+	void* contenido;
+
+}t_tarea;
+
+
+typedef struct{
+
 	t_mensaje* mensaje;
-	t_list* lista_subs;
-
-}t_datos;
-
-typedef struct{
-
-	t_list* notificaciones_envio;
-	pthread_mutex_t* mutex_mensaje;
 	t_suscriptor* suscriptor;
-	t_buffer* stream_enviar;
 
-}t_datos_envio;
-
-
-
-
+}t_envio;
 
 
 #endif /* VARIABLES_GLOBALES_H_ */

@@ -1,12 +1,51 @@
 #include "envio_recepcion.h"
 
-pthread_t THREAD;
+#define GESTORES_CLIENTES 10
+
+char* IP_SERVER;
+char* PUERTO_SERVER;
+
+pthread_t THREADS[GESTORES_CLIENTES];
+
+pthread_mutex_t mutex_cola = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+
+t_queue* cola_clientes;
+
 int socket_servidor;
 
-void cerrar_servidor(void){
-	close(socket_servidor);
+static int esperar_cliente(int socket_servidor);
+static void _interruptor_handler(void* elemento);
+static int server_client(void* p_socket);
+static int process_request(int cliente_fd, int cod_op);
+
+
+static void* _gestor_clientes();
+static void _interruptor_handler(void* elemento);
+static void detener_servidor(void* p_socket);
+
+
+void iniciar_datos_servidor(void){
+
+	int s;
+
+	IP_SERVER = config_get_string_value(CONFIG, "IP_BROKER");
+	PUERTO_SERVER = config_get_string_value(CONFIG, "PUERTO_BROKER");
+
+	cola_clientes = queue_create();
+
+    for (int i = 0; i < GESTORES_CLIENTES; i++) {
+    	s = pthread_create(&THREADS[i], NULL, _gestor_clientes, NULL);
+    	if (s != 0) printf("[ENVIO_RECEPCION.C] PTHREAD_CREATE ERROR");
+    }
 }
+
+
 void* iniciar_servidor(void){
+
+	int s;
+
+    pthread_cleanup_push(detener_servidor, &socket_servidor);
 
     struct addrinfo hints, *servinfo, *p;
 
@@ -17,31 +56,37 @@ void* iniciar_servidor(void){
 
     getaddrinfo(IP_SERVER, PUERTO_SERVER, &hints, &servinfo);
 
-    int s;
+    for (p = servinfo; p != NULL; p = p->ai_next) {
 
-    for (p=servinfo; p != NULL; p = p->ai_next)
-    {
-        socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-        if (socket_servidor < 0) { perror("SOCKET ERROR"); continue; }
+        s = socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+        if (s < 0) { perror("[ENVIO_RECEPCION.C] SOCKET ERROR"); continue; }
 
         s = bind(socket_servidor, p->ai_addr, p->ai_addrlen);
-        if (s < 0) { perror("BIND ERROR"); close(socket_servidor); continue; }
+        if (s < 0) { perror("[ENVIO_RECEPCION.C] BIND ERROR"); close(socket_servidor); continue; }
 
         break;
     }
 
     s = listen(socket_servidor, SOMAXCONN);
-    freeaddrinfo(servinfo);
-    if (s < 0) { perror("LISTEN ERROR"); raise(SIGINT);}
 
-    while (true)
+    freeaddrinfo(servinfo);
+
+    if (s < 0) { perror("[ENVIO_RECEPCION.C] LISTEN ERROR"); raise(SIGINT); }
+
+    while (true) {
+
     	esperar_cliente(socket_servidor);
 
-    pthread_exit(0);
+    	pthread_testcancel();
+    }
+
+    pthread_cleanup_pop(1);
+
+    pthread_exit(NULL);
 }
 
 
-void esperar_cliente(int socket_servidor){
+static int esperar_cliente(int socket_servidor){
 
 	int s;
 	struct sockaddr_in dir_cliente;
@@ -50,36 +95,82 @@ void esperar_cliente(int socket_servidor){
 
 	int socket_cliente;
 
-	s = socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion);
-	if (s < 0) { perror("[envio_recepcion.c] ACCEPT ERROR"); return; }
+	socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion);
+	if (socket_cliente < 0) { perror("[ENVIO_RECEPCION.C] ACCEPT ERROR"); return EXIT_FAILURE; }
 
 	int* p_socket = malloc(sizeof(int));
 	*p_socket = socket_cliente;
 
-	s = pthread_create(&THREAD, NULL, (void*)server_client, p_socket);
-	if (s != 0) printf("[envio_recepcion.c] PTHREAD_CREATE ERROR\n");
+	pthread_mutex_lock(&mutex_cola);
 
-	pthread_detach(THREAD);
+	queue_push(cola_clientes, p_socket);
+
+	pthread_cond_signal(&cond);
+
+	pthread_mutex_unlock(&mutex_cola);
+
+	return EXIT_SUCCESS;
 }
 
 
-void server_client(int* p_socket){
+static void _interruptor_handler(void* elemento){
+	pthread_mutex_unlock(elemento);
+}
 
-	int cod_op, socket = *p_socket;
+
+static void* _gestor_clientes(){
+
+	int* p_cliente;
+	int s, old_state;
+	pthread_cleanup_push(_interruptor_handler, &mutex_cola);
+
+	while (true) {
+
+		pthread_testcancel();
+
+		pthread_mutex_lock(&mutex_cola);
+
+		p_cliente = queue_pop(cola_clientes);
+		if (p_cliente == NULL ) {
+
+			pthread_cond_wait(&cond, &mutex_cola);
+			p_cliente = queue_pop(cola_clientes);
+		}
+
+		pthread_mutex_unlock(&mutex_cola);
+
+		s = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_state);
+		if (s != 0) perror("[PLANIFICADOR.C] PTHREAD_SETCANCELSTATE ERROR");
+
+		if (p_cliente != NULL)
+			server_client(p_cliente);
+
+		s = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_state);
+		if (s != 0) perror("[PLANIFICADOR.C] PTHREAD_SETCANCELSTATE ERROR");
+
+	}
+
+	pthread_cleanup_pop(1);
+
+	pthread_exit(0);
+}
+
+
+static int server_client(void* p_socket){
+
+	int cod_op, socket = *((int*)p_socket);
 	free(p_socket);
 
 	int s = recv(socket, &cod_op, sizeof(uint32_t), 0);
-	if (s < 0) { perror("[envio_recepcion.c] RECV ERROR"); cod_op = -1; }
+	if (s < 0) { perror("[ENVIO_RECEPCION.C] RECV ERROR"); return EXIT_FAILURE; }
 
 	process_request(socket, cod_op);
+
+	return EXIT_SUCCESS;
 }
 
 
-void process_request(int cliente_fd, int cod_op){
-
-	t_mensaje* mensaje;
-
-	printf("cod_op = %d\n", cod_op);
+static int process_request(int cliente_fd, int cod_op){
 
 	switch(cod_op){
 
@@ -87,10 +178,7 @@ void process_request(int cliente_fd, int cod_op){
 		case CATCH_POKEMON:
 		case GET_POKEMON:
 
-			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, false)) == NULL)
-				break;
-
-			tratar_mensaje(cliente_fd, mensaje, cod_op);
+			tratar_mensaje(cliente_fd, cod_op, false);
 
 			break;
 
@@ -98,10 +186,7 @@ void process_request(int cliente_fd, int cod_op){
 		case CAUGHT_POKEMON:
 		case LOCALIZED_POKEMON:
 
-			if((mensaje = generar_nodo_mensaje(cliente_fd, cod_op, true)) == NULL)
-				break;
-
-			tratar_mensaje(cliente_fd, mensaje, cod_op);
+			tratar_mensaje(cliente_fd, cod_op, true);
 
 			break;
 
@@ -114,56 +199,42 @@ void process_request(int cliente_fd, int cod_op){
 		case -1:
 
 			printf("NO SE RECIBIO EL MENSAJE CORRECTAMENTE\n");
-			pthread_exit(NULL);
+
+			return EXIT_FAILURE;
 
 		default:
 
 			printf("CODIGO DE OPERACION INVALIDO\n");
-			pthread_exit(NULL);
+
+			return EXIT_FAILURE;
 		}
-}
-
-
-void* tratar_mensaje(int socket, t_mensaje* mensaje, int cod_op){
-
-	guardar_mensaje(mensaje, cod_op);
-
-	informe_lista_mensajes();
-
-	enviar_confirmacion(socket, mensaje->id);
-
-	close(socket);
-
-	enviar_mensaje_suscriptores(mensaje);
 
 	return EXIT_SUCCESS;
 }
 
 
-void* tratar_suscriptor(int socket){
+static void detener_servidor(void* p_socket){
 
-	t_buffer* mensaje;
+	int s;
 
-	if((mensaje = recibir_mensaje(socket)) == NULL){
-		enviar_confirmacion(socket, false);
-		return NULL;
-	}
-	int tiempo;
-	int cod_op = obtener_cod_op(mensaje, &tiempo);
+    for(int i = 0; i < GESTORES_CLIENTES; i++){
 
-	t_suscriptor* suscriptor = nodo_suscriptor(socket);
+    	s = pthread_cancel(THREADS[i]);
+    	if (s != 0 ) perror("[ENVIO_RECEPCION.C] PTHREAD_CANCEL ERROR");
+    }
 
-	enviar_confirmacion(suscriptor->socket, true);
+    for(int i = 0; i < GESTORES_CLIENTES; i++){
 
-	guardar_suscriptor(suscriptor, cod_op);
+    	s = pthread_join(THREADS[i], NULL);
+    	if (s != 0 ) perror("[ENVIO_RECEPCION.C] PTHREAD_JOIN ERROR");
+    }
 
-	//informe_lista_subs();
+    close(socket_servidor);
+    queue_destroy_and_destroy_elements(cola_clientes, free);
 
-	enviar_mensajes_suscriptor(suscriptor, cod_op);
-
-	return EXIT_SUCCESS;
+    pthread_cond_destroy(&cond);
+    pthread_mutex_destroy(&mutex_cola);
 }
-
 
 
 

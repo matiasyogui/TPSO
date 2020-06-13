@@ -2,6 +2,7 @@
 #define ENVIO_RECEPCION_H_
 
 #include <commons/collections/list.h>
+#include <commons/collections/queue.h>
 #include <pthread.h>
 #include <errno.h>
 #include <signal.h>
@@ -11,25 +12,13 @@
 #include "variables_globales.h"
 #include "listas.h"
 
-void cerrar_servidor(void);
+
+void iniciar_datos_servidor(void);
 
 void* iniciar_servidor(void);
-void esperar_cliente(int socket_servidor);
-void server_client(int* socket);
-void process_request(int cliente_fd, int cod_op);
 
-t_buffer* recibir_mensaje(int socket_cliente);
-t_mensaje* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo);
+int tratar_mensaje(int socket, int cod_op, bool esCorrelativo);
+int tratar_suscriptor(int socket);
 
-void* tratar_suscriptor(int socket);
-int obtener_cod_op(t_buffer* buffer, int* tiempo);
-
-
-void* tratar_mensaje(int socket, t_mensaje* mensaje, int cod_op);
-void enviar_confirmacion(int socket, int mensaje);
-
-void enviar_mensaje_suscriptores(t_mensaje* mensaje);
-void enviar_mensajes_suscriptor(t_suscriptor* suscriptor, int cod_op);
-void* serializar_mensaje2(int cod_op, t_mensaje* mensaje_enviar, int* size);
 
 #endif /* ENVIO_RECEPCION_H_ */
