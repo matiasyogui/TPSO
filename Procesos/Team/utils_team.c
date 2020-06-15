@@ -132,11 +132,6 @@ void leer_mensaje(t_buffer* buffer){
     }
 }
 
-void pasajeFIFO(t_list* lista1, t_list* lista2){
-	t_entrenador* nodoAPasar = list_remove(lista1, 0);
-	list_add(lista2, nodoAPasar);
-}
-
 void Producer(t_entrenador* ent) {
 	while(1){
 	pthread_mutex_lock(ent->semaforo);
@@ -156,6 +151,8 @@ void Producer(t_entrenador* ent) {
 }
 
 void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i){
+	entrenador -> idEntrenador = i;
+
    	entrenador = malloc(sizeof(t_entrenador));
    	entrenador-> posicion = malloc(sizeof(t_posicion));
    	entrenador->posicion->posx = atoi(strtok(POSICIONES_ENTRENADORES[i],"|"));

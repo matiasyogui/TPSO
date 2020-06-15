@@ -44,7 +44,7 @@ typedef struct{
 
 
 typedef struct{
-
+	int idEntrenador;
 	t_posicion* posicion;
 	pthread_mutex_t* semaforo;
 	int cercania;
@@ -61,6 +61,10 @@ typedef struct{
 pthread_t thread;
 pthread_mutex_t mutex;
 pthread_mutex_t mListaGlobal;
+pthread_mutex_t mListaReady;
+pthread_mutex_t mListaExec;
+pthread_mutex_t mListaBlocked;
+
 
 pthread_mutex_t semPlanificador;
 t_entrenador* entrenadorActual;
