@@ -11,6 +11,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <cosas_comunes.h>
+#include "listas.h"
 
 
 #define IP "127.0.0.2"
@@ -73,16 +74,6 @@ pthread_mutex_t mEjecutarMensaje;
 
 pthread_mutex_t semPlanificador;
 t_entrenador* entrenadorActual;
-
-t_list* listaReady;
-t_list* listaExecute;
-t_list* listaBlocked;
-t_list* listaExit;
-
-t_list* lista_mensajes;
-
-t_list* objetivoGlobal;
-t_list* pokemonYaAtrapado;
 
 char** POSICIONES_ENTRENADORES;
 char** POKEMON_ENTRENADORES;
