@@ -132,56 +132,6 @@ void leer_mensaje(t_buffer* buffer){
     }
 }
 
-void Producer(t_entrenador* ent) {
-	while(1){
-	pthread_mutex_lock(ent->semaforo);
-	printf("bloquea al planificador \n");
-	printf("se ejecuta el entrenador con posicion %d y %d\n",ent->posicion->posx,ent->posicion->posy);
-	//entender el mensaje y ejecutarse
-
-	switch(mensajeActual){
-	case LOCALIZED_POKEMON:
-		printf("El entrenador con posicion: X=%d Y=%d, localizo un pokemon.\n",ent->posicion->posx,ent->posicion->posy);
-	}
-
-	//bloquea devuelta
-	printf("desbloquea al planificador\n");
-	pthread_mutex_unlock(&semPlanificador);
-	}
-}
-
-void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i){
-	entrenador -> idEntrenador = i;
-
-   	entrenador = malloc(sizeof(t_entrenador));
-   	entrenador-> posicion = malloc(sizeof(t_posicion));
-   	entrenador->posicion->posx = atoi(strtok(POSICIONES_ENTRENADORES[i],"|"));
-   	entrenador->posicion->posy = atoi(strtok(NULL,"|"));
-   	entrenador->objetivo = string_split(OBJETIVOS_ENTRENADORES[i], "|");
-   	entrenador->pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
-
-    entrenador->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
-   	entrenador->mensaje = malloc(sizeof(t_mensajeTeam));
-
-   	entrenador->semaforo = malloc(sizeof(pthread_mutex_t));
-   	pthread_mutex_init(entrenador->semaforo, NULL);
-   	hilo = malloc(sizeof(pthread_t));
-   	pthread_mutex_lock(entrenador->semaforo);
-   	pthread_create(hilo, NULL, (void*) Producer, entrenador);
-
-   	for(int j = 0; j < cant_elementos(entrenador -> objetivo); j++){
-   		list_add(objetivoGlobal, entrenador->objetivo[j]);
-   	}
-
-   	for(int jj = 0; jj < cant_elementos(entrenador -> pokemones); jj++){
-   		list_add(pokemonYaAtrapado, entrenador -> pokemones[jj]);
-   	}
-
-   	list_add(listaBlocked, entrenador);
-}
-
-
-
 //cautgh
 //localized
 void leer_mensaje_appeared(t_buffer* buffer){
@@ -207,4 +157,23 @@ void leer_mensaje_appeared(t_buffer* buffer){
 	fflush(stdout);
 	free(buffer->stream);
 	free(buffer);
+}
+
+
+int algoritmo_planificacion(char* algoritmoDePlanificacion){
+
+	if(string_equals_ignore_case(algoritmoDePlanificacion, "FIFO") == 1)
+		return FIFO;
+
+	if(string_equals_ignore_case(algoritmoDePlanificacion, "SJFSD") == 1)
+		return SJFSD;
+
+	if(string_equals_ignore_case(algoritmoDePlanificacion, "SJFCD") == 1)
+		return SJFCD;
+
+	if(string_equals_ignore_case(algoritmoDePlanificacion, "RR") == 1)
+		return RR;
+
+	printf("No se reconocio el tipo de mensaje\n");
+	exit(-1);
 }

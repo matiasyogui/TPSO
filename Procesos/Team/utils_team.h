@@ -21,9 +21,11 @@ int server_team;
 
 typedef enum{
 
-	MENSAJE=1
-
-}op_code;
+	FIFO,
+	SJFSD,
+	SJFCD,
+	RR
+}algoritmo_de_planificacion;
 
 
 typedef struct{
@@ -53,6 +55,7 @@ typedef struct{
 	char** pokemones;
 	int idCorrelativo;
 	t_mensajeTeam* mensaje;
+	t_mensajeTeam* ultimoMensajeEnviado;
 	bool estaDisponible;
 
 }t_entrenador;
@@ -64,6 +67,8 @@ pthread_mutex_t mListaGlobal;
 pthread_mutex_t mListaReady;
 pthread_mutex_t mListaExec;
 pthread_mutex_t mListaBlocked;
+
+pthread_mutex_t mEjecutarMensaje;
 
 
 pthread_mutex_t semPlanificador;
@@ -104,11 +109,10 @@ void process_request(int cod_op, int cliente_fd);
 
 void leer_mensaje(t_buffer* buffer);
 
-void pasajeFIFO(t_list* lista1, t_list* lista2);
-void Producer(t_entrenador* ent);
 void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i);
 
 bool nosInteresaMensaje(t_mensajeTeam* msg);
+int algoritmo_planificacion(char* algoritmoDePlanificacion);
 
 
 #endif /* UTILS_TEAM_H_ */

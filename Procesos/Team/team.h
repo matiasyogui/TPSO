@@ -13,6 +13,6 @@ void leer_archivo_configuracion();
 void element_destroyer(void* elemento);
 void algortimoCercano(void* elemento, int posicionPokemonx, int posicionPokemony);
 t_entrenador* elegirEntrenadorXCercania(int posx, int posy);
-
+void ejecutarMensaje();
 
 #endif /* BROKER_H_ */
