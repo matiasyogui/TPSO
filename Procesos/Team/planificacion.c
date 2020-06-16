@@ -20,6 +20,10 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 		void* pokemon;
 		switch(mensaje->cod_op){
 
+		bool _buscarPokemon(void* elemento){
+			return buscarPokemon(elemento, pokemon);
+		}
+
 		case APPEARED_POKEMON:
 			stream = mensaje -> buffer -> stream;
 			offset = 0;
@@ -101,6 +105,7 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 
 			if(valor){
 				ent -> pokemones[(cant_elementos(ent -> pokemones)) + 1] = (char*) pokemon;
+				list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
 			}
 			ent -> estaDisponible = true;
 			break;
@@ -268,20 +273,73 @@ void agregarMensajeLista(int socket, int cod_op){
 	mensajeAGuardar -> id = id_correlativo;
 	mensajeAGuardar -> cod_op = cod_op;
 
-	if(nosInteresaMensaje(mensajeAGuardar)){
+	if(cod_op == LOCALIZED_POKEMON){
 
-		pthread_mutex_lock(&mListaGlobal);
+		if(nosInteresaMensaje(mensajeAGuardar)){
+			t_mensajeTeam* nuevoMensajeAGuardar = malloc(sizeof(t_mensajeTeam));
+			nuevoMensajeAGuardar -> buffer = malloc(sizeof(t_buffer));
 
-		list_add(lista_mensajes, mensajeAGuardar);
-		printf("CANTIDAD DE MENSAJES EN LISTA = %d", list_size(lista_mensajes));
+			int size, offset;
+			void* stream;
 
-		sem_post(&sem_cant_mensajes);
+			stream = mensajeAGuardar -> buffer -> stream;
+			offset = 0;
 
-		pthread_mutex_unlock(&mListaGlobal);
+			memcpy(&size, stream, sizeof(int));
+			offset += sizeof(int);
 
+			void* pokemon = malloc(size);
+			memcpy(pokemon, stream + offset, size);
+			offset += size;
+
+			int cantidad;
+			memcpy(&cantidad, stream + offset, sizeof(int));
+			offset += sizeof(int);
+
+			for(int j = 0; j < cantidad; j++){
+
+				int posx;
+				memcpy(&posx, stream + offset, sizeof(int));
+				offset += sizeof(int);
+
+				int posy;
+				memcpy(&posy, stream + offset, sizeof(int));
+				offset += sizeof(int);
+
+				nuevoMensajeAGuardar -> cod_op = APPEARED_POKEMON;
+
+				char* stream[3] = {pokemon, posx, posy};
+
+				nuevoMensajeAGuardar -> buffer -> stream = stream_appeared_pokemon(stream, &size);
+
+				nuevoMensajeAGuardar -> buffer -> size = size;
+
+				pthread_mutex_lock(&mListaGlobal);
+
+				list_add(lista_mensajes, mensajeAGuardar);
+				printf("CANTIDAD DE MENSAJES EN LISTA = %d", list_size(lista_mensajes));
+
+				sem_post(&sem_cant_mensajes);
+
+				pthread_mutex_unlock(&mListaGlobal);
+			}
+		}
+	}else{
+
+		if(nosInteresaMensaje(mensajeAGuardar)){
+
+			pthread_mutex_lock(&mListaGlobal);
+
+			list_add(lista_mensajes, mensajeAGuardar);
+			printf("CANTIDAD DE MENSAJES EN LISTA = %d", list_size(lista_mensajes));
+
+			sem_post(&sem_cant_mensajes);
+
+			pthread_mutex_unlock(&mListaGlobal);
+
+		}
+		printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id correlativo = %d, size mensaje = %d \n", cod_op, id_correlativo, size);
 	}
-	printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id correlativo = %d, size mensaje = %d \n", cod_op, id_correlativo, size);
-
 	free(mensaje);
 }
 
@@ -294,7 +352,6 @@ void enviar_mensaje(t_paquete* paquete, int socket_cliente){
 
 	if(send(socket_cliente, mensaje, bytes_enviar, 0) < 0)
 		perror(" FALLO EL SEND");
-
 
 	free(paquete->buffer->stream);
 	free(paquete->buffer);

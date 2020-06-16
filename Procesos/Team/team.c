@@ -49,13 +49,6 @@ t_entrenador* elegirEntrenadorXCercania(int posx, int posy){
 
 	t_entrenador* entrenadorElegido = (t_entrenador*) list_remove(listaMapeada, 0);
 
-/*	bool _mismaCercania(void* elemento){
-		return ((t_entrenador*) elemento) -> cercania == entrenadorElegido -> cercania;
-	}
-
-	if(1)
-		list_filter(listaMapeada, _mismaCercania);
-*/
 	return entrenadorElegido;
 }
 
@@ -93,10 +86,13 @@ int suscribirse(char* cola){
 
 			case APPEARED_POKEMON:
 			case CAUGHT_POKEMON:
+
+
 			case LOCALIZED_POKEMON:
 
 				agregarMensajeLista(socket, cod_op);
 				printf("Se recibio un mensaje\n");
+				break;
 
 
 				break;
@@ -105,12 +101,18 @@ int suscribirse(char* cola){
 	return EXIT_SUCCESS;
 }
 
+void reintentarConexion(){
+	while(true){
+
+		crear_conexion
+		sleep(REINTETO_CONEXION);
+	}
+}
 
 bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 	void* stream = msg -> buffer -> stream;
-	int size;
-	int offset;
+	int size, offset, cantidad;
 
 	bool _buscarID(void* elemento){
 		return msg->id == (int)elemento;
@@ -135,9 +137,10 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			pokemon = malloc(size);
 			memcpy(pokemon, stream + offset, size);
 
-			valor = list_any_satisfy(pokemonAPedirSinRepetidos, _buscarPokemon);
+			valor = list_any_satisfy(pokemonesAPedir, _buscarPokemon);
 
 			list_remove_by_condition(pokemonAPedirSinRepetidos, _buscarPokemon);
+
 
 			for(int i = 0; i< list_size(pokemonAPedirSinRepetidos); i++){
 				printf("POKEMON A PEDIR = %s\n", (char*)list_get(pokemonAPedirSinRepetidos, i));
@@ -157,10 +160,18 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 			pokemon = malloc(size);
 			memcpy(pokemon, stream + offset, size);
+			offset += size;
+
+			memcpy(&cantidad, stream + offset, sizeof(int));
+
 
 			valor = list_any_satisfy(pokemonAPedirSinRepetidos, _buscarPokemon);
 
 			list_remove_by_condition(pokemonAPedirSinRepetidos, _buscarPokemon);
+
+			for(int j = 0; j < cantidad; i++){
+				list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
+			}
 
 			for(int i = 0; i< list_size(pokemonAPedirSinRepetidos); i++){
 				printf("POKEMON A PEDIR = %s\n", (char*)list_get(pokemonAPedirSinRepetidos, i));
@@ -214,13 +225,13 @@ int main(){
 	for(i=0;i<cantEntrenadores;i++){
 		setteoEntrenador(entrenadores[i], hilos[i], i);
 	}
-
+/*
 	pthread_t blockAReady;
 
 
 	pthread_mutex_init(&mBlockAReady, NULL);
 	pthread_create(&blockAReady, NULL, (void*)pasajeBlockAReady, NULL);
-
+*/
 	pedir_pokemones();
 
 	for(i=0;i<cantEntrenadores;i++){
@@ -268,7 +279,7 @@ void leer_archivo_configuracion(){
 }
 
 void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i){
-	entrenador -> idEntrenador = i;
+	//entrenador -> idEntrenador = i;
 
    	entrenador = malloc(sizeof(t_entrenador));
    	entrenador-> posicion = malloc(sizeof(t_posicion));
