@@ -1,3 +1,4 @@
+
 #include "gamecard.h"
 
 pthread_t thread_server;
@@ -8,13 +9,16 @@ char* PUNTO_MONTAJE_TALLGRASS;
 
 void leer_archivo_configuracion(void);
 static void finalizar_programa(void);
-
+void listarTallGrassArchivos(DIR*, char*);
+void montar_TallGrass(void);
+void crear_TallGrass(void);
+char* ultimoDirectorio(char*);
 
 int main(){
 
 	leer_archivo_configuracion();
 
-	//crear_TallGrass();
+	montar_TallGrass();
 
 	iniciar_suscripciones(NEW_POKEMON, CATCH_POKEMON, GET_POKEMON);
 
@@ -56,41 +60,121 @@ static void finalizar_programa(void){
 	log_destroy(LOGGER);
 }
 
+char* ultimoDirectorio(char*pathDirectorio){
 
-/*
-t_list* listarTallGrassArchivos(char*direc) {
+	char* ptr = strtok(pathDirectorio, "/");
+	char* ptrAnterior;
 
-  DIR *d;
-  struct dirent *dir;
-  d = opendir(direc);
-  t_list *listaDeTablas = list_create();
-  if (d != NULL)
-  {
-    while ((dir = readdir(d)) != NULL) {
+	while (ptr != NULL)
+	{
+		ptrAnterior = ptr;
+		ptr = strtok(NULL, "/");
+	}
 
-    	if (!string_contains(dir->d_name, ".")){
-
-			printf("archivo %s\n", dir->d_name);
-			char* nombreTabla = malloc(sizeof(strlen(dir->d_name)+1));
-			strcpy(nombreTabla, dir->d_name);
-			list_add(listaDeTablas, nombreTabla);
-    	}
-
-    }
-    closedir(dir);
-    closedir(d);
-    return listaDeTablas;
-  } else return listaDeTablas;
+	return ptrAnterior;
 
 }
 
-void crear_TallGrass(){
+
+t_list * listarTallGrassFiles(char * path) {
+
+	  struct dirent *dir;
+	  char * nombreDir = malloc(strlen(path) + strlen(FILES)+1);
+	  t_list *listaArchivos ;
+
+	  strcpy(nombreDir,path);
+	  strcat(nombreDir,FILES);
+
+	  DIR * d = opendir(nombreDir);
+
+	  if (d != NULL)
+	  {
+		    while ((dir = readdir(d)) != NULL)
+		    {
+		    	if (string_contains(dir->d_name, "."))
+		    	{
+					printf("Directorio %s archivo %s\n",FILES, dir->d_name);
+					char* nombreArchivo = strdup(dir->d_name);
+					list_add(listaArchivos, nombreArchivo);
+		    	}
+		    }
+
+	  }else{
+		  crearTallGrassFiles(PUNTO_MONTAJE_TALLGRASS);
+	  }
+
+	  return listaArchivos;
+}
+
+void crearTallGrassFiles(char*pathMontaje){
+
+	//Crear Directorio FILES
+}
+
+void montar_TallGrass(){
 	printf("PUNTO MONTAJE=%s\n", PUNTO_MONTAJE_TALLGRASS);
-	printf("IP=%s\n", IP_BROKER);
 
-	t_list *lista = listarTallGrassArchivos(PUNTO_MONTAJE_TALLGRASS);
+	t_metadata* metadata =create_metadata(PUNTO_MONTAJE_TALLGRASS);
+
+	t_list * listaMetaData = listarTallGrassFiles(PUNTO_MONTAJE_TALLGRASS);
 
 }
 
-*/
+t_metadata * create_metadata(char *path) {
+
+	  char * pathfile = malloc(strlen(path) + strlen(METADATAFILE)+ strlen(METADATADIR) +1);
+
+	  strcpy(pathfile,path);
+
+	  strcat(pathfile,METADATADIR);
+	  strcat(pathfile,METADATAFILE);
+
+
+	FILE* file = fopen(pathfile, "r");
+
+	if (file == NULL) {
+		return NULL;
+	}
+
+	struct stat stat_file;
+	stat(pathfile, &stat_file);
+
+	t_metadata *metadata = malloc(sizeof(t_metadata));
+
+	metadata->path = strdup(file);
+
+	char* buffer = calloc(1, stat_file.st_size + 1);
+	fread(buffer, stat_file.st_size, 1, file);
+
+	char** lines = string_split(buffer, "\n");
+
+	void add_cofiguration(char *line) {
+		if (!string_starts_with(line, "#")) {
+			char** keyAndValue = string_n_split(line, 2, "=");
+			switch(keyAndValue[0]){
+			case BLOCKSIZE:
+				metadata->Block_size = keyAndValue[1];
+				break;
+			case BLOCKS:
+				metadata->Blocks = keyAndValue[1];
+				break;
+			}
+
+			free(keyAndValue[0]);
+			free(keyAndValue);
+		}
+	}
+	string_iterate_lines(lines, add_cofiguration);
+	string_iterate_lines(lines, (void*) free);
+
+	free(lines);
+	free(buffer);
+	fclose(file);
+
+	return metadata;
+}
+
+
+
+
 
