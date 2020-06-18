@@ -13,6 +13,7 @@ void listarTallGrassArchivos(DIR*, char*);
 void montar_TallGrass(void);
 void crear_TallGrass(void);
 char* ultimoDirectorio(char*);
+t_metadata * create_metadata(char *path);
 
 int main(){
 
@@ -115,6 +116,8 @@ void montar_TallGrass(){
 	printf("PUNTO MONTAJE=%s\n", PUNTO_MONTAJE_TALLGRASS);
 
 	t_metadata* metadata =create_metadata(PUNTO_MONTAJE_TALLGRASS);
+	printf("Metadata blocksize %d\n", metadata->Block_size);
+	printf("Metadata blocks %d\n", metadata->Blocks);
 
 	t_list * listaMetaData = listarTallGrassFiles(PUNTO_MONTAJE_TALLGRASS);
 
@@ -149,23 +152,26 @@ t_metadata * create_metadata(char *path) {
 	char** lines = string_split(buffer, "\n");
 
 	void add_cofiguration(char *line) {
-		if (!string_starts_with(line, "#")) {
+		if (!string_starts_with(line, "#"))
+		{
 			char** keyAndValue = string_n_split(line, 2, "=");
-			switch(keyAndValue[0]){
-			case BLOCKSIZE:
-				metadata->Block_size = keyAndValue[1];
-				break;
-			case BLOCKS:
-				metadata->Blocks = keyAndValue[1];
-				break;
-			}
+
+			if(strcmp(keyAndValue[0], BLOCKSIZE))
+				metadata->Block_size = atoi(keyAndValue[1]);
+
+			if(strcmp(keyAndValue[0], BLOCKS))
+				metadata->Blocks = atoi(keyAndValue[1]);
 
 			free(keyAndValue[0]);
 			free(keyAndValue);
 		}
-	}
+
+
+		}
+
 	string_iterate_lines(lines, add_cofiguration);
 	string_iterate_lines(lines, (void*) free);
+
 
 	free(lines);
 	free(buffer);

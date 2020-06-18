@@ -3,6 +3,8 @@
 
 #include <dirent.h>
 #include <sys/mount.h>
+#include <sys/stat.h>
+
 #include "variables_globales.h"
 #include "servidor.h"
 #include "suscripcion.h"
@@ -18,7 +20,7 @@ typedef struct {
 	char *path;
 	int Block_size;
 	int Blocks;
-	char[10] Magic_Number;
+	char* Magic_Number;
 } t_metadata;
 
 #endif /* GAMECARD_H_ */
