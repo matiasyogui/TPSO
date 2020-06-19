@@ -72,6 +72,9 @@ char* obtener_key(char* dato, char* proceso);
 //LOS BYTES TOTALES DE UN ARRAY DE STRING INCLUYENDO '\0'
 int obtener_tamanio(char** datos);
 
+//LOS BYTES TOTALES DE UN ARRAY DE STREAM'
+int obtener_tamanio_stream(char** datos);
+
 //CANTIDAD DE ELEMENTOS QUE HAY EN UN ARRAY
 int cant_elementos(char** array);
 

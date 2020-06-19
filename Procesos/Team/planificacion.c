@@ -2,7 +2,7 @@
 
 void* pasajeBlockAReady(){ //falta crear el hilo
 
-	while(true){
+	while(noEstanListosParaDeadlock()){
 
 		sem_wait(&sem_cant_mensajes);
 
@@ -90,8 +90,6 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 
 			memcpy(&valor, stream, sizeof(int));
 
-
-			////////////////
 			streamUltimoMensaje = ent -> ultimoMensajeEnviado -> buffer -> stream;
 			offset = 0;
 
@@ -104,23 +102,75 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 
 
 			if(valor){
+				ent->pokemones = realloc(ent->pokemones,(obtener_tamanio_stream(ent -> pokemones)) + size);
 				ent -> pokemones[(cant_elementos(ent -> pokemones)) + 1] = (char*) pokemon;
-				list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
+				//list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
+				if(cant_elementos(ent->objetivo) == cant_elementos(ent -> pokemones)){
+					if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
+
+					}
+				}
 			}
 			ent -> estaDisponible = true;
 			break;
 		}
+		while(noEstanTodosEnREady()){
+			//iniciar deteccion de deadlock
+			//solucionar deadlock
+		}
 	}
 
-		//algoritmo de cercania para saber que entrenador desbloquear
-		//guardar mensaje en el entrenador
-		//pasar el entrenador a ready( solo se debe desbloquear 1 )
-
-
-		/*if()
-			entrenador -> mensaje = list_take(lista_mensajes, 0);*/
 }
 
+bool tienenLosMismosElementos(char** lista1, char** lista2){
+	int i=0;
+	int j=0;
+	bool todosLosElementosIguales = true;
+
+	while(i<cant_elementos(lista1) && todosLosElementosIguales){
+		while(j<cant_elementos(lista2) && todosLosElementosIguales){
+			if(strcmp(lista1[i],lista2[j]) == 1){
+				j++;
+			}
+			else{
+				todosLosElementosIguales = false;
+			}
+		}
+		i++;
+	}
+	return todosLosElementosIguales;
+}
+
+/*void ordenarAlfabeticamente(char** lista){
+    int j, k, salto;
+    char** aux;
+
+    salto = sizeof(lista) / 2;
+
+    while(salto > 0){
+        for(int i = salto; i < sizeof(lista); i++){
+            j = i - salto;
+
+            while(j >= 0){
+                k = j + salto;
+
+                if(strcmp(lista[j], e[k].apellido) < 0){
+                    j = -1;
+                }else{
+                    aux = e[j];
+                    e[k] = e[j];
+                    e[k] = aux;
+                }
+            }
+        }
+        salto = salto / 2;
+    }
+}*/
+
+
+bool noEstanListosParaDeadlock(){
+	return list_all_satisfy(listaBlocked,estanNoDisponibles())
+}
 
 void planificarEntrenadoresAExec(){ //falta crear el hilo
 	while(true){

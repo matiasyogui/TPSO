@@ -12,7 +12,7 @@
 #include <pthread.h>
 #include <cosas_comunes.h>
 #include "listas.h"
-#include <stbool.h>
+#include <stdbool.h>
 
 
 #define IP "127.0.0.2"

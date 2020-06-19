@@ -141,6 +141,17 @@ int obtener_tamanio(char** datos){
 	return size;
 }
 
+int obtener_tamanio_stream(char** datos){
+
+	int size = 0;
+
+	while(*datos != NULL){
+		size += strlen(*(datos)); // no incluimos el '\0'
+		datos++;
+	}
+	return size;
+}
+
 
 int cant_elementos(char** array){
 
