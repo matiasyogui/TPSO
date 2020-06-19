@@ -104,8 +104,6 @@ int suscribirse(char* cola){
 void reintentarConexion(){
 	while(true){
 
-		crear_conexion
-		sleep(REINTETO_CONEXION);
 	}
 }
 
