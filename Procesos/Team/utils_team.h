@@ -53,12 +53,13 @@ typedef struct{
 	pthread_mutex_t* semaforo;
 	int cercania;
 	char* algoritmo_de_planificacion;
-	char** objetivo;
-	char** pokemones;
+	t_list* objetivo;
+	t_list* pokemones;
 	int idCorrelativo;
 	t_mensajeTeam* mensaje;
 	t_mensajeTeam* ultimoMensajeEnviado;
 	bool estaDisponible;
+	bool pokemonesMaximos;
 
 }t_entrenador;
 

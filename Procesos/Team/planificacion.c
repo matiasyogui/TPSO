@@ -2,7 +2,7 @@
 
 void* pasajeBlockAReady(){ //falta crear el hilo
 
-	while(noEstanListosParaDeadlock()){
+	while(faltanAtraparPokemones()){
 
 		sem_wait(&sem_cant_mensajes);
 
@@ -102,11 +102,16 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 
 
 			if(valor){
-				ent->pokemones = realloc(ent->pokemones,(obtener_tamanio_stream(ent -> pokemones)) + size);
-				ent -> pokemones[(cant_elementos(ent -> pokemones)) + 1] = (char*) pokemon;
-				//list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
-				if(cant_elementos(ent->objetivo) == cant_elementos(ent -> pokemones)){
+				list_add(ent->pokemones,(char*) pokemon);
+				if(list_size(ent->objetivo) == list_size(ent -> pokemones)){
 					if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
+						list_add(listaExit, ent);
+					}
+					else{
+						ent->pokemonesMaximos = true;
+						pthread_mutex_lock(&mListaBlocked);
+						list_add(listaBlocked, ent);
+						pthread_mutex_unlock(&mListaBlocked);
 
 					}
 				}
@@ -114,7 +119,7 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 			ent -> estaDisponible = true;
 			break;
 		}
-		while(noEstanTodosEnREady()){
+		while(list_size(listaBlocked)>0){
 			//iniciar deteccion de deadlock
 			//solucionar deadlock
 		}
@@ -122,54 +127,37 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 
 }
 
-bool tienenLosMismosElementos(char** lista1, char** lista2){
+bool tienenLosMismosElementos(t_list* lista1, t_list* lista2){
 	int i=0;
 	int j=0;
-	bool todosLosElementosIguales = true;
+	t_list* listaAux = list_create();
+	listaAux = list_duplicate(lista2);
+	bool encontro = true;
 
-	while(i<cant_elementos(lista1) && todosLosElementosIguales){
-		while(j<cant_elementos(lista2) && todosLosElementosIguales){
-			if(strcmp(lista1[i],lista2[j]) == 1){
-				j++;
+	while(i<list_size(lista1) && encontro){
+		encontro = false;
+		while(j<list_size(listaAux) && !encontro){
+			printf("comparando %s y %s \n",lista1[i],listaAux[j]);
+			fflush(stdout);
+			if(strcmp(list_get(lista1,i),list_get(lista2,j)) == 0){
+				encontro = true;
+				list_remove(lista2,j);
 			}
 			else{
-				todosLosElementosIguales = false;
+				j++;
 			}
 		}
 		i++;
 	}
-	return todosLosElementosIguales;
+	return encontro;
 }
 
-/*void ordenarAlfabeticamente(char** lista){
-    int j, k, salto;
-    char** aux;
+bool faltanAtraparPokemones(){
+	bool tienePokemonesMaximos(void* elemento){
+		return ((t_entrenador*) elemento)->pokemonesMaximos;
+	}
 
-    salto = sizeof(lista) / 2;
-
-    while(salto > 0){
-        for(int i = salto; i < sizeof(lista); i++){
-            j = i - salto;
-
-            while(j >= 0){
-                k = j + salto;
-
-                if(strcmp(lista[j], e[k].apellido) < 0){
-                    j = -1;
-                }else{
-                    aux = e[j];
-                    e[k] = e[j];
-                    e[k] = aux;
-                }
-            }
-        }
-        salto = salto / 2;
-    }
-}*/
-
-
-bool noEstanListosParaDeadlock(){
-	return list_all_satisfy(listaBlocked,estanNoDisponibles())
+	return !list_all_satisfy(listaBlocked,tienePokemonesMaximos());
 }
 
 void planificarEntrenadoresAExec(){ //falta crear el hilo

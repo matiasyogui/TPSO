@@ -279,12 +279,17 @@ void leer_archivo_configuracion(){
 void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i){
 	//entrenador -> idEntrenador = i;
 
+	char** objetivo;
+	char** pokemones;
+	entrenador->objetivo = list_create();
+	entrenador->pokemones = list_create();
+	entrenador->pokemonesMaximos = false;
    	entrenador = malloc(sizeof(t_entrenador));
    	entrenador-> posicion = malloc(sizeof(t_posicion));
    	entrenador->posicion->posx = atoi(strtok(POSICIONES_ENTRENADORES[i],"|"));
    	entrenador->posicion->posy = atoi(strtok(NULL,"|"));
-   	entrenador->objetivo = string_split(OBJETIVOS_ENTRENADORES[i], "|");
-   	entrenador->pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
+   	objetivo = string_split(OBJETIVOS_ENTRENADORES[i], "|");
+   	pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
 
     entrenador->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
    	entrenador->mensaje = malloc(sizeof(t_mensajeTeam));
@@ -295,12 +300,14 @@ void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i){
    	pthread_mutex_lock(entrenador->semaforo);
    	pthread_create(hilo, NULL, (void*) ejecutarMensaje, NULL);
 
-   	for(int j = 0; j < cant_elementos(entrenador -> objetivo); j++){
-   		list_add(objetivoGlobal, entrenador->objetivo[j]);
+   	for(int j = 0; j < cant_elementos(objetivo); j++){
+   		list_add(objetivoGlobal, objetivo[j]);
+   		list_add(entrenador->objetivo,objetivo[j]);
    	}
 
-   	for(int jj = 0; jj < cant_elementos(entrenador -> pokemones); jj++){
-   		list_add(pokemonYaAtrapado, entrenador -> pokemones[jj]);
+   	for(int jj = 0; jj < cant_elementos(pokemones); jj++){
+   		list_add(pokemonYaAtrapado, pokemones[jj]);
+   		list_add(entrenador->pokemones,pokemones[jj]);
    	}
 
    	list_add(listaBlocked, entrenador);
