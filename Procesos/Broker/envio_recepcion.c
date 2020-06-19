@@ -19,33 +19,34 @@ static void _interruptor_handler(void* elemento);
 static int server_client(void* p_socket);
 static int process_request(int cliente_fd, int cod_op);
 
-
 static void* _gestor_clientes();
 static void _interruptor_handler(void* elemento);
 static void detener_servidor(void* p_socket);
+static void obtener_datos(void);
 
 
-void iniciar_datos_servidor(void){
-
-	int s;
+static void obtener_datos(void){
 
 	IP_SERVER = config_get_string_value(CONFIG, "IP_BROKER");
 	PUERTO_SERVER = config_get_string_value(CONFIG, "PUERTO_BROKER");
 
 	cola_clientes = queue_create();
-
-    for (int i = 0; i < GESTORES_CLIENTES; i++) {
-    	s = pthread_create(&THREADS[i], NULL, _gestor_clientes, NULL);
-    	if (s != 0) printf("[ENVIO_RECEPCION.C] PTHREAD_CREATE ERROR");
-    }
 }
 
 
 void* iniciar_servidor(void){
 
+	obtener_datos();
+
 	int s;
 
     pthread_cleanup_push(detener_servidor, &socket_servidor);
+
+    for (int i = 0; i < GESTORES_CLIENTES; i++) {
+
+    	s = pthread_create(&THREADS[i], NULL, _gestor_clientes, NULL);
+    	if (s != 0) printf("[ENVIO_RECEPCION.C] PTHREAD_CREATE ERROR");
+    }
 
     struct addrinfo hints, *servinfo, *p;
 
@@ -97,8 +98,10 @@ static int esperar_cliente(int socket_servidor){
 	socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion);
 	if (socket_cliente < 0) { perror("[ENVIO_RECEPCION.C] ACCEPT ERROR"); return EXIT_FAILURE; }
 
+
 	int* p_socket = malloc(sizeof(int));
 	*p_socket = socket_cliente;
+
 
 	pthread_mutex_lock(&mutex_cola);
 
@@ -107,6 +110,7 @@ static int esperar_cliente(int socket_servidor){
 	pthread_cond_signal(&cond);
 
 	pthread_mutex_unlock(&mutex_cola);
+
 
 	pthread_mutex_lock(&mutex_log);
 
@@ -125,8 +129,9 @@ static void _interruptor_handler(void* elemento){
 
 static void* _gestor_clientes(){
 
-	int* p_cliente;
-	int s, old_state;
+	void *p_cliente;
+	int old_state, s;
+
 	pthread_cleanup_push(_interruptor_handler, &mutex_cola);
 
 	while (true) {
@@ -137,7 +142,6 @@ static void* _gestor_clientes(){
 
 		p_cliente = queue_pop(cola_clientes);
 		if (p_cliente == NULL ) {
-
 			pthread_cond_wait(&cond, &mutex_cola);
 			p_cliente = queue_pop(cola_clientes);
 		}
@@ -145,13 +149,13 @@ static void* _gestor_clientes(){
 		pthread_mutex_unlock(&mutex_cola);
 
 		s = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_state);
-		if (s != 0) perror("[PLANIFICADOR.C] PTHREAD_SETCANCELSTATE ERROR");
+		if (s != 0) perror("[ENVIO_RECEPCION.C] PTHREAD_SETCANCELSTATE ERROR");
 
 		if (p_cliente != NULL)
 			server_client(p_cliente);
 
 		s = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_state);
-		if (s != 0) perror("[PLANIFICADOR.C] PTHREAD_SETCANCELSTATE ERROR");
+		if (s != 0) perror("[ENVIO_RECEPCION.C] PTHREAD_SETCANCELSTATE ERROR");
 
 	}
 
@@ -163,7 +167,9 @@ static void* _gestor_clientes(){
 
 static int server_client(void* p_socket){
 
-	int cod_op, socket = *((int*)p_socket);
+	int socket, cod_op;
+
+	socket = *((int*)p_socket);
 	free(p_socket);
 
 	int s = recv(socket, &cod_op, sizeof(uint32_t), 0);
@@ -200,6 +206,8 @@ static int process_request(int cliente_fd, int cod_op){
         	tratar_suscriptor(cliente_fd);
 
         	break;
+
+        //case RECONECTAR:
 
 		case -1:
 

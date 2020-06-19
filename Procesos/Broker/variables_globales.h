@@ -1,7 +1,6 @@
 #ifndef VARIABLES_GLOBALES_H_
 #define VARIABLES_GLOBALES_H_
 
-
 #define CANTIDAD_SUBLISTAS 6
 
 #include <stdbool.h>
@@ -27,8 +26,9 @@ pthread_cond_t cond_cola_tareas;
 
 typedef struct{
 
-	int socket;
 	uint32_t cod_op;
+	uint32_t id;
+	int socket;
 
 }t_suscriptor;
 
@@ -56,7 +56,8 @@ typedef struct{
 typedef enum{
 
 	MENSAJE,
-	SUSCRIPCION
+	SUSCRIPCION,
+	RECONEXION
 
 }tipo_tarea;
 

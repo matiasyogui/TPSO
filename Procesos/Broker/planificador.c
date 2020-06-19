@@ -24,9 +24,14 @@ static t_notificacion_envio* cargar_notificacion_envio(t_mensaje* mensaje, t_sus
 static void* serializar_mensaje(t_mensaje* mensaje_enviar, int* size);
 static void detener_threads(pthread_t vector_threads[], int cantidad);
 
+
+//===================================================================================================
+
+
 int iniciar_planificacion_envios(void){
 
 	int s;
+
 	cola_envios = queue_create();
 
 	for (int i = 0; i < GESTORES_TAREAS; i++) {
@@ -44,6 +49,23 @@ int iniciar_planificacion_envios(void){
 	return EXIT_SUCCESS;
 }
 
+
+int detener_planificacion_envios(void){
+
+	detener_threads(thread_gestionTareas, GESTORES_TAREAS);
+
+	detener_threads(thread_gestionEnvios, GESTORES_ENVIO);
+
+    pthread_mutex_destroy(&mutex_cola_envios);
+    pthread_cond_destroy(&cond_cola_envios);
+
+    queue_destroy_and_destroy_elements(cola_envios, free);
+
+    return EXIT_SUCCESS;
+}
+
+
+//===================================================================================================
 
 
 static void _interruptor_handler(void* elemento){
@@ -89,6 +111,7 @@ static void* _gestion_tareas(void){
 		pthread_exit(0);
 }
 
+
 static void CARGAR_ENVIOS(void* _tarea){
 
 	t_tarea* tarea = _tarea;
@@ -131,6 +154,7 @@ static t_envio* generar_envio(t_mensaje* mensaje, t_suscriptor* suscriptor){
 	return envio;
 }
 
+
 static void cargar_envio(t_envio* envio){
 
 	pthread_mutex_lock(&mutex_cola_envios);
@@ -143,6 +167,8 @@ static void cargar_envio(t_envio* envio){
 
 }
 
+
+//===================================================================================================
 
 
 static void* _gestion_envios(void){
@@ -183,6 +209,7 @@ static void* _gestion_envios(void){
 		pthread_exit(0);
 }
 
+
 static int realizar_envio(t_envio* envio){
 
 	t_mensaje* mensaje = envio -> mensaje;
@@ -194,7 +221,7 @@ static int realizar_envio(t_envio* envio){
 	int s, size;
 	void* stream = serializar_mensaje(mensaje, &size);
 
-	s = send(suscriptor->socket, stream, size, 0);
+	s = send(suscriptor->socket, stream, size, MSG_NOSIGNAL);
 	if (s < 0) { perror("SEND ERROR"); free(stream); return EXIT_FAILURE; }
 
 	free(stream);
@@ -225,6 +252,7 @@ static int realizar_envio(t_envio* envio){
 
 	return EXIT_SUCCESS;
 }
+
 
 static t_notificacion_envio* cargar_notificacion_envio(t_mensaje* mensaje, t_suscriptor* suscriptor){
 
@@ -266,19 +294,9 @@ static void* serializar_mensaje(t_mensaje* mensaje_enviar, int* size){
 }
 
 
-int detener_planificacion_envios(void){
+//====================================================================================================
 
-	detener_threads(thread_gestionTareas, GESTORES_TAREAS);
 
-	detener_threads(thread_gestionEnvios, GESTORES_ENVIO);
-
-    pthread_mutex_destroy(&mutex_cola_envios);
-    pthread_cond_destroy(&cond_cola_envios);
-
-    queue_destroy_and_destroy_elements(cola_envios, free);
-
-    return EXIT_SUCCESS;
-}
 
 static void detener_threads(pthread_t vector_threads[], int cantidad){
 

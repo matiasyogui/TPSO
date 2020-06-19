@@ -1,9 +1,22 @@
 #include "servidor.h"
-#include <signal.h>
 
-void iniciar_servidor(void)
-{
-	int socket_servidor;
+#define IP "127.0.0.3"
+#define PUERTO "5001"
+
+pthread_t thread;
+
+
+void esperar_cliente(int);
+void serve_client(int *socket);
+void process_request(int cod_op, int cliente_fd);
+t_buffer* recibir_mensaje(int socket_cliente);
+void leer_mensaje(t_buffer* buffer);
+
+
+
+void iniciar_servidor(void){
+
+	int s ,socket_servidor;
 
     struct addrinfo hints, *servinfo, *p;
 
@@ -14,35 +27,30 @@ void iniciar_servidor(void)
 
     getaddrinfo(IP, PUERTO, &hints, &servinfo);
 
-    for (p=servinfo; p != NULL; p = p->ai_next)
-    {
-        if ((socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1){
-        	perror("fallo socket");
-        	continue;
-        }
+    for (p = servinfo; p != NULL; p = p->ai_next) {
 
-        if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1) {
-        	perror("fallo bind");
-            close(socket_servidor);
-            continue;
-        }
+        s = socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+        if (s < 0) { perror("SOCKET ERROR"); continue; }
+
+        s = bind(socket_servidor, p->ai_addr, p->ai_addrlen);
+        if (s < 0) { perror("BIND ERROR"); close(socket_servidor); continue; }
+
         break;
     }
 
-    if(listen(socket_servidor, SOMAXCONN) < 0){
-    		perror("LISTEN ERROR");
-    		raise(SIGINT);
-    }
+    s = listen(socket_servidor, SOMAXCONN);
+    if (s < 0) { perror("LISTEN ERROR"); raise(SIGINT); }
 
     freeaddrinfo(servinfo);
-    server_gamecard = socket_servidor;
-    while(1)
+
+    while(true)
     	esperar_cliente(socket_servidor);
 
 }
 
-void esperar_cliente(int socket_servidor)
-{
+
+void esperar_cliente(int socket_servidor){
+
 	struct sockaddr_in dir_cliente;
 
 	socklen_t tam_direccion = sizeof(struct sockaddr_in);
@@ -57,6 +65,7 @@ void esperar_cliente(int socket_servidor)
 
 }
 
+
 void serve_client(int* p_socket){
 
 	int cod_op, socket = *p_socket;
@@ -68,6 +77,7 @@ void serve_client(int* p_socket){
 	process_request(cod_op, socket);
 
 }
+
 
 void process_request(int cod_op, int cliente_fd) {
 
@@ -97,6 +107,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 }
 
+
 t_buffer* recibir_mensaje(int socket_cliente){
 
 	t_buffer* buffer = malloc(sizeof(t_buffer));
@@ -109,6 +120,7 @@ t_buffer* recibir_mensaje(int socket_cliente){
 
 	return buffer;
 }
+
 
 void leer_mensaje(t_buffer* buffer){
     int offset = 0, tamanio = 0;

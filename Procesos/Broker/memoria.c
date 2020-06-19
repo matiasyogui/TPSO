@@ -1,7 +1,10 @@
 #include "memoria.h"
 
+static void obtener_datos();
+
 //==============================================================================
-void obtener_datos()
+
+static void obtener_datos()
 {
 	TAMANO_MEMORIA = config_get_int_value(CONFIG, "TAMANO_MEMORIA");
 	TAMANO_MINIMO_PARTICION = config_get_int_value(CONFIG, "TAMANO_MINIMO_PARTICION");
@@ -12,6 +15,7 @@ void obtener_datos()
 	ALGORITMO_PARTICION_LIBRE = config_get_string_value(CONFIG, "ALGORITMO_PARTICION_LIBRE");
 
 }
+
 
 void iniciar_memoria()
 {
@@ -34,7 +38,8 @@ void iniciar_memoria()
 
 }
 
-//=============================================================================
+//==============================================================================
+
 void* algoritmo_primer_ajuste(int size, int* numero_particion)
 {
 	int tamanio_disponible;
@@ -51,6 +56,7 @@ void* algoritmo_primer_ajuste(int size, int* numero_particion)
 	}
 	return NULL;
 }
+
 
 void* algoritmo_mejor_ajuste(int size, int* numero_particion)
 {
@@ -78,6 +84,7 @@ void* algoritmo_mejor_ajuste(int size, int* numero_particion)
 	return particion_libre;
 }
 
+
 void* busqueda_particion_libre(int size, int* numero_particion){
 
 	if(string_equals_ignore_case(ALGORITMO_PARTICION_LIBRE, "FF")) {// primer ajuste
@@ -92,6 +99,7 @@ void* busqueda_particion_libre(int size, int* numero_particion){
 	printf("\nALGORITMO DE PARTICION LIBRE %s  [linea 83 memoria.c] \n", ALGORITMO_PARTICION_LIBRE);
 	return NULL;
 }
+
 
 void* pedir_memoria(int size){
 
@@ -117,6 +125,7 @@ void* pedir_memoria(int size){
 }
 
 //==============================================================================
+
 int numero_particion(void* particion_buscada){
 
 	for(int i = 0; i < (list_size(particiones)-1); i++ ){
@@ -137,12 +146,14 @@ void eliminar_particion(void* particion){
 }
 
 //==============================================================================
+
 void guardar(void* particion, char* dato)
 {
 	memcpy(particion, (void*)dato, strlen(dato));
 }
 
 //==============================================================================
+
 void imprimir_particion(t_particion* particion)
 {
 	int tamanio = particion->fin_particion - particion->inicio_particion;
@@ -155,7 +166,9 @@ void imprimir_particion(t_particion* particion)
 
 }
 
+
 void dump_memoria(){
+
 	void* AUXILIAR;
 	printf("//////////////////////////INFORME DE MEMORIA///////////////////////////////////\n\n");
 	int numero = 0;

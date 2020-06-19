@@ -13,13 +13,13 @@ int crear_conexion(char *ip, char* puerto){
 	getaddrinfo(ip, puerto, &hints, &server_info);
 
 	int socket_cliente;
-	int status;
+	int s;
 
-	status = socket_cliente = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
-	if(status < 0) perror("[cosas_comunes.c] FALLO SOCKET");
+	s = socket_cliente = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
+	if(s < 0) perror("[cosas_comunes.c] SOCKET ERROR");
 
-	status = connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen);
-	if(status < 0) perror("[cosas_comunes.c] FALLO CONNECT");
+	s = connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen);
+	if(s < 0) perror("[cosas_comunes.c] CONNECT ERROR");
 
 	freeaddrinfo(server_info);
 

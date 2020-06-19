@@ -25,9 +25,8 @@ typedef enum{
 
 	SUSCRIPTOR,
 
-	CONFIRMACION
-
 }message_code;
+
 
 typedef struct{
 
@@ -35,6 +34,7 @@ typedef struct{
 	void* stream;
 
 } t_buffer;
+
 
 typedef struct{
 

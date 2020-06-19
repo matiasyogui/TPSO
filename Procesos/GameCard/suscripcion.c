@@ -1,8 +1,8 @@
 #include "suscripcion.h"
 
-#define CANT_COLAS_SUSCRIPBIRSE 3
+#define CANT_COLAS_SUSCRIBIRSE 3
 
-pthread_t thread_suscripcion[CANT_COLAS_SUSCRIPBIRSE];
+pthread_t thread_suscripcion[CANT_COLAS_SUSCRIBIRSE];
 
 int TIEMPO_REINTENTO_CONEXION;
 char* IP_BROKER;
@@ -42,13 +42,13 @@ void finalizar_suscripciones(void){
 
 	int s;
 
-	for (int i = 0; i < CANT_COLAS_SUSCRIPBIRSE; i++){
+	for (int i = 0; i < CANT_COLAS_SUSCRIBIRSE; i++){
 
 		s = pthread_cancel(thread_suscripcion[0]);
 		if( s != 0) perror("PTHREAD_CREATE ERROR");
 	}
 
-	for (int i = 0; i < CANT_COLAS_SUSCRIPBIRSE; i++){
+	for (int i = 0; i < CANT_COLAS_SUSCRIBIRSE; i++){
 
 		s = pthread_join(thread_suscripcion[0], NULL);
 		if( s != 0) perror("PTHREAD_JOIN ERROR");

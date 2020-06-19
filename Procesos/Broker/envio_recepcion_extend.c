@@ -6,7 +6,6 @@ static t_mensaje* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativ
 static int enviar_confirmacion(int socket, int mensaje);
 static int obtener_cod_op(t_buffer* buffer, int* tiempo);
 
-
 static void cargar_tarea(tipo_tarea tipo, void* contenido);
 static t_tarea* generar_nueva_tarea(tipo_tarea tipo, void* contenido);
 
@@ -42,7 +41,7 @@ int tratar_suscriptor(int socket){
 	int tiempo;
 
 	t_buffer* mensaje = recibir_mensaje(socket);
-	if (mensaje == NULL) { enviar_confirmacion(socket, false); return EXIT_FAILURE; }
+	if (mensaje == NULL) { enviar_confirmacion(socket, -1); return EXIT_FAILURE; }
 
 	int cod_op = obtener_cod_op(mensaje, &tiempo);
 
@@ -58,7 +57,7 @@ int tratar_suscriptor(int socket){
 
 	pthread_mutex_unlock(&mutex_log);
 
-	enviar_confirmacion(suscriptor->socket, true);
+	enviar_confirmacion(suscriptor->socket, suscriptor->id);
 
 	cargar_tarea(SUSCRIPCION, suscriptor);
 
@@ -97,7 +96,7 @@ static int enviar_confirmacion(int socket, int mensaje){
 
 	memcpy(mensaje_enviar, &mensaje, sizeof(uint32_t));
 
-	s = send(socket, mensaje_enviar, sizeof(uint32_t), 0);
+	s = send(socket, mensaje_enviar, sizeof(uint32_t), MSG_NOSIGNAL);
 	if (s < 0) { perror("[ENVIO_RECEPCION_EXTEND.C]SEND ERROR"); free(mensaje_enviar); return EXIT_FAILURE; }
 
 	free(mensaje_enviar);
