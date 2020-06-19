@@ -9,11 +9,12 @@ char* PUNTO_MONTAJE_TALLGRASS;
 
 void leer_archivo_configuracion(void);
 static void finalizar_programa(void);
-void listarTallGrassArchivos(DIR*, char*);
 void montar_TallGrass(void);
-void crear_TallGrass(void);
 char* ultimoDirectorio(char*);
-t_metadata * create_metadata(char *path);
+t_metadata * leer_metadata(char *);
+char *arch_get_string_value(t_archivo*, char*);
+t_archivo * leer_archivo(char*, char*, char*);
+void crearTallGrassFiles(char*);
 
 int main(){
 
@@ -115,7 +116,7 @@ void crearTallGrassFiles(char*pathMontaje){
 void montar_TallGrass(){
 	printf("PUNTO MONTAJE=%s\n", PUNTO_MONTAJE_TALLGRASS);
 
-	t_metadata* metadata =create_metadata(PUNTO_MONTAJE_TALLGRASS);
+	t_metadata* metadata =leer_metadata(PUNTO_MONTAJE_TALLGRASS);
 	printf("Metadata blocksize %d\n", metadata->Block_size);
 	printf("Metadata blocks %d\n", metadata->Blocks);
 
@@ -123,11 +124,26 @@ void montar_TallGrass(){
 
 }
 
-t_metadata * create_metadata(char *path) {
+t_metadata * leer_metadata(char *pathTallGrass){
 
-	  char * pathfile = malloc(strlen(path) + strlen(METADATAFILE)+ strlen(METADATADIR) +1);
+	  t_archivo * arch = leer_archivo(pathTallGrass,METADATADIR , METADATAFILE);
+	  t_metadata * meta = malloc(sizeof(t_metadata));
 
-	  strcpy(pathfile,path);
+	  meta->Block_size = atoi(arch_get_string_value(arch,BLOCKSIZE));
+	  meta->Blocks	= atoi(arch_get_string_value(arch,BLOCKS));
+
+	return meta;
+}
+
+char *arch_get_string_value(t_archivo *self, char *key) {
+	return dictionary_get(self->datos, key);
+}
+
+t_archivo * leer_archivo(char *pathTallGrass, char*directorio, char*nombreArchivo) {
+
+	  char * pathfile = malloc(strlen(pathTallGrass) + strlen(nombreArchivo)+ strlen(directorio) +1);
+
+	  strcpy(pathfile,pathTallGrass);
 
 	  strcat(pathfile,METADATADIR);
 	  strcat(pathfile,METADATAFILE);
@@ -136,16 +152,17 @@ t_metadata * create_metadata(char *path) {
 	FILE* file = fopen(pathfile, "r");
 
 	if (file == NULL) {
+		printf("Archivo %s no existe en directorio $s / %s\n",nombreArchivo,pathTallGrass,directorio);
 		return NULL;
 	}
 
 	struct stat stat_file;
 	stat(pathfile, &stat_file);
 
-	t_metadata *metadata = malloc(sizeof(t_metadata));
+	t_archivo *archivo = malloc(sizeof(t_archivo));
 
-	metadata->path = strdup(file);
-
+	archivo->path = strdup(file);
+	archivo->datos = dictionary_create();
 	char* buffer = calloc(1, stat_file.st_size + 1);
 	fread(buffer, stat_file.st_size, 1, file);
 
@@ -156,18 +173,13 @@ t_metadata * create_metadata(char *path) {
 		{
 			char** keyAndValue = string_n_split(line, 2, "=");
 
-			if(strcmp(keyAndValue[0], BLOCKSIZE))
-				metadata->Block_size = atoi(keyAndValue[1]);
-
-			if(strcmp(keyAndValue[0], BLOCKS))
-				metadata->Blocks = atoi(keyAndValue[1]);
+			dictionary_put(archivo->datos, keyAndValue[0], keyAndValue[1]);
 
 			free(keyAndValue[0]);
 			free(keyAndValue);
 		}
 
-
-		}
+	}
 
 	string_iterate_lines(lines, add_cofiguration);
 	string_iterate_lines(lines, (void*) free);
@@ -177,7 +189,7 @@ t_metadata * create_metadata(char *path) {
 	free(buffer);
 	fclose(file);
 
-	return metadata;
+	return archivo;
 }
 
 
