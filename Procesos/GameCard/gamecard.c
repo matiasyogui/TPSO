@@ -120,6 +120,8 @@ void montar_TallGrass(){
 	printf("Metadata blocksize %d\n", metadata->Block_size);
 	printf("Metadata blocks %d\n", metadata->Blocks);
 
+	crearBitMap(PUNTO_MONTAJE_TALLGRASS, metadata );
+
 	t_list * listaMetaData = listarTallGrassFiles(PUNTO_MONTAJE_TALLGRASS);
 
 }
