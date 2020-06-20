@@ -75,6 +75,10 @@ pthread_mutex_t mListaBlocked;
 
 pthread_mutex_t mEjecutarMensaje;
 
+pthread_mutex_t mPokemonesAPedir;
+pthread_mutex_t mPokemonesAPedirSinRepetidos;
+pthread_mutex_t mIdsCorrelativos;
+
 
 pthread_mutex_t semPlanificador;
 t_entrenador* entrenadorActual;
@@ -92,6 +96,7 @@ int PUERTO_BROKER;
 char* LOG_FILE;
 int mensajeActual;
 int i;
+int indiceDefault = -2;
 
 void* recibir_buffer(int*, int);
 

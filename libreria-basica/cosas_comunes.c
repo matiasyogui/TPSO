@@ -19,7 +19,10 @@ int crear_conexion(char *ip, char* puerto){
 	if(status < 0) perror("[cosas_comunes.c] FALLO SOCKET");
 
 	status = connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen);
-	if(status < 0) perror("[cosas_comunes.c] FALLO CONNECT");
+	if(status < 0){
+		perror("[cosas_comunes.c] FALLO CONNECT");
+		return -1;
+	}
 
 	freeaddrinfo(server_info);
 

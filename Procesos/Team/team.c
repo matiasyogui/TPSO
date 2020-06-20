@@ -64,6 +64,12 @@ bool buscarPokemon(void* elemento, void* pokemon){
 int suscribirse(char* cola){
 
 	int socket = crear_conexion("127.0.0.1", "4444");
+	while(socket<0){
+		perror("FALLO LA CONEXION CON EL BROKER /n");
+		printf("Intento reconexion /n");
+		sleep(TIEMPO_RECONEXION);
+		socket = crear_conexion("127.0.0.1", "4444");
+	}
 	char *datos[] = {"suscriptor", cola, "-1"};
 
 	t_paquete* paquete_enviar = armar_paquete2(datos);
@@ -74,13 +80,40 @@ int suscribirse(char* cola){
 	bool confirmacion_suscripcion;
 
 	s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
-	if ( s < 0) { perror("RECV ERROR"); return EXIT_FAILURE; }
-	else printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", confirmacion_suscripcion);
+	while ( s < 0) {
+		perror("RECV ERROR /n");
+		socket = crear_conexion("127.0.0.1", "4444");
+		while(socket<0){
+			perror("FALLO LA CONEXION CON EL BROKER /n");
+			printf("Intento reconexion /n");
+			sleep(TIEMPO_RECONEXION);
+			socket = crear_conexion("127.0.0.1", "4444");
+		}
+		enviar_mensaje(paquete_enviar, socket);
+		s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
+	}
+	printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", confirmacion_suscripcion);
 
 	while(1){
 
 		s = recv(socket, &cod_op, sizeof(uint32_t), 0 );
-		if (s < 0) { perror("FALLO RECV"); continue; }
+		while(s<0)
+		{
+		while (s < 0) {
+			perror("FALLO RECV");
+			socket = crear_conexion("127.0.0.1", "4444");
+			while(socket<0){
+				perror("FALLO LA CONEXION CON EL BROKER /n");
+				printf("Intento reconexion /n");
+				sleep(TIEMPO_RECONEXION);
+				socket = crear_conexion("127.0.0.1", "4444");
+			}
+			enviar_mensaje(paquete_enviar, socket);
+			s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
+			}
+		printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", confirmacion_suscripcion);
+		s = recv(socket, &cod_op, sizeof(uint32_t), 0 );
+		}
 
 		switch(cod_op){
 
@@ -135,21 +168,28 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			pokemon = malloc(size);
 			memcpy(pokemon, stream + offset, size);
 
+			pthread_mutex_lock(&mPokemonesAPedir);
 			valor = list_any_satisfy(pokemonesAPedir, _buscarPokemon);
 
-			list_remove_by_condition(pokemonAPedirSinRepetidos, _buscarPokemon);
+			list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
+			pthread_mutex_unlock(&mPokemonesAPedir);
 
+			pthread_mutex_lock(&mPokemonesAPedirSinRepetidos);
+			list_remove_by_condition(pokemonAPedirSinRepetidos, _buscarPokemon);
 
 			for(int i = 0; i< list_size(pokemonAPedirSinRepetidos); i++){
 				printf("POKEMON A PEDIR = %s\n", (char*)list_get(pokemonAPedirSinRepetidos, i));
 			}
+			pthread_mutex_unlock(&mPokemonesAPedirSinRepetidos);
 
 			return valor;
 
 		case LOCALIZED_POKEMON:
+			pthread_mutex_lock(&mIdsCorrelativos);
 			if(!list_any_satisfy(lista_id_correlativos, _buscarID)){
 				return false;
 			}
+			pthread_mutex_unlock(&mIdsCorrelativos);
 
 			offset = 0;
 
@@ -162,25 +202,32 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 			memcpy(&cantidad, stream + offset, sizeof(int));
 
-
+			pthread_mutex_lock(&mPokemonesAPedirSinRepetidos);
 			valor = list_any_satisfy(pokemonAPedirSinRepetidos, _buscarPokemon);
 
 			list_remove_by_condition(pokemonAPedirSinRepetidos, _buscarPokemon);
 
-			for(int j = 0; j < cantidad; i++){
-				list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
-			}
-
 			for(int i = 0; i< list_size(pokemonAPedirSinRepetidos); i++){
 				printf("POKEMON A PEDIR = %s\n", (char*)list_get(pokemonAPedirSinRepetidos, i));
 			}
+			pthread_mutex_unlock(&mPokemonesAPedirSinRepetidos);
+
+			pthread_mutex_lock(&mPokemonesAPedir);
+			for(int j = 0; j < cantidad; i++){
+				list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
+			}
+			pthread_mutex_unlock(&mPokemonesAPedir);
+
+
 
 			return valor;
 
 
 		case CAUGHT_POKEMON:
 
+			pthread_mutex_lock(&mIdsCorrelativos);
 			return list_any_satisfy(lista_id_correlativos, _buscarID);
+			pthread_mutex_unlock(&mIdsCorrelativos);
 	}
 
 	return false;
@@ -194,12 +241,18 @@ int main(){
 	pthread_mutex_init(&mListaExec, NULL);
 	pthread_mutex_init(&mListaBlocked, NULL);
 	pthread_mutex_init(&mEjecutarMensaje, NULL);
+	pthread_mutex_init(&mPokemonesAPedir, NULL);
+	pthread_mutex_init(&mPokemonesAPedirSinRepetidos, NULL);
+	pthread_mutex_init(&mIdsCorrelativos, NULL);
 
 	pthread_mutex_lock(&mListaGlobal);
 	pthread_mutex_lock(&mListaReady);
 	pthread_mutex_lock(&mListaExec);
 	pthread_mutex_lock(&mListaBlocked);
 	pthread_mutex_lock(&mEjecutarMensaje);
+	pthread_mutex_lock(&mPokemonesAPedir);
+	pthread_mutex_lock(&mPokemonesAPedirSinRepetidos);
+	pthread_mutex_lock(&mIdsCorrelativos);
 
 	inicializar_listas();
 

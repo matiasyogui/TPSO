@@ -14,7 +14,7 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 		pthread_mutex_unlock(&mListaGlobal);
 
 		t_entrenador* ent;
-		int size, offset, id, valor;
+		int size, offset, id, loAtrapo;
 		void* stream;
 		void* streamUltimoMensaje;
 		void* pokemon;
@@ -64,12 +64,6 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 
 			break;
 
-		case LOCALIZED_POKEMON:
-			//sem_wait(&sem_entrenador_disponible);
-
-			sem_post(&sem_entrenadores_ready);
-			break;
-
 		case CAUGHT_POKEMON:
 			id = mensaje -> id;
 
@@ -88,7 +82,7 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 			stream = ent -> mensaje -> buffer -> stream;
 			offset = 0;
 
-			memcpy(&valor, stream, sizeof(int));
+			memcpy(&loAtrapo, stream, sizeof(int));
 
 			streamUltimoMensaje = ent -> ultimoMensajeEnviado -> buffer -> stream;
 			offset = 0;
@@ -101,7 +95,7 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 			offset += size;
 
 
-			if(valor){
+			if(loAtrapo){
 				list_add(ent->pokemones,(char*) pokemon);
 				if(list_size(ent->objetivo) == list_size(ent -> pokemones)){
 					if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
@@ -115,6 +109,14 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 
 					}
 				}
+			else{
+				pthread_mutex_lock(&mPokemonesAPedir);
+				list_add(pokemonesAPedir,(char*) pokemon);
+				pthread_mutex_unlock(&mPokemonesAPedir);
+				pthread_mutex_lock(&mListaBlocked);
+				list_add(listaBlocked, ent);
+				pthread_mutex_unlock(&mListaBlocked);
+			}
 			}
 			ent -> estaDisponible = true;
 			break;
@@ -137,9 +139,9 @@ bool tienenLosMismosElementos(t_list* lista1, t_list* lista2){
 	while(i<list_size(lista1) && encontro){
 		encontro = false;
 		while(j<list_size(listaAux) && !encontro){
-			printf("comparando %s y %s \n",lista1[i],listaAux[j]);
+			printf("comparando %s y %s \n",(char*) list_get(lista1,i), (char*) list_get(listaAux,j));
 			fflush(stdout);
-			if(strcmp(list_get(lista1,i),list_get(lista2,j)) == 0){
+			if(strcmp((char*) list_get(lista1,i),(char*) list_get(lista2,j)) == 0){
 				encontro = true;
 				list_remove(lista2,j);
 			}
@@ -157,7 +159,7 @@ bool faltanAtraparPokemones(){
 		return ((t_entrenador*) elemento)->pokemonesMaximos;
 	}
 
-	return !list_all_satisfy(listaBlocked,tienePokemonesMaximos());
+	return !list_all_satisfy(listaBlocked,tienePokemonesMaximos);
 }
 
 void planificarEntrenadoresAExec(){ //falta crear el hilo
@@ -212,17 +214,39 @@ int enviarCatch(void* elemento, int posx, int posy){
 	//enviamos el mensaje
 	int socket = crear_conexion("127.0.0.1", "4444");
 	if(send(socket, stream, offset, 0) < 0)
-		perror(" FALLO EL SEND");
+		perror(" FALLO EL SEND DEL CATCH \n");
 
 
 	//esperamos respuesta del broker
-	int id_mensaje;
-	recv(socket, &id_mensaje, sizeof(uint32_t), 0);
+	int id_mensaje,s;
+	s = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
+	if(s>=0)
+	{
 	printf("[CONFIRMACION DE RECEPCION DE MENSAJE] mi id del mensaje = %d \n", id_mensaje);
 
+	pthread_mutex_lock(&mIdsCorrelativos);
 	list_add(lista_id_correlativos, id_mensaje);
+	pthread_mutex_unlock(&mIdsCorrelativos);
 
 	return id_mensaje;
+	}
+	else{
+		int size;
+		t_mensajeTeam* nuevoMensaje = malloc(sizeof(t_mensajeTeam));
+		nuevoMensaje->cod_op = CAUGHT_POKEMON;
+		nuevoMensaje->id = indiceDefault;
+		nuevoMensaje->buffer = malloc(sizeof(t_buffer));
+		nuevoMensaje->buffer->stream = malloc(sizeof(int));
+		char* datos[1] = {"1"};
+		nuevoMensaje->buffer->stream =  stream_caught_pokemon(datos,&size);
+		nuevoMensaje->buffer->size=size;
+		pthread_mutex_lock(&mListaGlobal);
+		list_add(lista_mensajes,nuevoMensaje);
+		pthread_mutex_unlock(&mListaGlobal);
+		indiceDefault--;
+
+		return indiceDefault+1;
+	}
 }
 
 
@@ -235,58 +259,50 @@ void ejecutarMensaje(){
 		int size, offset;
 		void* stream;
 
-		switch(ent->mensaje->cod_op){
-			case APPEARED_POKEMON:
-			stream = ent -> mensaje -> buffer -> stream;
-			offset = 0;
+		stream = ent -> mensaje -> buffer -> stream;
+		offset = 0;
 
-			memcpy(&size, stream, sizeof(int));
-			offset += sizeof(int);
+		memcpy(&size, stream, sizeof(int));
+		offset += sizeof(int);
 
-			void* pokemon = malloc(size);
-			memcpy(pokemon, stream + offset, size);
-			offset += size;
+		void* pokemon = malloc(size);
+		memcpy(pokemon, stream + offset, size);
+		offset += size;
 
-			int posx;
-			memcpy(&posx, stream + offset, sizeof(int));
-			offset += sizeof(int);
+		int posx;
+		memcpy(&posx, stream + offset, sizeof(int));
+		offset += sizeof(int);
 
-			int posy;
-			memcpy(&posy, stream + offset, sizeof(int));
+		int posy;
+		memcpy(&posy, stream + offset, sizeof(int));
 
-			for(int i = 0; i < ent -> cercania; i++){
-				if(posx != ent -> posicion -> posx){
-					if(posx > ent -> posicion -> posx){
-						(ent -> posicion -> posx)++;
-					}else{
-						(ent -> posicion -> posx)--;
-					}
-					sleep(1);
+		for(int i = 0; i < ent -> cercania; i++){
+			if(posx != ent -> posicion -> posx){
+				if(posx > ent -> posicion -> posx){
+					(ent -> posicion -> posx)++;
+				}else{
+					(ent -> posicion -> posx)--;
 				}
-
-				if(posy != ent -> posicion -> posy){
-					if(posy > ent -> posicion -> posy){
-						(ent -> posicion -> posy)++;
-					}else{
-						(ent -> posicion -> posy)--;
-					}
-					sleep(1);
-				}
+				sleep(1);
 			}
 
-			ent -> idCorrelativo = enviarCatch(pokemon, posx, posy);
-			ent -> ultimoMensajeEnviado = ent -> mensaje;
-			ent -> estaDisponible = false;
-
-			pthread_mutex_lock(&mListaBlocked);
-			list_add(listaBlocked, ent);
-			pthread_mutex_unlock(&mListaBlocked);
-			break;
-
-			case LOCALIZED_POKEMON:
-
-				break;
+			if(posy != ent -> posicion -> posy){
+				if(posy > ent -> posicion -> posy){
+					(ent -> posicion -> posy)++;
+				}else{
+					(ent -> posicion -> posy)--;
+				}
+				sleep(1);
+			}
 		}
+
+		ent -> idCorrelativo = enviarCatch(pokemon, posx, posy);
+		ent -> ultimoMensajeEnviado = ent -> mensaje;
+		ent -> estaDisponible = false;
+
+		pthread_mutex_lock(&mListaBlocked);
+		list_add(listaBlocked, ent);
+		pthread_mutex_unlock(&mListaBlocked);
 
 		pthread_mutex_lock(&mEjecutarMensaje);
 	}
@@ -423,13 +439,14 @@ void enviarGet(void* elemento){
 	//enviamos el mensaje
 	int socket = crear_conexion("127.0.0.1", "4444");
 	if(send(socket, stream, offset, 0) < 0)
-		perror(" FALLO EL SEND");
+		perror(" FALLO EL SEND DEL GET \n");
 
 
 	//esperamos respuesta del broker
-	int id_mensaje;
-	recv(socket, &id_mensaje, sizeof(uint32_t), 0);
+	int id_mensaje,s;
+	s = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
+	if(s>=0){
 	printf("[CONFIRMACION DE RECEPCION DE MENSAJE] mi id del mensaje = %d \n", id_mensaje);
-
 	list_add(lista_id_correlativos, id_mensaje);
-}
+	}
+	}
