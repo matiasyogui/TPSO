@@ -8,29 +8,7 @@
 #include "variables_globales.h"
 #include "servidor.h"
 #include "suscripcion.h"
+#include "bitmap.h"
 
-
-
-#define METADATADIR "metadata/"
-#define METADATAFILE "metadata.bin"
-#define BLOCKSIZE "BLOCK_SIZE"
-#define BLOCKS "BLOCKS"
-
-#define FILES "files"
-
-
-	typedef struct {
-		char *path;
-		t_dictionary *datos;
-	} t_archivo;
-
-
-
-typedef struct {
-	char *path;
-	int Block_size;
-	int Blocks;
-	char* Magic_Number;
-} t_metadata;
 
 #endif /* GAMECARD_H_ */
