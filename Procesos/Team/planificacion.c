@@ -231,10 +231,10 @@ int enviarCatch(void* elemento, int posx, int posy){
 	return id_mensaje;
 	}
 	else{
-		int size;
+		int size, idAux;
 		t_mensajeTeam* nuevoMensaje = malloc(sizeof(t_mensajeTeam));
 		nuevoMensaje->cod_op = CAUGHT_POKEMON;
-		nuevoMensaje->id = indiceDefault;
+		nuevoMensaje->id = idFuncionesDefault;
 		nuevoMensaje->buffer = malloc(sizeof(t_buffer));
 		nuevoMensaje->buffer->stream = malloc(sizeof(int));
 		char* datos[1] = {"1"};
@@ -243,9 +243,10 @@ int enviarCatch(void* elemento, int posx, int posy){
 		pthread_mutex_lock(&mListaGlobal);
 		list_add(lista_mensajes,nuevoMensaje);
 		pthread_mutex_unlock(&mListaGlobal);
-		indiceDefault--;
+		idAux = idFuncionesDefault+1;
+		idFuncionesDefault--;
 
-		return indiceDefault+1;
+		return idAux;
 	}
 }
 

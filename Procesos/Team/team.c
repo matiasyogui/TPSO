@@ -134,12 +134,6 @@ int suscribirse(char* cola){
 	return EXIT_SUCCESS;
 }
 
-void reintentarConexion(){
-	while(true){
-
-	}
-}
-
 bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 	void* stream = msg -> buffer -> stream;
@@ -256,14 +250,14 @@ int main(){
 
 	inicializar_listas();
 
+	leer_archivo_configuracion();
+
 	pthread_t hiloSuscriptor[3], server;
 	pthread_create(&hiloSuscriptor[1], NULL, (void*)suscribirse, "appeared_pokemon");
 	pthread_create(&hiloSuscriptor[2], NULL, (void*)suscribirse, "caught_pokemon");
 	pthread_create(&hiloSuscriptor[3], NULL, (void*)suscribirse, "localized_pokemon");
 
 	pthread_create(&server, NULL, (void*)iniciar_servidor, NULL);
-
-	leer_archivo_configuracion();
 
 	int cantEntrenadores = cant_elementos(POSICIONES_ENTRENADORES);
 	t_entrenador* entrenadores[cantEntrenadores];

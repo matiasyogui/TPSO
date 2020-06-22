@@ -96,7 +96,6 @@ int PUERTO_BROKER;
 char* LOG_FILE;
 int mensajeActual;
 int i;
-int indiceDefault = -2;
 
 void* recibir_buffer(int*, int);
 
