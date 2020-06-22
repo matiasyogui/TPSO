@@ -53,12 +53,13 @@ typedef struct{
 	pthread_mutex_t* semaforo;
 	int cercania;
 	char* algoritmo_de_planificacion;
-	char** objetivo;
-	char** pokemones;
+	t_list* objetivo;
+	t_list* pokemones;
 	int idCorrelativo;
 	t_mensajeTeam* mensaje;
 	t_mensajeTeam* ultimoMensajeEnviado;
 	bool estaDisponible;
+	bool pokemonesMaximos;
 
 }t_entrenador;
 
@@ -73,6 +74,10 @@ pthread_mutex_t mListaExec;
 pthread_mutex_t mListaBlocked;
 
 pthread_mutex_t mEjecutarMensaje;
+
+pthread_mutex_t mPokemonesAPedir;
+pthread_mutex_t mPokemonesAPedirSinRepetidos;
+pthread_mutex_t mIdsCorrelativos;
 
 
 pthread_mutex_t semPlanificador;
@@ -91,6 +96,7 @@ int PUERTO_BROKER;
 char* LOG_FILE;
 int mensajeActual;
 int i;
+int indiceDefault = -2;
 
 void* recibir_buffer(int*, int);
 

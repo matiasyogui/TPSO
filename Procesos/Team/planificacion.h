@@ -16,5 +16,7 @@ void ejecutarMensaje();
 void agregarMensajeLista(int socket, int cod_op);
 void enviar_mensaje(t_paquete* paquete, int socket_cliente);
 void enviarGet(void* elemento);
+bool tienenLosMismosElementos(t_list* lista1, t_list* lista2);
+bool faltanAtraparPokemones();
 
 #endif /* PLANIFICACION_H_ */

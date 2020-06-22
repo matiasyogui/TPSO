@@ -5,6 +5,7 @@ pthread_t thread_server;
 int TIEMPO_DE_REINTENTO_OPERACION;
 int TIEMPO_RETARDO_OPERACION;
 char* PUNTO_MONTAJE_TALLGRASS;
+t_bitarray * bitBloques ;
 
 
 void leer_archivo_configuracion(void);
@@ -15,6 +16,7 @@ t_metadata * leer_metadata(char *);
 char *arch_get_string_value(t_archivo*, char*);
 t_archivo * leer_archivo(char*, char*, char*);
 void crearTallGrassFiles(char*);
+void crearMetadataDePuntoDeMontaje(char* );
 
 int main(){
 
@@ -78,6 +80,14 @@ char* ultimoDirectorio(char*pathDirectorio){
 }
 
 
+void crearMetadataDePuntoDeMontaje(char* directorioMetadata){
+	FILE *metadataBin;
+	metadataBin=fopen(directorioMetadata,"w");
+	fprintf(metadataBin,"BLOCK_SIZE=64\nBLOCKS=5096\nMAGIC_NUMBER=TALLGRASS");
+	free(directorioMetadata);
+	fclose(metadataBin);
+}
+
 t_list * listarTallGrassFiles(char * path) {
 
 	  struct dirent *dir;
@@ -117,10 +127,28 @@ void montar_TallGrass(){
 	printf("PUNTO MONTAJE=%s\n", PUNTO_MONTAJE_TALLGRASS);
 
 	t_metadata* metadata =leer_metadata(PUNTO_MONTAJE_TALLGRASS);
+
+	if(metadata == NULL)
+		crearMetadataDePuntoDeMontaje(PUNTO_MONTAJE_TALLGRASS);
+
 	printf("Metadata blocksize %d\n", metadata->Block_size);
 	printf("Metadata blocks %d\n", metadata->Blocks);
 
-	crearBitMap(PUNTO_MONTAJE_TALLGRASS, metadata );
+	bitBloques = leerArchivoBitmap(PUNTO_MONTAJE_TALLGRASS, metadata );
+
+	bitarray_set_bit(bitBloques, 0);
+	bitarray_set_bit(bitBloques, 2);
+	bitarray_set_bit(bitBloques, 4);
+	bitarray_set_bit(bitBloques, 6);
+	bitarray_set_bit(bitBloques, 8);
+	bitarray_set_bit(bitBloques, 10);
+	bitarray_set_bit(bitBloques, 12);
+	bitarray_set_bit(bitBloques, 14);
+	bitarray_set_bit(bitBloques, 16);
+	bitarray_set_bit(bitBloques, 18);
+	bitarray_set_bit(bitBloques, 20);
+
+	ActualizarBitmap(PUNTO_MONTAJE_TALLGRASS,metadata, bitBloques);
 
 	t_list * listaMetaData = listarTallGrassFiles(PUNTO_MONTAJE_TALLGRASS);
 

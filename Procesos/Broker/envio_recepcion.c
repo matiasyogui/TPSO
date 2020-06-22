@@ -1,6 +1,6 @@
 #include "envio_recepcion.h"
 
-#define GESTORES_CLIENTES 10
+#define GESTORES_CLIENTES 100
 
 char* IP_SERVER;
 char* PUERTO_SERVER;

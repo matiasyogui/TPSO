@@ -13,7 +13,6 @@ static void obtener_datos()
 	ALGORITMO_MEMORIA = config_get_string_value(CONFIG, "ALGORITMO_MEMORIA");
 	ALGORITMO_REEMPLAZO = config_get_string_value(CONFIG, "ALGORITMO_REEMPLAZO");
 	ALGORITMO_PARTICION_LIBRE = config_get_string_value(CONFIG, "ALGORITMO_PARTICION_LIBRE");
-
 }
 
 
@@ -38,7 +37,9 @@ void iniciar_memoria()
 
 }
 
+
 //==============================================================================
+
 
 void* algoritmo_primer_ajuste(int size, int* numero_particion)
 {
@@ -96,7 +97,7 @@ void* busqueda_particion_libre(int size, int* numero_particion){
 	}
 
 	printf("\nNo se reconocio el ALGORITMO DE PARTICION LIBRE");
-	printf("\nALGORITMO DE PARTICION LIBRE %s  [linea 83 memoria.c] \n", ALGORITMO_PARTICION_LIBRE);
+	printf("\nALGORITMO DE PARTICION LIBRE %s  [memoria.c] \n", ALGORITMO_PARTICION_LIBRE);
 	return NULL;
 }
 
@@ -124,7 +125,9 @@ void* pedir_memoria(int size){
 	}
 }
 
+
 //==============================================================================
+
 
 int numero_particion(void* particion_buscada){
 
@@ -145,14 +148,9 @@ void eliminar_particion(void* particion){
 	list_remove_and_destroy_element(particiones, numero_particion_eliminar, free);
 }
 
-//==============================================================================
-
-void guardar(void* particion, char* dato)
-{
-	memcpy(particion, (void*)dato, strlen(dato));
-}
 
 //==============================================================================
+
 
 void imprimir_particion(t_particion* particion)
 {

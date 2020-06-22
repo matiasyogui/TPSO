@@ -116,6 +116,7 @@ static void CARGAR_ENVIOS(void* _tarea){
 
 	t_tarea* tarea = _tarea;
 	t_list* lista;
+
 	switch(tarea->tipo){
 
 		case MENSAJE:

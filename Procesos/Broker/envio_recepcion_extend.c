@@ -115,10 +115,12 @@ static t_buffer* recibir_mensaje(int cliente_fd){
 	s = recv(cliente_fd, &(buffer->size), sizeof(uint32_t), 0);
 	if (s < 0) { free(buffer); perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
 
-	buffer->stream = malloc(buffer->size);
+	buffer->stream = pedir_memoria(buffer->size);
 
 	s = recv(cliente_fd, buffer->stream, buffer->size, 0);
 	if (s < 0) { free(buffer); free(buffer->stream); perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
+
+	dump_memoria();
 
 	return buffer;
 }

@@ -57,7 +57,6 @@ typedef enum{
 
 	MENSAJE,
 	SUSCRIPCION,
-	RECONEXION
 
 }tipo_tarea;
 

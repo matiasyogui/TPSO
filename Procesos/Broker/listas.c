@@ -289,7 +289,9 @@ t_list* obtener_lista_mensajes(int cod_op){
 	return lista_mensajes;
 }
 
-t_list* obtener_lista_ids(char* tipo, cod_op){
+/*
+
+t_list* obtener_lista_ids(char* tipo, int cod_op){
 
 	if(string_equals_ignore_case(tipo, "MENSAJE") == 1){
 		pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
@@ -335,3 +337,4 @@ static t_list* _obtener_lista_ids_suscriptor(t_list* lista){
 
 	return lista_ids;
 }
+*/
