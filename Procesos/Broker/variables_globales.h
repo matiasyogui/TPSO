@@ -14,15 +14,24 @@
 t_log* LOGGER;
 t_config* CONFIG;
 
-pthread_mutex_t mutex_log;
+pthread_mutex_t MUTEX_LOG;
 
 ///////////////////////////ADMIN_MENSAJES.H////////////////////////
 
 
-t_queue* cola_tareas;
-pthread_mutex_t mutex_cola_tareas;
-pthread_cond_t cond_cola_tareas;
+t_queue* cola_envios;
+pthread_mutex_t mutex_cola_envios;
+pthread_cond_t cond_cola_envios;
 
+
+//para implementar
+typedef struct{
+
+	int id;
+	int cod_op;
+	void* datos; // datos podria ser un puntero a un t_mensaje o a un t_suscriptor
+
+}t_nodo;
 
 typedef struct{
 
@@ -40,42 +49,48 @@ typedef struct{
 	uint32_t id_correlativo;
 	t_buffer* mensaje;
 	t_list* notificiones_envio;
-	pthread_mutex_t mutex;
 
 }t_mensaje;
 
 
 typedef struct{
 
-	t_suscriptor* suscriptor;
+	int id_suscriptor;
 	bool ACK;
 
 }t_notificacion_envio;
 
 
+typedef struct{
+
+	int cod_op;
+	int id_mensaje;
+	int id_suscriptor;
+
+}t_envio;
+
+
 typedef enum{
 
 	MENSAJE,
-	SUSCRIPCION,
-	RECONEXION
+	SUSCRIPCION
 
-}tipo_tarea;
+}tipo;
 
+typedef enum{
 
-typedef struct{
+	HABILITADO,
+	DESHABILITADO
 
-	tipo_tarea tipo;
-	void* contenido;
-
-}t_tarea;
-
+}estado;
 
 typedef struct{
 
-	t_mensaje* mensaje;
-	t_suscriptor* suscriptor;
+		int tiempo;
+		int id_suscriptor;
+		int cod_op;
 
-}t_envio;
+} data;
 
 
 #endif /* VARIABLES_GLOBALES_H_ */

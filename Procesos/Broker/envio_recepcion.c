@@ -112,11 +112,11 @@ static int esperar_cliente(int socket_servidor){
 	pthread_mutex_unlock(&mutex_cola);
 
 
-	pthread_mutex_lock(&mutex_log);
+	pthread_mutex_lock(&MUTEX_LOG);
 
 	log_info(LOGGER, "Un proceso se conecto al broker");
 
-	pthread_mutex_unlock(&mutex_log);
+	pthread_mutex_unlock(&MUTEX_LOG);
 
 	return EXIT_SUCCESS;
 }
@@ -207,7 +207,7 @@ static int process_request(int cliente_fd, int cod_op){
 
         	break;
 
-        //case RECONECTAR:
+        //case RECONEXION:
 
 		case -1:
 

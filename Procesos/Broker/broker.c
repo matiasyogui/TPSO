@@ -19,7 +19,7 @@ int main(void){
 	s = pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
 	if (s != 0) printf("[BROKER.C] PTHREAD_CREATE ERROR");
 
-	iniciar_planificacion_envios();
+	iniciar_envios();
 
 	pthread_join(thread_server, NULL);
 
@@ -33,14 +33,14 @@ static void iniciar_programa(void){
 
 	char* ruta_log = config_get_string_value(CONFIG, "LOG_FILE");
 	LOGGER = iniciar_logger(ruta_log, "broker", 0, LOG_LEVEL_INFO);
-	pthread_mutex_init(&mutex_log, NULL);
+	pthread_mutex_init(&MUTEX_LOG, NULL);
 
 	iniciar_listas();
 	//iniciar_memoria();
 
-	cola_tareas = queue_create();
-	pthread_mutex_init(&mutex_cola_tareas, NULL);
-	pthread_cond_init(&cond_cola_tareas, NULL);
+	cola_envios = queue_create();
+	pthread_mutex_init(&mutex_cola_envios, NULL);
+	pthread_cond_init(&cond_cola_envios, NULL);
 }
 
 
@@ -48,18 +48,18 @@ static void finalizar_servidor(void){
 
 	detener_servidor();
 
-	detener_planificacion_envios();
+	detener_envios();
 
 	finalizar_listas();
 
-	queue_destroy_and_destroy_elements(cola_tareas, free);
-	pthread_cond_destroy(&cond_cola_tareas);
-	pthread_mutex_destroy(&mutex_cola_tareas);
+	queue_destroy_and_destroy_elements(cola_envios, free);
+	pthread_cond_destroy(&cond_cola_envios);
+	pthread_mutex_destroy(&mutex_cola_envios);
 
 	config_destroy(CONFIG);
 
 	log_destroy(LOGGER);
-	pthread_mutex_destroy(&mutex_log);
+	pthread_mutex_destroy(&MUTEX_LOG);
 
 	raise(SIGTERM);
 }

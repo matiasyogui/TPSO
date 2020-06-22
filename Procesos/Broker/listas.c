@@ -1,5 +1,7 @@
 #include "listas.h"
 
+#define CANTIDAD_SUBLISTAS 6
+
 static int id_basico = 0;
 
 t_list* LISTA_MENSAJES;
@@ -13,9 +15,20 @@ static t_list* crear_listas(void);
 static void agregar_elemento(t_list* lista, int index, void* data);
 
 static void borrar_mensaje(void* nodo_mensaje);
+static void borrar_suscriptor(void* suscriptor);
 static void limpiar_sublista_mensajes(void* sublista);
 
 static int obtener_id(void);
+
+//==============
+
+static t_list* _obtener_lista_ids_mensajes(t_list* lista);
+static t_list* _obtener_lista_ids_suscriptores(t_list* lista);
+static void* serializar_nodo_mensaje(t_mensaje* mensaje_enviar, int* size);
+static void* buscar_sub(t_list* sublista, int id);
+static void* buscar_nodo(t_list* sublista, int id);
+
+//=============
 
 
 
@@ -38,12 +51,12 @@ void finalizar_listas(void){
 	destruir_lista_mensajes();
 	destruir_lista_suscriptores();
 
-	pthread_mutex_destroy(&mutex_id);
-
 	for(int i = 0; i < CANTIDAD_SUBLISTAS; i++){
 		pthread_mutex_destroy(&MUTEX_SUBLISTAS_MENSAJES[i]);
 		pthread_mutex_destroy(&MUTEX_SUBLISTAS_SUSCRIPTORES[i]);
 	}
+
+	pthread_mutex_destroy(&mutex_id);
 }
 
 
@@ -98,13 +111,12 @@ static void agregar_elemento(t_list* lista, int index, void* data){
 t_mensaje* nodo_mensaje(int cod_op, int id_correlativo, t_buffer* mensaje){
 
 	t_mensaje* nodo_mensaje = malloc(sizeof( t_mensaje ));
+
 	nodo_mensaje -> cod_op = cod_op;
 	nodo_mensaje -> id = obtener_id();
 	nodo_mensaje -> id_correlativo = id_correlativo;
 	nodo_mensaje -> mensaje = mensaje;
-
 	nodo_mensaje -> notificiones_envio = list_create();
-	pthread_mutex_init(&(nodo_mensaje->mutex), NULL);
 
 	return nodo_mensaje;
 }
@@ -122,12 +134,12 @@ t_suscriptor* nodo_suscriptor(int cod_op, int socket){
 }
 
 
-t_notificacion_envio* nodo_notificacion(t_suscriptor* suscriptor){
+t_notificacion_envio* nodo_notificacion(int id_suscriptor){
 
 	t_notificacion_envio* notificacion = malloc(sizeof(t_notificacion_envio));
 
-	notificacion->suscriptor = suscriptor;
-	notificacion->ACK = false;
+	notificacion -> id_suscriptor = id_suscriptor;
+	notificacion -> ACK = false;
 
 	return notificacion;
 }
@@ -152,13 +164,28 @@ void eliminar_mensaje_id(int id, int cod_op){
 }
 
 
+void eliminar_suscriptor(int id, int cod_op){
+
+	bool _busqueda_por_id(void*elemento){
+		return ((t_suscriptor*)elemento)->id == id;
+	}
+
+	t_list* lista = list_get(LISTA_SUBS, cod_op);
+
+	pthread_mutex_lock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
+
+	list_remove_and_destroy_by_condition(lista, _busqueda_por_id, borrar_suscriptor);
+
+	pthread_mutex_unlock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
+}
+
+
 static void borrar_mensaje(void* nodo_mensaje){
 
 	t_mensaje* aux = nodo_mensaje;
 	free(aux->mensaje->stream);
 	free(aux->mensaje);
 	list_destroy_and_destroy_elements(aux->notificiones_envio, free);
-	pthread_mutex_destroy(&aux->mutex);
 	free(aux);
 }
 
@@ -176,7 +203,7 @@ void destruir_lista_mensajes(void){
 }
 
 
-void borrar_suscriptor(void* suscriptor){
+static void borrar_suscriptor(void* suscriptor){
 
 	t_suscriptor* aux = suscriptor;
 	//close(aux->socket);
@@ -266,42 +293,38 @@ static int obtener_id(void){
 }
 
 
-t_list* obtener_lista_suscriptores(int cod_op){
 
-	pthread_mutex_lock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
+t_list* obtener_lista_ids(tipo tipo, int cod_op){
 
-	t_list* lista_subs = list_duplicate(list_get(LISTA_SUBS, cod_op));
+	t_list* lista;
 
-	pthread_mutex_unlock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
+	switch(tipo){
 
-	return lista_subs;
-}
+		case MENSAJE:
 
+			pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
 
-t_list* obtener_lista_mensajes(int cod_op){
+			lista = _obtener_lista_ids_mensajes(list_get(LISTA_MENSAJES, cod_op));
 
-	pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
+			pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
 
-	t_list* lista_mensajes = list_duplicate(list_get(LISTA_MENSAJES, cod_op));
+			break;
 
-	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
+		case SUSCRIPCION:
 
-	return lista_mensajes;
-}
+			pthread_mutex_lock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
 
-t_list* obtener_lista_ids(char* tipo, cod_op){
+			lista = _obtener_lista_ids_suscriptores(list_get(LISTA_SUBS, cod_op));
 
-	if(string_equals_ignore_case(tipo, "MENSAJE") == 1){
-		pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
+			pthread_mutex_unlock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
 
-		_obtener_lista_ids_mensaje(list_get(LISTA_MENSAJES, cod_op));
-
-		pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
+			break;
 	}
+	return lista;
 }
 
 
-static t_list* _obtener_lista_ids_mensaje(t_list* lista){
+static t_list* _obtener_lista_ids_mensajes(t_list* lista){
 
 	t_list* lista_ids = list_create();
 
@@ -319,7 +342,7 @@ static t_list* _obtener_lista_ids_mensaje(t_list* lista){
 }
 
 
-static t_list* _obtener_lista_ids_suscriptor(t_list* lista){
+static t_list* _obtener_lista_ids_suscriptores(t_list* lista){
 
 	t_list* lista_ids = list_create();
 
@@ -335,3 +358,126 @@ static t_list* _obtener_lista_ids_suscriptor(t_list* lista){
 
 	return lista_ids;
 }
+
+
+
+
+static void* serializar_nodo_mensaje(t_mensaje* mensaje_enviar, int* size){
+
+	void* stream = malloc(3 * sizeof(uint32_t) + mensaje_enviar->mensaje->size);
+	int offset = 0;
+
+	memcpy(stream + offset, &(mensaje_enviar->cod_op), sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	if (mensaje_enviar -> id_correlativo != -1)
+		memcpy(stream + offset, &(mensaje_enviar->id_correlativo), sizeof(uint32_t));
+	else
+		memcpy(stream + offset, &(mensaje_enviar->id), sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &(mensaje_enviar->mensaje->size), sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, mensaje_enviar->mensaje->stream, mensaje_enviar->mensaje->size);
+	offset += mensaje_enviar->mensaje->size;
+
+	*size = offset;
+	return stream;
+}
+
+
+void* serializar_mensaje(int cod_op, int id, int* size){
+
+	void* stream = NULL;
+	t_list* sublista = list_get(LISTA_MENSAJES, cod_op);
+
+	pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
+
+	t_mensaje* mensaje = buscar_nodo(sublista, id);
+
+	if(mensaje != NULL)
+		stream = serializar_nodo_mensaje(mensaje, size);
+
+	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
+
+	return stream;
+}
+
+
+void agregar_notificacion(int cod_op, int id, t_notificacion_envio* notificacion){
+
+	t_list* sublista = list_get(LISTA_MENSAJES, cod_op);
+
+	pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
+
+	t_mensaje* mensaje = buscar_nodo(sublista, id);
+
+	if (mensaje != NULL)
+		list_add(mensaje-> notificiones_envio, notificacion);
+
+	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
+
+}
+
+void cambiar_estado_notificacion(int cod_op, int id_mensaje, int id_suscriptor, bool confirmacion){
+
+	bool _busqueda_por_id(void*elemento){
+		return ((t_notificacion_envio*)elemento)->id_suscriptor == id_suscriptor;
+	}
+
+	t_list* sublista = list_get(LISTA_MENSAJES, cod_op);
+
+	pthread_mutex_lock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
+
+	t_mensaje* mensaje = buscar_nodo(sublista, id_mensaje);
+	if (mensaje != NULL){
+
+		t_notificacion_envio* notificacion = list_find(mensaje->notificiones_envio, _busqueda_por_id);
+		if(notificacion != NULL){
+
+			notificacion->ACK = confirmacion;
+		}
+	}
+	pthread_mutex_unlock(&MUTEX_SUBLISTAS_MENSAJES[cod_op]);
+}
+
+
+int obtener_socket(int cod_op, int id_suscriptor){
+
+	t_list* lista_subs = list_get(LISTA_SUBS, cod_op);
+	int socket = -1;
+
+	pthread_mutex_lock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
+
+	t_suscriptor* sub = buscar_sub(lista_subs, id_suscriptor);
+
+	if (sub != NULL)
+		socket = sub->socket;
+
+	pthread_mutex_unlock(&MUTEX_SUBLISTAS_SUSCRIPTORES[cod_op]);
+
+	return socket;
+}
+
+
+static void* buscar_sub(t_list* sublista, int id){
+
+	bool _busqueda_por_id(void*elemento){
+		return ((t_suscriptor*)elemento)->id == id;
+	}
+
+	return list_find(sublista, _busqueda_por_id);
+}
+
+
+static void* buscar_nodo(t_list* sublista, int id){
+
+	bool _busqueda_por_id(void*elemento){
+		return ((t_mensaje*)elemento)->id == id;
+	}
+
+	return list_find(sublista, _busqueda_por_id);
+}
+
+

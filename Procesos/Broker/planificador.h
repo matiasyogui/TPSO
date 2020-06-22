@@ -6,8 +6,8 @@
 #include <commons/collections/queue.h>
 #include "listas.h"
 
-int iniciar_planificacion_envios(void);
+int iniciar_envios(void);
 
-int detener_planificacion_envios(void);
+int detener_envios(void);
 
 #endif /* PLANIFICADOR_H_ */
