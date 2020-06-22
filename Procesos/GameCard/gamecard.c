@@ -6,7 +6,7 @@ int TIEMPO_DE_REINTENTO_OPERACION;
 int TIEMPO_RETARDO_OPERACION;
 char* PUNTO_MONTAJE_TALLGRASS;
 t_bitarray * bitBloques ;
-
+t_metadata* metadata;
 
 void leer_archivo_configuracion(void);
 static void finalizar_programa(void);
@@ -17,6 +17,8 @@ char *arch_get_string_value(t_archivo*, char*);
 t_archivo * leer_archivo(char*, char*, char*);
 void crearTallGrassFiles(char*);
 void crearMetadataDePuntoDeMontaje(char* );
+bool estaUsadoBloque(int);
+void marcarBloqueUsado(int);
 
 int main(){
 
@@ -24,7 +26,7 @@ int main(){
 
 	montar_TallGrass();
 
-	iniciar_suscripciones(NEW_POKEMON, CATCH_POKEMON, GET_POKEMON);
+//	iniciar_suscripciones(NEW_POKEMON, CATCH_POKEMON, GET_POKEMON);
 
 	//pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
 
@@ -126,7 +128,7 @@ void crearTallGrassFiles(char*pathMontaje){
 void montar_TallGrass(){
 	printf("PUNTO MONTAJE=%s\n", PUNTO_MONTAJE_TALLGRASS);
 
-	t_metadata* metadata =leer_metadata(PUNTO_MONTAJE_TALLGRASS);
+	metadata =leer_metadata(PUNTO_MONTAJE_TALLGRASS);
 
 	if(metadata == NULL)
 		crearMetadataDePuntoDeMontaje(PUNTO_MONTAJE_TALLGRASS);
@@ -136,23 +138,35 @@ void montar_TallGrass(){
 
 	bitBloques = leerArchivoBitmap(PUNTO_MONTAJE_TALLGRASS, metadata );
 
-	bitarray_set_bit(bitBloques, 0);
-	bitarray_set_bit(bitBloques, 2);
-	bitarray_set_bit(bitBloques, 4);
-	bitarray_set_bit(bitBloques, 6);
-	bitarray_set_bit(bitBloques, 8);
-	bitarray_set_bit(bitBloques, 10);
-	bitarray_set_bit(bitBloques, 12);
-	bitarray_set_bit(bitBloques, 14);
-	bitarray_set_bit(bitBloques, 16);
-	bitarray_set_bit(bitBloques, 18);
-	bitarray_set_bit(bitBloques, 20);
+	int ind = 2;
 
-	ActualizarBitmap(PUNTO_MONTAJE_TALLGRASS,metadata, bitBloques);
+	if (estaUsadoBloque(ind))
+		printf("Bloque %d esta usado\n",ind);
+	else
+		printf("Bloque %d NO esta usado\n",ind);
+
+	marcarBloqueUsado(ind);
+
+		if (estaUsadoBloque(ind))
+			printf("Bloque %d esta usado\n",ind);
+		else
+			printf("Bloque %d NO esta usado\n",ind);
 
 	t_list * listaMetaData = listarTallGrassFiles(PUNTO_MONTAJE_TALLGRASS);
 
 }
+
+bool estaUsadoBloque(ind){
+	return bitarray_test_bit(bitBloques, ind);
+}
+
+void marcarBloqueUsado(int index){
+
+	bitarray_set_bit(bitBloques, index);
+
+	ActualizarBitmap(PUNTO_MONTAJE_TALLGRASS,metadata, bitBloques);
+}
+
 
 t_metadata * leer_metadata(char *pathTallGrass){
 
