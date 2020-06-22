@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
+#include <stdbool.h>
 
 #include "variables_globales.h"
 #include "servidor.h"
