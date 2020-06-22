@@ -47,40 +47,40 @@ static void _interruptor_handler(void* elemento){
 
 static void* _gestion_ficha_envios(void){
 
-		void* ficha_envio;
-		int s, old_state;
+	void* ficha_envio;
+	int s, old_state;
 
-		pthread_cleanup_push(_interruptor_handler, &mutex_cola_envios);
+	pthread_cleanup_push(_interruptor_handler, &mutex_cola_envios);
 
-		while (true) {
+	while (true) {
 
-			pthread_testcancel();
+		pthread_testcancel();
 
-			pthread_mutex_lock(&mutex_cola_envios);
+		pthread_mutex_lock(&mutex_cola_envios);
 
+		ficha_envio = queue_pop(cola_envios);
+		if (ficha_envio == NULL) {
+
+			pthread_cond_wait(&cond_cola_envios, &mutex_cola_envios);
 			ficha_envio = queue_pop(cola_envios);
-			if (ficha_envio == NULL) {
-
-				pthread_cond_wait(&cond_cola_envios, &mutex_cola_envios);
-				ficha_envio = queue_pop(cola_envios);
-			}
-
-			pthread_mutex_unlock(&mutex_cola_envios);
-
-			s = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_state);
-			if (s != 0) perror("[PLANIFICADOR.C] PTHREAD_SETCANCELSTATE ERROR");
-
-			if (ficha_envio != NULL)
-				realizar_envio(ficha_envio);
-
-			s = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_state);
-			if (s != 0) perror("[PLANIFICADOR.C] PTHREAD_SETCANCELSTATE ERROR");
-
 		}
 
-		pthread_cleanup_pop(1);
+		pthread_mutex_unlock(&mutex_cola_envios);
 
-		pthread_exit(0);
+		s = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_state);
+		if (s != 0) perror("[PLANIFICADOR.C] PTHREAD_SETCANCELSTATE ERROR");
+
+		if (ficha_envio != NULL)
+				realizar_envio(ficha_envio);
+
+		s = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_state);
+		if (s != 0) perror("[PLANIFICADOR.C] PTHREAD_SETCANCELSTATE ERROR");
+
+	}
+
+	pthread_cleanup_pop(1);
+
+	pthread_exit(0);
 }
 
 
@@ -104,7 +104,7 @@ static int realizar_envio(void* _envio){
 
 	cambiar_estado_notificacion(envio->cod_op, envio->id_mensaje, envio->id_suscriptor, confirmacion);
 
-	free(_envio);
+	free(envio);
 	free(stream);
 	return EXIT_SUCCESS;
 }

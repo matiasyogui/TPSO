@@ -17,6 +17,7 @@ void eliminar_suscriptor_tiempo(int tiempo, int id_sub, int cod_op);
 static void eliminar_sub_tiempo(void* _datos);
 
 
+
 int tratar_mensaje(int socket, int cod_op, bool esCorrelativo){
 
 	t_mensaje* mensaje = generar_nodo_mensaje(socket, cod_op, esCorrelativo);
@@ -142,11 +143,8 @@ static int obtener_cod_op(t_buffer* buffer, int* tiempo){
 }
 
 
-
-
-
-
 //====================================================================
+
 
 static void cargar_envios_mensajes(int cod_op, int id_suscriptor){
 
@@ -208,6 +206,20 @@ static t_envio* nodo_envio(int cod_op, int id_mensaje, int id_suscriptor){
 }
 
 
+//===================================================================================
+
+
+static data* crear_data(int cod_op, int id_suscriptor, int tiempo_suscripcion){
+
+	data* datos = malloc(sizeof(data));
+
+	datos->tiempo = tiempo_suscripcion;
+	datos->id_suscriptor = id_suscriptor;
+	datos->cod_op = cod_op;
+
+	return datos;
+}
+
 
 static void eliminar_sub_tiempo(void* _datos){
 
@@ -215,21 +227,24 @@ static void eliminar_sub_tiempo(void* _datos){
 
 	sleep(datos->tiempo);
 
-	eliminar_suscriptor(datos->cod_op, datos->id_suscriptor);
+	eliminar_suscriptor_id(datos->cod_op, datos->id_suscriptor);
+
+	free(datos);
 }
+
 
 void eliminar_suscriptor_tiempo(int tiempo, int id_sub, int cod_op){
 
-	data* datos = malloc(sizeof(data));
-	datos->tiempo = tiempo;
-	datos->id_suscriptor = id_sub;
-	datos->cod_op = cod_op;
+	data* datos = crear_data(cod_op, id_sub, tiempo);
 
 	pthread_t tid;
 
 	pthread_create(&tid, NULL, (void*)eliminar_sub_tiempo, datos);
 	pthread_detach(tid);
 }
+
+//===================================================================================
+
 
 void logear_mensaje(char* mensaje){
 

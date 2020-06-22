@@ -24,12 +24,11 @@ pthread_mutex_t mutex_cola_envios;
 pthread_cond_t cond_cola_envios;
 
 
-//para implementar
 typedef struct{
 
 	int id;
 	int cod_op;
-	void* datos; // datos podria ser un puntero a un t_mensaje o a un t_suscriptor
+	int flag_estatus;
 
 }t_nodo;
 
@@ -46,9 +45,10 @@ typedef struct{
 
 	uint32_t cod_op;
 	uint32_t id;
-	uint32_t id_correlativo;
+	int id_correlativo;
 	t_buffer* mensaje;
 	t_list* notificiones_envio;
+	pthread_mutex_t mutex;
 
 }t_mensaje;
 
@@ -61,6 +61,22 @@ typedef struct{
 }t_notificacion_envio;
 
 
+typedef enum{
+
+	MENSAJE,
+	SUSCRIPCION,
+
+}tipo;
+
+
+typedef struct{
+
+	tipo tipo;
+	void* contenido;
+
+}t_tarea;
+
+
 typedef struct{
 
 	int cod_op;
@@ -69,28 +85,13 @@ typedef struct{
 
 }t_envio;
 
-
-typedef enum{
-
-	MENSAJE,
-	SUSCRIPCION
-
-}tipo;
-
-typedef enum{
-
-	HABILITADO,
-	DESHABILITADO
-
-}estado;
-
 typedef struct{
 
-		int tiempo;
-		int id_suscriptor;
-		int cod_op;
+	int tiempo;
+	int cod_op;
+	int id_suscriptor;
 
-} data;
+}data;
 
 
 #endif /* VARIABLES_GLOBALES_H_ */

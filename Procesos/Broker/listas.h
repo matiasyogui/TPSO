@@ -28,7 +28,7 @@ t_notificacion_envio* nodo_notificacion(int suscriptor);
 
 
 void eliminar_mensaje_id(int id, int cod_op);
-void eliminar_suscriptor(int id, int cod_op);
+void eliminar_suscriptor_id(int id, int cod_op);
 
 
 void destruir_lista_mensajes(void);
@@ -54,5 +54,11 @@ void agregar_notificacion(int cod_op, int id, t_notificacion_envio* notificacion
 void cambiar_estado_notificacion(int cod_op, int id_mensaje, int id_suscriptor, bool confirmacion);
 
 int obtener_socket(int cod_op, int id_suscriptor);
+
+
+
+t_list* obtener_lista_subs(int cod_op);
+t_list* obtener_lista_mensajes(int cod_op);
+
 
 #endif /* LISTAS_H_ */
