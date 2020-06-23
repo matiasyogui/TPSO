@@ -499,3 +499,622 @@
 [INFO] 21:44:54:673 broker/(6056:6110): Llego un mensaje a la cola caught_pokemon
 [INFO] 21:44:54:680 broker/(6056:6057): Un proceso se conecto al broker
 [INFO] 21:44:54:699 broker/(6056:6113): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:10:899 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:10:947 broker/(4480:4486): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:10:955 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:10:970 broker/(4480:4485): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:10:975 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:10:976 broker/(4480:4487): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:10:978 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:10:979 broker/(4480:4491): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:10:981 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:10:982 broker/(4480:4502): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:10:984 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:10:986 broker/(4480:4501): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:10:987 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:10:989 broker/(4480:4503): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:10:990 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:10:992 broker/(4480:4508): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:10:994 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:10:996 broker/(4480:4507): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:10:998 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:3 broker/(4480:4509): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:11:6 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:8 broker/(4480:4525): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:11:10 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:12 broker/(4480:4504): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:11:14 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:16 broker/(4480:4517): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:11:18 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:25 broker/(4480:4520): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:11:28 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:30 broker/(4480:4498): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:11:32 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:35 broker/(4480:4505): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:11:37 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:39 broker/(4480:4496): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:11:42 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:44 broker/(4480:4512): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:11:46 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:49 broker/(4480:4500): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:11:51 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:57 broker/(4480:4513): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:11:60 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:62 broker/(4480:4499): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:11:68 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:76 broker/(4480:4526): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:11:78 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:81 broker/(4480:4523): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:11:83 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:89 broker/(4480:4518): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:11:92 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:96 broker/(4480:4497): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:11:101 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:107 broker/(4480:4515): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:11:109 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:114 broker/(4480:4511): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:11:116 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:122 broker/(4480:4510): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:11:125 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:133 broker/(4480:4524): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:11:135 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:139 broker/(4480:4521): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:11:142 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:148 broker/(4480:4519): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:11:150 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:157 broker/(4480:4522): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:11:159 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:164 broker/(4480:4516): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:11:170 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:180 broker/(4480:4506): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:11:185 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:192 broker/(4480:4514): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:11:194 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:200 broker/(4480:4530): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:11:205 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:210 broker/(4480:4529): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:11:216 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:220 broker/(4480:4527): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:11:222 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:230 broker/(4480:4531): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:11:233 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:240 broker/(4480:4528): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:11:242 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:247 broker/(4480:4532): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:11:249 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:254 broker/(4480:4533): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:11:256 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:261 broker/(4480:4534): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:11:263 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:268 broker/(4480:4535): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:11:270 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:275 broker/(4480:4542): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:11:277 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:282 broker/(4480:4541): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:11:284 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:290 broker/(4480:4548): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:11:292 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:297 broker/(4480:4544): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:11:299 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:304 broker/(4480:4547): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:11:306 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:11:316 broker/(4480:4540): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:25:363 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:25:374 broker/(4480:4552): Un proceso se suscribio a la cola new_pokemon
+[INFO] 20:50:25:387 broker/(4480:4492): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:25:390 broker/(4480:4492): Se recibio el ACK del suscriptor con socket = 5, para el mensaje con id = 1
+[INFO] 20:50:25:392 broker/(4480:4492): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:25:393 broker/(4480:4493): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:25:394 broker/(4480:4494): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:25:394 broker/(4480:4495): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:25:394 broker/(4480:4495): Se recibio el ACK del suscriptor con socket = 5, para el mensaje con id = 21
+[INFO] 20:50:25:399 broker/(4480:4492): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:25:399 broker/(4480:4492): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:25:401 broker/(4480:4495): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:25:401 broker/(4480:4495): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:25:401 broker/(4480:4495): Se recibio el ACK del suscriptor con socket = 5, para el mensaje con id = 41
+[INFO] 20:50:25:402 broker/(4480:4495): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:35:595 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:603 broker/(4480:4543): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:35:604 broker/(4480:4492): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:35:607 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:616 broker/(4480:4546): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:35:619 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:629 broker/(4480:4537): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:35:632 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:638 broker/(4480:4536): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:35:640 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:652 broker/(4480:4545): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:35:655 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:660 broker/(4480:4539): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:35:661 broker/(4480:4490): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:35:663 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:670 broker/(4480:4538): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:35:672 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:686 broker/(4480:4550): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:35:689 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:696 broker/(4480:4549): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:35:704 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:715 broker/(4480:4572): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:35:718 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:727 broker/(4480:4571): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:35:728 broker/(4480:4495): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:35:729 broker/(4480:4495): Se recibio el ACK del suscriptor con socket = 5, para el mensaje con id = 62
+[INFO] 20:50:35:729 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:737 broker/(4480:4570): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:35:739 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:745 broker/(4480:4569): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:35:748 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:762 broker/(4480:4573): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:35:765 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:774 broker/(4480:4551): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:35:776 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:791 broker/(4480:4553): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:35:793 broker/(4480:4494): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:35:793 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:806 broker/(4480:4554): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:35:808 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:831 broker/(4480:4555): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:35:834 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:851 broker/(4480:4556): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:35:853 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:869 broker/(4480:4557): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:35:871 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:884 broker/(4480:4558): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:35:888 broker/(4480:4493): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:35:890 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:905 broker/(4480:4559): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:35:907 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:915 broker/(4480:4560): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:35:917 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:926 broker/(4480:4561): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:35:928 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:948 broker/(4480:4562): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:35:958 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:966 broker/(4480:4563): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:35:967 broker/(4480:4492): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:35:971 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:984 broker/(4480:4564): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:35:987 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:35:999 broker/(4480:4565): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:35:1 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:14 broker/(4480:4566): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:36:16 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:24 broker/(4480:4567): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:36:26 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:36 broker/(4480:4568): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:36:37 broker/(4480:4490): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:36:37 broker/(4480:4490): Se recibio el ACK del suscriptor con socket = 5, para el mensaje con id = 82
+[INFO] 20:50:36:38 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:47 broker/(4480:4578): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:36:49 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:60 broker/(4480:4586): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:36:62 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:71 broker/(4480:4585): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:36:73 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:83 broker/(4480:4579): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:36:85 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:104 broker/(4480:4580): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:36:104 broker/(4480:4495): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:36:106 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:119 broker/(4480:4587): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:36:120 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:133 broker/(4480:4584): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:36:135 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:149 broker/(4480:4581): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:36:151 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:168 broker/(4480:4588): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:36:171 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:186 broker/(4480:4583): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:36:187 broker/(4480:4494): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:36:188 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:202 broker/(4480:4591): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:36:204 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:221 broker/(4480:4593): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:36:223 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:241 broker/(4480:4582): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:36:243 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:262 broker/(4480:4590): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:36:264 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:280 broker/(4480:4589): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:36:281 broker/(4480:4493): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:36:282 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:301 broker/(4480:4592): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:36:303 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:323 broker/(4480:4594): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:36:326 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:348 broker/(4480:4595): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:36:349 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:36:369 broker/(4480:4486): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:39:187 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:204 broker/(4480:4485): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:39:205 broker/(4480:4492): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:39:205 broker/(4480:4492): Se recibio el ACK del suscriptor con socket = 5, para el mensaje con id = 102
+[INFO] 20:50:39:207 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:222 broker/(4480:4487): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:39:224 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:236 broker/(4480:4491): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:39:238 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:262 broker/(4480:4502): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:39:264 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:288 broker/(4480:4501): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:39:290 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:302 broker/(4480:4503): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:39:303 broker/(4480:4490): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:39:304 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:337 broker/(4480:4508): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:39:345 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:358 broker/(4480:4507): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:39:360 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:374 broker/(4480:4509): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:39:375 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:393 broker/(4480:4525): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:39:394 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:407 broker/(4480:4504): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:39:407 broker/(4480:4495): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:39:409 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:422 broker/(4480:4517): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:39:424 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:437 broker/(4480:4520): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:39:439 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:454 broker/(4480:4498): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:39:456 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:483 broker/(4480:4505): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:39:486 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:500 broker/(4480:4496): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:39:500 broker/(4480:4494): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:39:502 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:515 broker/(4480:4512): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:39:518 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:532 broker/(4480:4500): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:50:39:534 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:554 broker/(4480:4513): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:50:39:556 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:575 broker/(4480:4499): Llego un mensaje a la cola get_pokemon
+[INFO] 20:50:39:578 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:598 broker/(4480:4526): Llego un mensaje a la cola new_pokemon
+[INFO] 20:50:39:598 broker/(4480:4493): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:50:39:599 broker/(4480:4493): Se recibio el ACK del suscriptor con socket = 5, para el mensaje con id = 122
+[INFO] 20:50:39:600 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:50:39:622 broker/(4480:4523): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:50:39:624 broker/(4480:4482): Un proceso se conecto al broker
+[INFO] 20:54:51:67 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:89 broker/(5108:5129): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:52:105 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:106 broker/(5108:5127): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:52:109 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:110 broker/(5108:5148): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:52:112 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:113 broker/(5108:5147): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:52:115 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:115 broker/(5108:5146): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:52:118 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:118 broker/(5108:5145): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:52:120 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:121 broker/(5108:5120): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:52:123 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:123 broker/(5108:5124): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:52:125 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:125 broker/(5108:5163): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:52:133 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:133 broker/(5108:5134): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:52:140 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:141 broker/(5108:5152): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:52:144 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:145 broker/(5108:5130): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:52:147 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:148 broker/(5108:5126): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:52:151 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:153 broker/(5108:5169): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:52:156 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:157 broker/(5108:5160): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:52:164 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:165 broker/(5108:5164): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:52:167 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:167 broker/(5108:5153): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:52:169 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:170 broker/(5108:5135): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:52:171 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:172 broker/(5108:5154): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:52:174 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:174 broker/(5108:5136): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:52:176 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:176 broker/(5108:5133): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:52:179 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:180 broker/(5108:5119): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:52:183 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:183 broker/(5108:5138): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:52:188 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:188 broker/(5108:5151): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:52:190 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:190 broker/(5108:5143): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:52:196 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:197 broker/(5108:5140): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:52:199 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:199 broker/(5108:5139): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:52:201 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:202 broker/(5108:5142): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:52:205 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:205 broker/(5108:5149): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:52:207 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:208 broker/(5108:5144): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:52:209 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:210 broker/(5108:5166): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:52:214 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:215 broker/(5108:5121): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:52:218 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:219 broker/(5108:5158): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:52:221 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:221 broker/(5108:5156): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:52:225 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:226 broker/(5108:5122): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:52:228 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:229 broker/(5108:5141): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:52:231 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:231 broker/(5108:5150): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:52:233 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:234 broker/(5108:5161): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:52:236 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:236 broker/(5108:5128): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:52:238 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:238 broker/(5108:5171): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:52:241 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:241 broker/(5108:5170): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:52:244 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:244 broker/(5108:5167): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:52:248 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:249 broker/(5108:5123): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:52:255 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:260 broker/(5108:5125): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:52:262 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:263 broker/(5108:5132): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:52:267 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:268 broker/(5108:5131): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:52:269 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:270 broker/(5108:5168): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:52:272 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:272 broker/(5108:5165): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:52:274 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:275 broker/(5108:5155): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:52:279 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:52:280 broker/(5108:5157): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:58:621 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:621 broker/(5108:5162): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:58:623 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:624 broker/(5108:5159): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:58:626 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:626 broker/(5108:5137): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:58:628 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:628 broker/(5108:5172): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:58:630 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:631 broker/(5108:5175): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:58:633 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:633 broker/(5108:5174): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:58:636 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:637 broker/(5108:5173): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:58:640 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:641 broker/(5108:5176): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:58:642 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:643 broker/(5108:5197): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:58:647 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:647 broker/(5108:5196): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:58:649 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:649 broker/(5108:5195): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:58:655 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:655 broker/(5108:5194): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:58:667 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:667 broker/(5108:5193): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:58:670 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:670 broker/(5108:5192): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:58:672 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:672 broker/(5108:5191): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:58:674 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:675 broker/(5108:5190): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:58:678 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:679 broker/(5108:5189): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:58:681 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:682 broker/(5108:5188): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:58:684 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:684 broker/(5108:5187): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:58:687 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:687 broker/(5108:5177): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:58:689 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:690 broker/(5108:5178): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:58:692 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:692 broker/(5108:5180): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:58:694 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:695 broker/(5108:5179): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:58:697 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:698 broker/(5108:5185): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:58:700 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:700 broker/(5108:5182): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:58:702 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:703 broker/(5108:5183): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:58:707 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:707 broker/(5108:5186): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:58:710 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:711 broker/(5108:5181): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:58:713 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:713 broker/(5108:5184): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:58:715 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:716 broker/(5108:5226): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:58:719 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:720 broker/(5108:5247): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:58:722 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:723 broker/(5108:5254): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:58:725 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:726 broker/(5108:5260): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:58:728 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:728 broker/(5108:5258): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:58:731 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:731 broker/(5108:5262): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:58:733 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:734 broker/(5108:5259): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:58:736 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:737 broker/(5108:5257): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:58:740 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:741 broker/(5108:5256): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:58:749 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:749 broker/(5108:5255): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:58:752 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:752 broker/(5108:5267): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:58:754 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:755 broker/(5108:5269): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:58:764 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:765 broker/(5108:5268): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:58:767 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:768 broker/(5108:5264): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:58:771 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:772 broker/(5108:5271): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:58:776 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:777 broker/(5108:5266): Llego un mensaje a la cola get_pokemon
+[INFO] 20:54:58:780 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:780 broker/(5108:5263): Llego un mensaje a la cola new_pokemon
+[INFO] 20:54:58:782 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:783 broker/(5108:5265): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:54:58:786 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:786 broker/(5108:5270): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:54:58:788 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:789 broker/(5108:5261): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:54:58:791 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:54:58:791 broker/(5108:5272): Llego un mensaje a la cola get_pokemon
+[INFO] 20:55:01:925 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:01:930 broker/(5108:5129): Un proceso se suscribio a la cola new_pokemon
+[INFO] 20:55:01:950 broker/(5108:5116): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:952 broker/(5108:5116): Se recibio el ACK del suscriptor con socket = 5, para el mensaje con id = 21
+[INFO] 20:55:01:954 broker/(5108:5116): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:954 broker/(5108:5116): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:954 broker/(5108:5116): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:955 broker/(5108:5117): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:955 broker/(5108:5117): Se recibio el ACK del suscriptor con socket = 5, para el mensaje con id = 1
+[INFO] 20:55:01:955 broker/(5108:5117): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:956 broker/(5108:5117): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:956 broker/(5108:5117): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:956 broker/(5108:5117): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:957 broker/(5108:5116): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:958 broker/(5108:5116): Se recibio el ACK del suscriptor con socket = 5, para el mensaje con id = 41
+[INFO] 20:55:01:959 broker/(5108:5116): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:959 broker/(5108:5116): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:960 broker/(5108:5116): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:960 broker/(5108:5116): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:960 broker/(5108:5116): Se recibio el ACK del suscriptor con socket = 5, para el mensaje con id = 81
+[INFO] 20:55:01:961 broker/(5108:5116): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:961 broker/(5108:5116): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:962 broker/(5108:5116): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:962 broker/(5108:5115): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:963 broker/(5108:5114): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:963 broker/(5108:5118): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:01:964 broker/(5108:5117): Se recibio el ACK del suscriptor con socket = 5, para el mensaje con id = 61
+[INFO] 20:55:09:478 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:478 broker/(5108:5127): Llego un mensaje a la cola new_pokemon
+[INFO] 20:55:09:480 broker/(5108:5116): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:09:480 broker/(5108:5116): Se recibio el ACK del suscriptor con socket = 5, para el mensaje con id = 102
+[INFO] 20:55:09:481 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:482 broker/(5108:5148): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:55:09:483 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:484 broker/(5108:5147): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:55:09:486 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:486 broker/(5108:5146): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:55:09:488 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:489 broker/(5108:5145): Llego un mensaje a la cola get_pokemon
+[INFO] 20:55:09:490 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:496 broker/(5108:5120): Llego un mensaje a la cola new_pokemon
+[INFO] 20:55:09:497 broker/(5108:5115): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:09:499 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:499 broker/(5108:5124): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:55:09:501 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:502 broker/(5108:5163): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:55:09:504 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:504 broker/(5108:5134): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:55:09:506 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:506 broker/(5108:5152): Llego un mensaje a la cola get_pokemon
+[INFO] 20:55:09:508 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:509 broker/(5108:5130): Llego un mensaje a la cola new_pokemon
+[INFO] 20:55:09:509 broker/(5108:5114): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:09:517 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:517 broker/(5108:5126): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:55:09:520 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:521 broker/(5108:5169): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:55:09:523 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:523 broker/(5108:5160): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:55:09:527 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:528 broker/(5108:5164): Llego un mensaje a la cola get_pokemon
+[INFO] 20:55:09:530 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:530 broker/(5108:5153): Llego un mensaje a la cola new_pokemon
+[INFO] 20:55:09:531 broker/(5108:5118): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:09:533 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:534 broker/(5108:5135): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:55:09:540 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:540 broker/(5108:5154): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:55:09:544 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:545 broker/(5108:5136): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:55:09:548 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:550 broker/(5108:5133): Llego un mensaje a la cola get_pokemon
+[INFO] 20:55:09:552 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:552 broker/(5108:5119): Llego un mensaje a la cola new_pokemon
+[INFO] 20:55:09:553 broker/(5108:5117): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:09:553 broker/(5108:5117): Se recibio el ACK del suscriptor con socket = 5, para el mensaje con id = 122
+[INFO] 20:55:09:555 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:555 broker/(5108:5138): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:55:09:557 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:558 broker/(5108:5151): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:55:09:560 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:561 broker/(5108:5143): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:55:09:563 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:564 broker/(5108:5140): Llego un mensaje a la cola get_pokemon
+[INFO] 20:55:09:566 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:566 broker/(5108:5139): Llego un mensaje a la cola new_pokemon
+[INFO] 20:55:09:567 broker/(5108:5116): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:09:572 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:572 broker/(5108:5142): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:55:09:576 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:577 broker/(5108:5149): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:55:09:580 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:580 broker/(5108:5144): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:55:09:582 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:583 broker/(5108:5166): Llego un mensaje a la cola get_pokemon
+[INFO] 20:55:09:585 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:585 broker/(5108:5121): Llego un mensaje a la cola new_pokemon
+[INFO] 20:55:09:587 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:588 broker/(5108:5158): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:55:09:590 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:593 broker/(5108:5115): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:09:593 broker/(5108:5156): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:55:09:596 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:596 broker/(5108:5122): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:55:09:598 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:600 broker/(5108:5141): Llego un mensaje a la cola get_pokemon
+[INFO] 20:55:09:602 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:605 broker/(5108:5150): Llego un mensaje a la cola new_pokemon
+[INFO] 20:55:09:610 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:610 broker/(5108:5161): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:55:09:611 broker/(5108:5114): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:09:613 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:614 broker/(5108:5128): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:55:09:616 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:617 broker/(5108:5171): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:55:09:619 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:619 broker/(5108:5170): Llego un mensaje a la cola get_pokemon
+[INFO] 20:55:09:622 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:623 broker/(5108:5167): Llego un mensaje a la cola new_pokemon
+[INFO] 20:55:09:624 broker/(5108:5118): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:09:625 broker/(5108:5118): Se recibio el ACK del suscriptor con socket = 5, para el mensaje con id = 142
+[INFO] 20:55:09:627 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:628 broker/(5108:5123): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:55:09:631 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:632 broker/(5108:5125): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:55:09:633 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:634 broker/(5108:5132): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:55:09:643 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:643 broker/(5108:5131): Llego un mensaje a la cola get_pokemon
+[INFO] 20:55:09:645 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:646 broker/(5108:5168): Llego un mensaje a la cola new_pokemon
+[INFO] 20:55:09:647 broker/(5108:5117): Se envio un mensaje a un suscriptor con socket = 5
+[INFO] 20:55:09:648 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:649 broker/(5108:5165): Llego un mensaje a la cola appeared_pokemon
+[INFO] 20:55:09:652 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:653 broker/(5108:5155): Llego un mensaje a la cola catch_pokemon
+[INFO] 20:55:09:655 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:656 broker/(5108:5157): Llego un mensaje a la cola caught_pokemon
+[INFO] 20:55:09:658 broker/(5108:5109): Un proceso se conecto al broker
+[INFO] 20:55:09:658 broker/(5108:5162): Llego un mensaje a la cola get_pokemon

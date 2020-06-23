@@ -36,7 +36,7 @@ static void iniciar_programa(void){
 	pthread_mutex_init(&mutex_log, NULL);
 
 	iniciar_listas();
-	iniciar_memoria();
+	//iniciar_memoria();
 
 	cola_tareas = queue_create();
 	pthread_mutex_init(&mutex_cola_tareas, NULL);
