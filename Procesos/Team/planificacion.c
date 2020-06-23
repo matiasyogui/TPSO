@@ -13,6 +13,8 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 
 		pthread_mutex_unlock(&mListaGlobal);
 
+		printf("\n el puntero del mensaje es %p \n",mensaje);
+
 		t_entrenador* ent;
 		int size, offset, id, loAtrapo;
 		void* stream;
@@ -41,6 +43,9 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 
 			int posy;
 			memcpy(&posy, stream + offset, sizeof(int));
+
+			printf("posx = %d y posy = %d \n",posx,posy);
+			fflush(stdout);
 
 			ent = elegirEntrenadorXCercania(posx, posy);
 
@@ -249,7 +254,8 @@ int enviarCatch(void* elemento, int posx, int posy){
 }
 
 
-void ejecutarMensaje(t_entrenador* ent){
+void ejecutarMensaje(void* entAux){
+	t_entrenador* ent = (t_entrenador*) entAux;
 	while(true){
 		pthread_mutex_lock(&(ent->semaforo));
 		printf("se empezo a ejecutar el entrenador %d \n", ent->idEntrenador);
@@ -325,6 +331,8 @@ void agregarMensajeLista(int socket, int cod_op){
 
 	mensajeAGuardar -> id = id_correlativo;
 	mensajeAGuardar -> cod_op = cod_op;
+
+	printf("EL mensaje a guardar tiene: \n el codigo de operacion es %d \n el size es %d \n el id_correlativo es %d \n el stream es %s \n",cod_op,size,id_correlativo,(char*) mensaje);
 
 	if(cod_op == LOCALIZED_POKEMON){
 

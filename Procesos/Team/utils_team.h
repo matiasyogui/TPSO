@@ -110,7 +110,7 @@ void process_request(int cod_op, int cliente_fd);
 
 void leer_mensaje(t_buffer* buffer);
 
-void setteoEntrenador(t_entrenador* entrenador, int i);
+t_entrenador* setteoEntrenador(int i);
 
 bool nosInteresaMensaje(t_mensajeTeam* msg);
 int algoritmo_planificacion(char* algoritmoDePlanificacion);

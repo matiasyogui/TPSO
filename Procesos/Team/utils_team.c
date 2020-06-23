@@ -162,16 +162,18 @@ void leer_mensaje_appeared(t_buffer* buffer){
 
 int algoritmo_planificacion(char* algoritmoDePlanificacion){
 
-	if(string_equals_ignore_case(algoritmoDePlanificacion, "FIFO") == 1)
+	printf("%s\n",algoritmoDePlanificacion);
+
+	if(string_equals_ignore_case(algoritmoDePlanificacion, "FIFO") == true)
 		return FIFO;
 
-	if(string_equals_ignore_case(algoritmoDePlanificacion, "SJFSD") == 1)
+	if(string_equals_ignore_case(algoritmoDePlanificacion, "SJFSD") == true)
 		return SJFSD;
 
-	if(string_equals_ignore_case(algoritmoDePlanificacion, "SJFCD") == 1)
+	if(string_equals_ignore_case(algoritmoDePlanificacion, "SJFCD") == true)
 		return SJFCD;
 
-	if(string_equals_ignore_case(algoritmoDePlanificacion, "RR") == 1)
+	if(string_equals_ignore_case(algoritmoDePlanificacion, "RR") == true)
 		return RR;
 
 	printf("No se reconocio el tipo de mensaje\n");

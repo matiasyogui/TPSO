@@ -259,8 +259,8 @@ int main(){
 	pthread_t hilos[cantEntrenadores];
 
 	for(i=0;i<cantEntrenadores;i++){
-		setteoEntrenador(entrenadores[i], i);
-	   	pthread_create(&hilos[i], NULL, (void*) ejecutarMensaje, entrenadores[i]);
+		entrenadores[i] = setteoEntrenador(i);
+	   	pthread_create(&hilos[i], NULL, (void*) ejecutarMensaje, (void*) entrenadores[i]);
 	}
 
 	pthread_t blockAReady;
@@ -321,10 +321,10 @@ void leer_archivo_configuracion(){
 	config_destroy(config);
 }
 
-void setteoEntrenador(t_entrenador* entrenador, int i){
+t_entrenador* setteoEntrenador(int i){
 	char** objetivo;
 	char** pokemones;
-   	entrenador = malloc(sizeof(t_entrenador));
+   	t_entrenador* entrenador = malloc(sizeof(t_entrenador));
    	entrenador -> idEntrenador = i;
 	entrenador->objetivo = list_create();
 	entrenador->pokemones = list_create();
@@ -334,7 +334,7 @@ void setteoEntrenador(t_entrenador* entrenador, int i){
    	entrenador->posicion->posy = atoi(strtok(NULL,"|"));
    	objetivo = string_split(OBJETIVOS_ENTRENADORES[i], "|");
    	pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
-
+   	entrenador->estaDisponible = true;
     entrenador->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
 
    	pthread_mutex_init(&(entrenador->semaforo), NULL);
@@ -351,5 +351,7 @@ void setteoEntrenador(t_entrenador* entrenador, int i){
    	}
 
    	list_add(listaBlocked, entrenador);
+
+   	return entrenador;
 }
 
