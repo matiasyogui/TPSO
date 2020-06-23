@@ -9,7 +9,7 @@
 sem_t sem_cant_mensajes;
 sem_t sem_entrenadores_ready;
 
-int idFuncionesDefault = -2;
+
 
 void* pasajeBlockAReady();
 void planificarEntrenadoresAExec();

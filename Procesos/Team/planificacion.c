@@ -171,8 +171,6 @@ void planificarEntrenadoresAExec(){ //falta crear el hilo
 				pthread_mutex_lock(&mListaReady);
 				t_link_element* nodo = list_remove(listaReady, 0);
 				pthread_mutex_unlock(&mListaReady);
-
-				list_add(listaExecute, nodo);
 				ent = (t_entrenador*) nodo;
 				pthread_mutex_unlock(&(ent -> semaforo));
 				pthread_mutex_lock(&mEjecutarMensaje);
@@ -244,21 +242,20 @@ int enviarCatch(void* elemento, int posx, int posy){
 		list_add(lista_mensajes,nuevoMensaje);
 		pthread_mutex_unlock(&mListaGlobal);
 		idAux = idFuncionesDefault+1;
-		idFuncionesDefault--;
+		idFuncionesDefault = idFuncionesDefault - 1;
 
 		return idAux;
 	}
 }
 
 
-void ejecutarMensaje(){
-	t_entrenador* ent;
+void ejecutarMensaje(t_entrenador* ent){
 	while(true){
-		pthread_mutex_lock(&mListaExec);
-
-		ent = (t_entrenador*) list_remove(listaExecute, 0);
+		pthread_mutex_lock(&(ent->semaforo));
+		printf("se empezo a ejecutar el entrenador %d \n", ent->idEntrenador);
 		int size, offset;
 		void* stream;
+
 
 		stream = ent -> mensaje -> buffer -> stream;
 		offset = 0;
@@ -304,8 +301,9 @@ void ejecutarMensaje(){
 		pthread_mutex_lock(&mListaBlocked);
 		list_add(listaBlocked, ent);
 		pthread_mutex_unlock(&mListaBlocked);
-
-		pthread_mutex_lock(&mEjecutarMensaje);
+		printf("se empezo a ejecutar el entrenador %d \n", ent->idEntrenador);
+		pthread_mutex_unlock(&mEjecutarMensaje);
+		pthread_mutex_lock(&(ent->semaforo));
 	}
 }
 

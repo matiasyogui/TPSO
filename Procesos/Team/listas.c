@@ -63,5 +63,4 @@ void element_destroyer(void* elemento){
 	free(ent->objetivo);
 	free(ent->pokemones);
 	free(ent->posicion);
-	free(ent->semaforo);
 }
