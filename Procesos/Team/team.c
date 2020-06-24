@@ -37,9 +37,8 @@ t_entrenador* elegirEntrenadorXCercania(int posx, int posy){
 
 	printf("cantidad de entrenadores dispoinbles %d \n",list_size(listaMapeada));
 
-	t_entrenador* aux;
-
-	/*for(int i = 1; i < list_size(listaMapeada); i++){ //metodo de la burbuja
+	/* 	t_entrenador* aux;
+	 	for(int i = 1; i < list_size(listaMapeada); i++){ //metodo de la burbuja
 		for(int j = 0; j < (list_size(listaMapeada) - 1); j++){
 			if(((t_entrenador*) list_get(listaMapeada, j)) -> cercania > ((t_entrenador*) list_get(listaMapeada, j + 1)) -> cercania){
 				aux = (t_entrenador*) list_remove(listaMapeada, j);
@@ -65,7 +64,7 @@ t_entrenador* elegirEntrenadorXCercania(int posx, int posy){
 
 void* algortimoCercano(void* elemento, int posicionPokemonx, int posicionPokemony){
 	t_entrenador* ent = (t_entrenador*) elemento;
-	ent -> cercania = fabs(((ent -> posicion -> posx) - posicionPokemonx) + ((ent -> posicion -> posy) - posicionPokemony));
+	ent -> cercania = (fabs((ent -> posicion -> posx) - posicionPokemonx) + fabs(((ent -> posicion -> posy) - posicionPokemony)));
 	return ((void*)ent);
 }
 
@@ -131,15 +130,10 @@ int suscribirse(char* cola){
 
 			case APPEARED_POKEMON:
 			case CAUGHT_POKEMON:
-
-
 			case LOCALIZED_POKEMON:
 
 				agregarMensajeLista(socket, cod_op);
 				printf("Se recibio un mensaje\n");
-				break;
-
-
 				break;
 		}
 	}

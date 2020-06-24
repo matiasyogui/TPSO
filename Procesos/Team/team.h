@@ -12,5 +12,6 @@
 void leer_archivo_configuracion();
 void* algortimoCercano(void* elemento, int posicionPokemonx, int posicionPokemony);
 t_entrenador* elegirEntrenadorXCercania(int posx, int posy);
+bool buscarPokemon(void* elemento, void* pokemon);
 
 #endif /* BROKER_H_ */

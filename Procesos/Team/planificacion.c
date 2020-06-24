@@ -1,6 +1,6 @@
 #include "planificacion.h"
 
-void* pasajeBlockAReady(){ //falta crear el hilo
+void* pasajeBlockAReady(){
 
 	while(faltanAtraparPokemones()){
 
@@ -44,7 +44,7 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 			int posy;
 			memcpy(&posy, stream + offset, sizeof(int));
 
-			printf("posx = %d y posy = %d \n",posx,posy);
+			printf("posx = %d y posy = %d \n", posx, posy);
 			fflush(stdout);
 
 			ent = elegirEntrenadorXCercania(posx, posy);
@@ -241,7 +241,7 @@ int enviarCatch(void* elemento, int posx, int posy){
 		nuevoMensaje->buffer = malloc(sizeof(t_buffer));
 		nuevoMensaje->buffer->stream = malloc(sizeof(int));
 		char* datos[1] = {"1"};
-		nuevoMensaje->buffer->stream =  stream_caught_pokemon(datos,&size);
+		nuevoMensaje->buffer->stream = stream_caught_pokemon(datos,&size);
 		nuevoMensaje->buffer->size=size;
 		pthread_mutex_lock(&mListaGlobal);
 		list_add(lista_mensajes,nuevoMensaje);
