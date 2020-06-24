@@ -58,7 +58,7 @@ void* pasajeBlockAReady(){ //falta crear el hilo
 			}
 
 			pthread_mutex_lock(&mListaBlocked);
-			ent = list_remove_by_condition(listaBlocked, _mismoEntrenador);
+			ent = (t_entrenador*) list_remove_by_condition(listaBlocked, _mismoEntrenador);
 			pthread_mutex_unlock(&mListaBlocked);
 
 			pthread_mutex_lock(&mListaReady);
