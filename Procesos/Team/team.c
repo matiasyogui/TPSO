@@ -64,9 +64,9 @@ bool buscarPokemon(void* elemento, void* pokemon){
 int suscribirse(char* cola){
 
 	int socket = crear_conexion("127.0.0.1", "4444");
-	while(socket<0){
-		perror("FALLO LA CONEXION CON EL BROKER /n");
-		printf("Intento reconexion /n");
+	while(socket<=0){
+		perror("FALLO LA CONEXION CON EL BROKER");
+		printf("Intento reconexion \n");
 		sleep(TIEMPO_RECONEXION);
 		socket = crear_conexion("127.0.0.1", "4444");
 	}
@@ -80,12 +80,12 @@ int suscribirse(char* cola){
 	bool confirmacion_suscripcion;
 
 	s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
-	while ( s < 0) {
-		perror("RECV ERROR /n");
+	while ( s <= 0) {
+		perror("RECV ERROR \n");
 		socket = crear_conexion("127.0.0.1", "4444");
 		while(socket<0){
-			perror("FALLO LA CONEXION CON EL BROKER /n");
-			printf("Intento reconexion /n");
+			perror("FALLO LA CONEXION CON EL BROKER \n");
+			printf("Intento reconexion \n");
 			sleep(TIEMPO_RECONEXION);
 			socket = crear_conexion("127.0.0.1", "4444");
 		}
@@ -95,16 +95,16 @@ int suscribirse(char* cola){
 	printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", confirmacion_suscripcion);
 
 	while(1){
-
+		printf("espero recibir algo \n");
 		s = recv(socket, &cod_op, sizeof(uint32_t), 0 );
-		while(s<0)
+		while(s<=0)
 		{
-		while (s < 0) {
+		while (s <= 0) {
 			perror("FALLO RECV");
 			socket = crear_conexion("127.0.0.1", "4444");
 			while(socket<0){
-				perror("FALLO LA CONEXION CON EL BROKER /n");
-				printf("Intento reconexion /n");
+				perror("FALLO LA CONEXION CON EL BROKER \n");
+				printf("Intento reconexion \n");
 				sleep(TIEMPO_RECONEXION);
 				socket = crear_conexion("127.0.0.1", "4444");
 			}
@@ -229,6 +229,7 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 
 int main(){
+	idFuncionesDefault = -2;
 
 	pthread_mutex_init(&mListaGlobal, NULL);
 	pthread_mutex_init(&mListaReady, NULL);
@@ -239,14 +240,8 @@ int main(){
 	pthread_mutex_init(&mPokemonesAPedirSinRepetidos, NULL);
 	pthread_mutex_init(&mIdsCorrelativos, NULL);
 
-	pthread_mutex_lock(&mListaGlobal);
-	pthread_mutex_lock(&mListaReady);
-	pthread_mutex_lock(&mListaExec);
-	pthread_mutex_lock(&mListaBlocked);
-	pthread_mutex_lock(&mEjecutarMensaje);
-	pthread_mutex_lock(&mPokemonesAPedir);
-	pthread_mutex_lock(&mPokemonesAPedirSinRepetidos);
-	pthread_mutex_lock(&mIdsCorrelativos);
+	sem_init(&sem_cant_mensajes, 0, 0);
+	sem_init(&sem_entrenadores_ready, 0, 0);
 
 	inicializar_listas();
 
@@ -255,32 +250,35 @@ int main(){
 	pthread_t hiloSuscriptor[3], server;
 	pthread_create(&hiloSuscriptor[1], NULL, (void*)suscribirse, "appeared_pokemon");
 	pthread_create(&hiloSuscriptor[2], NULL, (void*)suscribirse, "caught_pokemon");
-	pthread_create(&hiloSuscriptor[3], NULL, (void*)suscribirse, "localized_pokemon");
+	pthread_create(&hiloSuscriptor[0], NULL, (void*)suscribirse, "localized_pokemon");
 
 	pthread_create(&server, NULL, (void*)iniciar_servidor, NULL);
 
 	int cantEntrenadores = cant_elementos(POSICIONES_ENTRENADORES);
 	t_entrenador* entrenadores[cantEntrenadores];
-	pthread_t* hilos[cantEntrenadores];
-
-	//sem_init(&sem_entrenador_disponible, 0, cantEntrenadores);
-	sem_init(&sem_cant_mensajes, 0, 0);
-	sem_init(&sem_entrenadores_ready, 0, 0);
+	pthread_t hilos[cantEntrenadores];
 
 	for(i=0;i<cantEntrenadores;i++){
-		setteoEntrenador(entrenadores[i], hilos[i], i);
+		entrenadores[i] = setteoEntrenador(i);
+	   	pthread_create(&hilos[i], NULL, (void*) ejecutarMensaje, (void*) entrenadores[i]);
 	}
-/*
+
 	pthread_t blockAReady;
+	pthread_t planificarEntrenadorAEjecutar;
 
 
 	pthread_mutex_init(&mBlockAReady, NULL);
 	pthread_create(&blockAReady, NULL, (void*)pasajeBlockAReady, NULL);
-*/
+	pthread_create(&planificarEntrenadorAEjecutar,NULL, (void*) planificarEntrenadoresAExec, NULL);
+
 	pedir_pokemones();
 
 	for(i=0;i<cantEntrenadores;i++){
-		pthread_join(*hilos[i],NULL);
+		pthread_join(hilos[i],NULL);
+	}
+
+	for(i=0;i<3;i++){
+		pthread_join(hiloSuscriptor[i],NULL);
 	}
 
 	pthread_join(server, NULL);
@@ -323,29 +321,24 @@ void leer_archivo_configuracion(){
 	config_destroy(config);
 }
 
-void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i){
-	//entrenador -> idEntrenador = i;
-
+t_entrenador* setteoEntrenador(int i){
 	char** objetivo;
 	char** pokemones;
+   	t_entrenador* entrenador = malloc(sizeof(t_entrenador));
+   	entrenador -> idEntrenador = i;
 	entrenador->objetivo = list_create();
 	entrenador->pokemones = list_create();
 	entrenador->pokemonesMaximos = false;
-   	entrenador = malloc(sizeof(t_entrenador));
    	entrenador-> posicion = malloc(sizeof(t_posicion));
    	entrenador->posicion->posx = atoi(strtok(POSICIONES_ENTRENADORES[i],"|"));
    	entrenador->posicion->posy = atoi(strtok(NULL,"|"));
    	objetivo = string_split(OBJETIVOS_ENTRENADORES[i], "|");
    	pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
-
+   	entrenador->estaDisponible = true;
     entrenador->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
-   	entrenador->mensaje = malloc(sizeof(t_mensajeTeam));
 
-   	entrenador->semaforo = malloc(sizeof(pthread_mutex_t));
-   	pthread_mutex_init(entrenador->semaforo, NULL);
-   	hilo = malloc(sizeof(pthread_t));
-   	pthread_mutex_lock(entrenador->semaforo);
-   	pthread_create(hilo, NULL, (void*) ejecutarMensaje, NULL);
+   	pthread_mutex_init(&(entrenador->semaforo), NULL);
+   	pthread_mutex_lock(&(entrenador->semaforo));
 
    	for(int j = 0; j < cant_elementos(objetivo); j++){
    		list_add(objetivoGlobal, objetivo[j]);
@@ -358,5 +351,7 @@ void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i){
    	}
 
    	list_add(listaBlocked, entrenador);
+
+   	return entrenador;
 }
 

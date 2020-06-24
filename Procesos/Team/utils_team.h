@@ -19,6 +19,7 @@
 #define PUERTO "5002"
 
 int server_team;
+int idFuncionesDefault;
 
 
 typedef enum{
@@ -50,7 +51,7 @@ typedef struct{
 typedef struct{
 	int idEntrenador;
 	t_posicion* posicion;
-	pthread_mutex_t* semaforo;
+	pthread_mutex_t semaforo;
 	int cercania;
 	char* algoritmo_de_planificacion;
 	t_list* objetivo;
@@ -74,6 +75,7 @@ pthread_mutex_t mListaExec;
 pthread_mutex_t mListaBlocked;
 
 pthread_mutex_t mEjecutarMensaje;
+
 
 pthread_mutex_t mPokemonesAPedir;
 pthread_mutex_t mPokemonesAPedirSinRepetidos;
@@ -108,7 +110,7 @@ void process_request(int cod_op, int cliente_fd);
 
 void leer_mensaje(t_buffer* buffer);
 
-void setteoEntrenador(t_entrenador* entrenador, pthread_t* hilo, int i);
+t_entrenador* setteoEntrenador(int i);
 
 bool nosInteresaMensaje(t_mensajeTeam* msg);
 int algoritmo_planificacion(char* algoritmoDePlanificacion);

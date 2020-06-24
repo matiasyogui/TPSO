@@ -179,7 +179,7 @@ void destruir_lista_mensajes(void){
 void borrar_suscriptor(void* suscriptor){
 
 	t_suscriptor* aux = suscriptor;
-	//close(aux->socket);
+	close(aux->socket);
 	free(aux);
 }
 
