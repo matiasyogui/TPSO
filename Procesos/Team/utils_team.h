@@ -13,6 +13,7 @@
 #include <cosas_comunes.h>
 #include "listas.h"
 #include <stdbool.h>
+#include <semaphore.h>
 
 
 #define IP "127.0.0.2"
@@ -66,6 +67,8 @@ typedef struct{
 
 bool falloConexionBroker;
 
+sem_t sem_cant_mensajes;
+sem_t sem_entrenadores_ready;
 
 pthread_t thread;
 pthread_mutex_t mutex;

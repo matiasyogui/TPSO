@@ -1,13 +1,11 @@
 #include <stdbool.h>
 #include "utils_team.h"
 #include "team.h"
-#include <semaphore.h>
 #include "listas.h"
 #ifndef PLANIFICACION_H_
 #define PLANIFICACION_H_
 
-sem_t sem_cant_mensajes;
-sem_t sem_entrenadores_ready;
+
 
 
 

@@ -23,8 +23,8 @@ void pedir_pokemones(){
 }
 
 t_entrenador* elegirEntrenadorXCercania(int posx, int posy){
-	void _algoritmoCercano(void* elemento){
-		algortimoCercano(elemento, posx, posy);
+	void* _algoritmoCercano(void* elemento){
+		return algortimoCercano(elemento, posx, posy);
 	}
 
 	bool _estaDisponible(void* elemento){
@@ -33,28 +33,40 @@ t_entrenador* elegirEntrenadorXCercania(int posx, int posy){
 
 	t_list* listaDisponibles = list_filter(listaBlocked, _estaDisponible);
 
-	t_list* listaMapeada = list_map(listaDisponibles, _algoritmoCercano);
+	t_list* listaMapeada = list_map(listaDisponibles,(void*) _algoritmoCercano);
+
+	printf("cantidad de entrenadores dispoinbles %d \n",list_size(listaMapeada));
 
 	t_entrenador* aux;
 
-	for(int i = 1; i < list_size(listaMapeada); i++){ //metodo de la burbuja
+	/*for(int i = 1; i < list_size(listaMapeada); i++){ //metodo de la burbuja
 		for(int j = 0; j < (list_size(listaMapeada) - 1); j++){
 			if(((t_entrenador*) list_get(listaMapeada, j)) -> cercania > ((t_entrenador*) list_get(listaMapeada, j + 1)) -> cercania){
-				aux = (t_entrenador*) list_get(listaMapeada, j);
-				list_add_in_index(listaMapeada, j, (t_entrenador*) list_get(listaMapeada, j + 1));
+				aux = (t_entrenador*) list_remove(listaMapeada, j);
+				list_add_in_index(listaMapeada, j, (t_entrenador*) list_remove(listaMapeada, j + 1));
 				list_add_in_index(listaMapeada, j + 1, aux);
 			}
 		}
+	}*/
+
+	bool _compararCercania(void* elemento1, void* elemento2){
+		return ((t_entrenador*) elemento1)->cercania <= ((t_entrenador*) elemento2)->cercania;
 	}
 
+	list_sort(listaMapeada,_compararCercania);
+
 	t_entrenador* entrenadorElegido = (t_entrenador*) list_remove(listaMapeada, 0);
+
+	printf("el entrenador elegido tiene la posicion %d y %d \n",entrenadorElegido->posicion->posx,entrenadorElegido->posicion->posy);
+	fflush(stdout);
 
 	return entrenadorElegido;
 }
 
-void algortimoCercano(void* elemento, int posicionPokemonx, int posicionPokemony){
+void* algortimoCercano(void* elemento, int posicionPokemonx, int posicionPokemony){
 	t_entrenador* ent = (t_entrenador*) elemento;
 	ent -> cercania = fabs(((ent -> posicion -> posx) - posicionPokemonx) + ((ent -> posicion -> posy) - posicionPokemony));
+	return ((void*)ent);
 }
 
 bool buscarPokemon(void* elemento, void* pokemon){
