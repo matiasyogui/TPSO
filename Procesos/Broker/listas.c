@@ -17,6 +17,10 @@ static void limpiar_sublista_mensajes(void* sublista);
 
 static int obtener_id(void);
 
+static void mostrar_listas(void);
+static void informe_lista_mensajes(void);
+static void informe_lista_subs(void);
+
 
 
 void iniciar_listas(void){
@@ -30,6 +34,8 @@ void iniciar_listas(void){
 	}
 
 	pthread_mutex_init(&mutex_id, NULL);
+
+	signal(SIGUSR2, (void*)mostrar_listas);
 }
 
 
@@ -196,10 +202,16 @@ void destruir_lista_suscriptores(void){
 
 //==============================FUNCIONES PARA MOSTRAR LAS LISTAS====================================
 
+static void mostrar_listas(void){
 
-void informe_lista_mensajes(void){
+	informe_lista_mensajes();
+	informe_lista_subs();
 
-	printf("\n=====================================INFORME LISTAS DE MENSAJES=====================================\n\n");
+}
+
+static void informe_lista_mensajes(void){
+
+	printf("\n===================INFORME LISTAS DE MENSAJES========================\n\n");
 
 	for(int i=0; i < list_size(LISTA_MENSAJES); i++){
 
@@ -224,13 +236,13 @@ void informe_lista_mensajes(void){
 
 		printf("\n");
 	}
-	printf("======================================================================================================\n\n");
+	printf("=====================================================================\n\n");
 }
 
 
-void informe_lista_subs(void){
+static void informe_lista_subs(void){
 
-	printf("\n===================================INFORME LISTAS DE SUBSCRIPTORES====================================\n\n");
+	printf("\n===================INFORME LISTAS DE SUBSCRIPTORES===================\n\n");
 
 	for(int i=0; i < list_size(LISTA_SUBS); i++){
 
@@ -246,7 +258,7 @@ void informe_lista_subs(void){
 
 		printf("\n");
 	}
-	printf("======================================================================================================\n\n");
+	printf("=====================================================================\n\n");
 }
 
 

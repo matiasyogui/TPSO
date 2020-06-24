@@ -53,5 +53,5 @@ dkms.conf
 /.metadata/
 
 #archivos
-**/*log
+*.log
 

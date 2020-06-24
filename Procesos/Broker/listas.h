@@ -41,13 +41,6 @@ void destruir_lista_mensajes(void);
 void destruir_lista_suscriptores(void);
 
 
-//==============================FUNCIONES PARA MOSTRAR LAS LISTAS====================================
-
-
-void informe_lista_mensajes(void);
-void informe_lista_subs(void);
-
-
 //===================================================================================================
 
 
