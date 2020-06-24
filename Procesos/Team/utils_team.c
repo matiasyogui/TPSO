@@ -90,7 +90,7 @@ void process_request(int cod_op, int cliente_fd) {
 		printf("MENSAJES EN LA LISTA GLOBAL = %d\n\n", list_size(lista_mensajes));
 		pthread_mutex_unlock(&mListaGlobal);
 
-
+		sem_post(&sem_cant_mensajes);
 
 		send(cliente_fd,&(mensaje->id),sizeof(int),0);
 
