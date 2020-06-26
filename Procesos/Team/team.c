@@ -261,12 +261,13 @@ int main(){
 	pthread_create(&server, NULL, (void*)iniciar_servidor, NULL);
 
 	int cantEntrenadores = cant_elementos(POSICIONES_ENTRENADORES);
-	t_entrenador* entrenadores[cantEntrenadores];
+	//t_entrenador** entrenadores=calloc(cantEntrenadores,sizeof(t_entrenador));
+
 	pthread_t hilos[cantEntrenadores];
 
 	for(i=0;i<cantEntrenadores;i++){
-		entrenadores[i] = setteoEntrenador(i);
-	   	pthread_create(&hilos[i], NULL, (void*) ejecutarMensaje, (void*) entrenadores[i]);
+		t_entrenador* ent = setteoEntrenador(i);
+	   	pthread_create(&hilos[i], NULL, (void*) ejecutarMensaje, (void*) ent);
 	}
 
 	pthread_t blockAReady;
@@ -291,13 +292,13 @@ int main(){
 
 	eliminar_listas();
 
-	for(i=0;i<cantEntrenadores;i++){
+	/*for(i=0;i<cantEntrenadores;i++){
 		free(entrenadores[i]-> posicion);
 		free(entrenadores[i]-> objetivo);
 		free(entrenadores[i]-> pokemones);
 		free(entrenadores[i]);
 	}
-
+*/
 	return EXIT_SUCCESS;
 }
 
@@ -324,7 +325,7 @@ void leer_archivo_configuracion(){
 	PUERTO_BROKER= config_get_int_value(config,"PUERTO_BROKER");
 	LOG_FILE= config_get_string_value(config,"LOG_FILE");
 
-	config_destroy(config);
+	//config_destroy(config);
 }
 
 t_entrenador* setteoEntrenador(int i){
@@ -355,9 +356,7 @@ t_entrenador* setteoEntrenador(int i){
    		list_add(pokemonYaAtrapado, pokemones[jj]);
    		list_add(entrenador->pokemones,pokemones[jj]);
    	}
-
    	list_add(listaBlocked, entrenador);
-
    	return entrenador;
 }
 
