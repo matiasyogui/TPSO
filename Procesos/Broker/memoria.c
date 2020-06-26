@@ -5,7 +5,9 @@
 
 static void obtener_datos();
 
+
 //==============================================================================
+
 
 static void obtener_datos()
 {
@@ -33,7 +35,9 @@ void iniciar_memoria()
 
 }
 
+
 //=============================================================================
+
 
 void* pedir_memoria(int size){
 
@@ -50,6 +54,8 @@ void* pedir_memoria(int size){
 
 
 //==============================================================================
+
+
 void dump_memoria(){
 
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))

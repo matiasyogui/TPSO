@@ -1,5 +1,6 @@
 #include "gameboy.h"
 
+
 int main(int argc,char* argv[]){
 
 	inicializar_archivos();
@@ -10,6 +11,13 @@ int main(int argc,char* argv[]){
 	void* mensaje_enviar = armar_mensaje_enviar(argv+1, &bytes_enviar);
 
 	int conexion = crear_conexion(IP_SERVER, PUERTO_SERVER);
+
+	void cerrar_socket(){
+		liberar_conexion(conexion);
+		raise(SIGTERM);
+	}
+
+	signal(SIGINT, (void*)cerrar_socket);
 
 	enviar_mensaje(mensaje_enviar, bytes_enviar, conexion);
 

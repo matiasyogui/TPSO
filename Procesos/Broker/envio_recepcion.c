@@ -4,15 +4,13 @@
 
 char* IP_SERVER;
 char* PUERTO_SERVER;
+int socket_servidor;
 
 pthread_t THREADS[GESTORES_CLIENTES];
 
+t_queue* cola_clientes;
 pthread_mutex_t mutex_cola = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-
-t_queue* cola_clientes;
-
-int socket_servidor;
 
 static int esperar_cliente(int socket_servidor);
 static void _interruptor_handler(void* elemento);
@@ -21,11 +19,12 @@ static int process_request(int cliente_fd, int cod_op);
 
 static void* _gestor_clientes();
 static void _interruptor_handler(void* elemento);
-static void detener_servidor(void* p_socket);
-static void obtener_datos(void);
+static void detener_servidor(void* nada);
+static void cargar_datos(void);
 
 
-static void obtener_datos(void){
+
+static void cargar_datos(void){
 
 	IP_SERVER = config_get_string_value(CONFIG, "IP_BROKER");
 	PUERTO_SERVER = config_get_string_value(CONFIG, "PUERTO_BROKER");
@@ -36,14 +35,13 @@ static void obtener_datos(void){
 
 void* iniciar_servidor(void){
 
-	obtener_datos();
+	cargar_datos();
 
 	int s;
 
-    pthread_cleanup_push(detener_servidor, &socket_servidor);
+    pthread_cleanup_push(detener_servidor, NULL);
 
     for (int i = 0; i < GESTORES_CLIENTES; i++) {
-
     	s = pthread_create(&THREADS[i], NULL, _gestor_clientes, NULL);
     	if (s != 0) printf("[ENVIO_RECEPCION.C] PTHREAD_CREATE ERROR");
     }
@@ -111,12 +109,7 @@ static int esperar_cliente(int socket_servidor){
 
 	pthread_mutex_unlock(&mutex_cola);
 
-
-	pthread_mutex_lock(&mutex_log);
-
-	log_info(LOGGER, "Un proceso se conecto al broker");
-
-	pthread_mutex_unlock(&mutex_log);
+	logear_mensaje("Un proceso se conecto al broker");
 
 	return EXIT_SUCCESS;
 }
@@ -130,7 +123,7 @@ static void _interruptor_handler(void* elemento){
 static void* _gestor_clientes(){
 
 	void *p_cliente;
-	int old_state, s;
+	int s;
 
 	pthread_cleanup_push(_interruptor_handler, &mutex_cola);
 
@@ -148,13 +141,13 @@ static void* _gestor_clientes(){
 
 		pthread_mutex_unlock(&mutex_cola);
 
-		s = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_state);
+		s = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, 0);
 		if (s != 0) perror("[ENVIO_RECEPCION.C] PTHREAD_SETCANCELSTATE ERROR");
 
 		if (p_cliente != NULL)
 			server_client(p_cliente);
 
-		s = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_state);
+		s = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
 		if (s != 0) perror("[ENVIO_RECEPCION.C] PTHREAD_SETCANCELSTATE ERROR");
 
 	}
@@ -183,7 +176,7 @@ static int server_client(void* p_socket){
 
 static int process_request(int cliente_fd, int cod_op){
 
-	switch(cod_op){
+	switch (cod_op) {
 
 		case NEW_POKEMON:
 		case CATCH_POKEMON:
@@ -207,7 +200,11 @@ static int process_request(int cliente_fd, int cod_op){
 
         	break;
 
-        //case RECONECTAR:
+        case RECONEXION:
+
+        	tratar_reconexion(cliente_fd);
+
+        	break;
 
 		case -1:
 
@@ -226,18 +223,16 @@ static int process_request(int cliente_fd, int cod_op){
 }
 
 
-static void detener_servidor(void* p_socket){
+static void detener_servidor(void* nada){
 
 	int s;
 
-    for(int i = 0; i < GESTORES_CLIENTES; i++){
-
+    for (int i = 0; i < GESTORES_CLIENTES; i++) {
     	s = pthread_cancel(THREADS[i]);
     	if (s != 0 ) perror("[ENVIO_RECEPCION.C] PTHREAD_CANCEL ERROR");
     }
 
-    for(int i = 0; i < GESTORES_CLIENTES; i++){
-
+    for (int i = 0; i < GESTORES_CLIENTES; i++) {
     	s = pthread_join(THREADS[i], NULL);
     	if (s != 0 ) perror("[ENVIO_RECEPCION.C] PTHREAD_JOIN ERROR");
     }

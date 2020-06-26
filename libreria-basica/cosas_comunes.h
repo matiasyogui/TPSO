@@ -14,6 +14,7 @@
 #include <commons/config.h>
 #include <commons/log.h>
 
+
 typedef enum{
 
 	NEW_POKEMON,
@@ -24,6 +25,7 @@ typedef enum{
 	LOCALIZED_POKEMON,
 
 	SUSCRIPTOR,
+	RECONEXION
 
 }message_code;
 

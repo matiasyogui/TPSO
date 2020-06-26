@@ -28,6 +28,7 @@ int crear_conexion(char *ip, char* puerto){
 
 
 void liberar_conexion(int socket_cliente){
+
 	close(socket_cliente);
 }
 
@@ -36,7 +37,7 @@ t_log* iniciar_logger(char* archivo, char *nombre_programa, int es_consola_activ
 
 	t_log* logger = log_create(archivo, nombre_programa, es_consola_activa, detalle);
 
-	if(logger == NULL){
+	if (logger == NULL) {
 		printf("No se pudo inicializar el logger\n");
 		exit(-1);
 	}
@@ -48,7 +49,7 @@ t_config* leer_config(char* ruta){
 
 	t_config * config = config_create(ruta);
 
-	if(config == NULL){
+	if (config == NULL) {
 		printf("No se pudo inicializar el config\n");
 		exit(-1);
 	}
@@ -96,25 +97,26 @@ char* cod_opToString(int cod_op){
 
 	switch(cod_op){
 
-	case NEW_POKEMON:
-		return "new_pokemon";
+		case NEW_POKEMON:
+			return "NEW_POKEMON";
 
-	case GET_POKEMON:
-		return "get_pokemon";
+		case GET_POKEMON:
+			return "GET_POKEMON";
 
-	case APPEARED_POKEMON:
-		return "appeared_pokemon";
+		case APPEARED_POKEMON:
+			return "APPEARED_POKEMON";
 
-	case CATCH_POKEMON:
-		return "catch_pokemon";
+		case CATCH_POKEMON:
+			return "CATCH_POKEMON";
 
-	case CAUGHT_POKEMON:
-		return "caught_pokemon";
+		case CAUGHT_POKEMON:
+			return "CAUGHT_POKEMON";
 
-	case LOCALIZED_POKEMON:
-		return "localized_pokemon";
+		case LOCALIZED_POKEMON:
+			return "LOCALIZED_POKEMON";
 	}
-	return "error";
+
+	return "COD_OP_NO_VALIDO";
 }
 
 

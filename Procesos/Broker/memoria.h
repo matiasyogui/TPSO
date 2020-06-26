@@ -47,7 +47,6 @@ name: eliminar_particion
 desc: elimina una particion por fifo o lru
 */
 void eliminar_particion();
-
 /*
 name: dump_memoria
 desc: describe toda la informacion de la memoria
@@ -58,6 +57,7 @@ name: compactar
 desc: comprime la memoria
 */
 void compactar();
+
 
 #endif /* MEMORIA_H_ */
 

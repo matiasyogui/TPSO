@@ -1,6 +1,7 @@
-
 #ifndef GAMEBOY_H_
 #define GAMEBOY_H_
+
+#include "signal.h"
 
 #include "utils_gameboy.h"
 #include "serializar_mensajes.h"
