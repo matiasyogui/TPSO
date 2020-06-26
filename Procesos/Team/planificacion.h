@@ -11,7 +11,7 @@
 
 void* pasajeBlockAReady();
 void planificarEntrenadoresAExec();
-int enviarCatch(void* elemento, int posx, int posy);
+void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent);
 void ejecutarMensaje();
 void agregarMensajeLista(int socket, int cod_op);
 void enviar_mensaje(t_paquete* paquete, int socket_cliente);

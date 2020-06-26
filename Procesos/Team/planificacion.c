@@ -49,17 +49,19 @@ void* pasajeBlockAReady(){
 
 			ent = elegirEntrenadorXCercania(posx, posy);
 
-			ent -> mensaje = mensaje;
+			printf("cant elementos lista blocked %d\n",list_size(listaBlocked));
 
 			bool _mismoEntrenador(void* elemento){
 				t_entrenador* entrenador = (t_entrenador*) elemento;
-
-				return ent -> idCorrelativo == entrenador -> idCorrelativo;
+				printf("ent id : %d vs ent2 id : %d \n",ent -> idEntrenador,entrenador -> idEntrenador);
+				return ent -> idEntrenador == entrenador -> idEntrenador;
 			}
 
 			pthread_mutex_lock(&mListaBlocked);
 			ent = (t_entrenador*) list_remove_by_condition(listaBlocked, _mismoEntrenador);
 			pthread_mutex_unlock(&mListaBlocked);
+
+			ent -> mensaje = mensaje;
 
 			pthread_mutex_lock(&mListaReady);
 			list_add(listaReady, ent);
@@ -71,6 +73,8 @@ void* pasajeBlockAReady(){
 
 		case CAUGHT_POKEMON:
 			id = mensaje -> id;
+
+			printf("llego un caught con el id %d \n",id);
 
 			bool _entrenadorTieneID(void* elemento){
 				t_entrenador* entrenador = (t_entrenador*) elemento;
@@ -102,6 +106,7 @@ void* pasajeBlockAReady(){
 
 			if(loAtrapo){
 				list_add(ent->pokemones,(char*) pokemon);
+				printf("Se atrapo el pokemon %s \n",pokemon);
 				if(list_size(ent->objetivo) == list_size(ent -> pokemones)){
 					if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
 						list_add(listaExit, ent);
@@ -171,6 +176,7 @@ void planificarEntrenadoresAExec(){ //falta crear el hilo
 	while(true){
 		sem_wait(&sem_entrenadores_ready);
 		t_entrenador* ent;
+		printf("el algoritmo de planificacion es %s \n",ALGORITMO_PLANIFICACION);
 		switch(algoritmo_planificacion(ALGORITMO_PLANIFICACION)){
 			case FIFO:
 				pthread_mutex_lock(&mListaReady);
@@ -190,7 +196,7 @@ void planificarEntrenadoresAExec(){ //falta crear el hilo
 }
 
 
-int enviarCatch(void* elemento, int posx, int posy){
+void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 
 	int cod_op = CATCH_POKEMON;
 	char* pokemon = (char*) elemento;
@@ -213,10 +219,11 @@ int enviarCatch(void* elemento, int posx, int posy){
 	offset += sizeof(uint32_t);
 
 	memcpy(stream+offset, &posy, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
 
 	//enviamos el mensaje
 	int socket = crear_conexion("127.0.0.1", "4444");
-	if(send(socket, stream, offset, 0) < 0)
+	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
 		perror(" FALLO EL SEND DEL CATCH \n");
 
 
@@ -231,7 +238,13 @@ int enviarCatch(void* elemento, int posx, int posy){
 	list_add(lista_id_correlativos, id_mensaje);
 	pthread_mutex_unlock(&mIdsCorrelativos);
 
-	return id_mensaje;
+	ent ->idCorrelativo = id_mensaje;
+	ent -> ultimoMensajeEnviado = ent -> mensaje;
+	ent -> estaDisponible = false;
+	pthread_mutex_lock(&mListaBlocked);
+	list_add(listaBlocked, ent);
+	pthread_mutex_unlock(&mListaBlocked);
+
 	}
 	else{
 		int size, idAux;
@@ -246,10 +259,19 @@ int enviarCatch(void* elemento, int posx, int posy){
 		pthread_mutex_lock(&mListaGlobal);
 		list_add(lista_mensajes,nuevoMensaje);
 		pthread_mutex_unlock(&mListaGlobal);
+
 		idAux = idFuncionesDefault+1;
 		idFuncionesDefault = idFuncionesDefault - 1;
 
-		return idAux;
+		ent ->idCorrelativo = idAux;
+		ent -> ultimoMensajeEnviado = ent -> mensaje;
+		ent -> estaDisponible = false;
+
+		pthread_mutex_lock(&mListaBlocked);
+		list_add(listaBlocked, ent);
+		pthread_mutex_unlock(&mListaBlocked);
+
+		sem_post(&sem_cant_mensajes);
 	}
 }
 
@@ -284,8 +306,10 @@ void ejecutarMensaje(void* entAux){
 			if(posx != ent -> posicion -> posx){
 				if(posx > ent -> posicion -> posx){
 					(ent -> posicion -> posx)++;
+					printf("se mueve a la derecha \n");
 				}else{
 					(ent -> posicion -> posx)--;
+					printf("se mueve a la izquierda \n");
 				}
 				sleep(1);
 			}
@@ -293,21 +317,17 @@ void ejecutarMensaje(void* entAux){
 			if(posy != ent -> posicion -> posy){
 				if(posy > ent -> posicion -> posy){
 					(ent -> posicion -> posy)++;
+					printf("se mueve arriba \n");
 				}else{
 					(ent -> posicion -> posy)--;
+					printf("se mueve abajo \n");
 				}
 				sleep(1);
 			}
 		}
 
-		ent -> idCorrelativo = enviarCatch(pokemon, posx, posy);
-		ent -> ultimoMensajeEnviado = ent -> mensaje;
-		ent -> estaDisponible = false;
-
-		pthread_mutex_lock(&mListaBlocked);
-		list_add(listaBlocked, ent);
-		pthread_mutex_unlock(&mListaBlocked);
-		printf("se empezo a ejecutar el entrenador %d \n", ent->idEntrenador);
+		enviarCatch(pokemon, posx, posy, ent);
+		printf("se termino de ejecutar el entrenador %d \n", ent->idEntrenador);
 		pthread_mutex_unlock(&mEjecutarMensaje);
 		pthread_mutex_lock(&(ent->semaforo));
 	}
