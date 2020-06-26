@@ -19,6 +19,7 @@ void* iniciar_servidor(void);
 
 int tratar_mensaje(int socket, int cod_op, bool esCorrelativo);
 int tratar_suscriptor(int socket);
+int tratar_reconexion(int socket);
 
 
 #endif /* ENVIO_RECEPCION_H_ */

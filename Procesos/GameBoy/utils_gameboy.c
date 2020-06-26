@@ -67,7 +67,7 @@ static int modo_suscriptor(int socket){
 	s = recv(socket, &estado, sizeof(uint32_t), 0);
 	if (s < 0) perror("[UTILS_GAMEBOY.C] RECV ERROR");
 
-	printf("[CONFIRMACION DE SUSCRIPCION] estado = %d \n", estado);
+	printf("[CONFIRMACION DE SUSCRIPCION] id_suscripcion = %d \n", estado);
 
 	while(true){
 
@@ -112,7 +112,7 @@ static int modo_emisor(int socket){
 	s = recv(socket, id, sizeof(uint32_t), 0);
 	if (s < 0){ perror("[UTILS_GAMEBOY.C]ERROR RECV"); return EXIT_FAILURE; }
 
-	printf("[CONFIRMACION DEL RECPCION DEL MENSAJE] id del mensaje en el broker = %d \n", *id);
+	printf("[CONFIRMACION DEL RECEPCION DEL MENSAJE] id del mensaje en el broker = %d \n", *id);
 	free(id);
 
 	return EXIT_SUCCESS;
