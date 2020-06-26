@@ -52,6 +52,4 @@ Mkfile.old
 dkms.conf
 /.metadata/
 
-#archivos
-*.log
 

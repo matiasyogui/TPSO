@@ -7,6 +7,7 @@
 
 #include "variables_globales.h"
 
+
 //==============================FUNCIONES CREACION DE LISTAS==========================================
 
 
@@ -14,7 +15,6 @@ void iniciar_listas(void);
 void finalizar_listas(void);
 void guardar_mensaje(void* mensaje, int cod_op);
 void guardar_suscriptor(void* suscriptor, int cod_op);
-
 
 
 //==============================FUNCIONES PARA ELIMINAR LAS LISTAS====================================
@@ -30,8 +30,12 @@ void eliminar_suscriptor_id(int id, int cod_op);
 int desconectar_suscriptor(int id_suscriptor, int cola_suscrito);
 int reconectar_suscriptor(int id_suscriptor, int cola_suscrito);
 
+int estado_mensaje_en_memoria(int id_mensaje, int cola_mensaje);
+int estado_mensaje_eliminado(int id_mensaje, int cola_mensaje);
+
 
 //====================================================================================================
+
 
 t_list* obtener_lista_ids_mensajes(int cod_op);
 t_list* obtener_lista_ids_suscriptores(int cod_op);

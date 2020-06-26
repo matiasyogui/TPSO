@@ -9,7 +9,6 @@
 #include <commons/collections/queue.h>
 
 
-
 typedef enum{
 
 	CONECTADO,
@@ -130,17 +129,20 @@ void borrar_mensaje(void* nodo_mensaje);
 
 void borrar_suscriptor(void* suscriptor);
 
+
 //==========================MOSTRAS ENUMS============================
 
-char* estado_conexion_toString(estado_conexion estado);
 
+char* estado_conexion_toString(estado_conexion estado);
 char* estado_mensaje_toString(estado_mensaje estado);
+
 
 //==========================MOSTRAS AUXILIARES============================
 
-void logear_mensaje(char* mensaje);
 
+void logear_mensaje(char* mensaje);
 void* serializar_nodo_mensaje(t_mensaje* mensaje_enviar, int* size);
+
 
 
 #endif /* VARIABLES_GLOBALES_H_ */

@@ -13,7 +13,9 @@ void obtener_datos()
 	ALGORITMO_PARTICION_LIBRE = config_get_string_value(CONFIG, "ALGORITMO_PARTICION_LIBRE");
 
 }
+
 //=============================================================================
+
 void* buscar_espacio_libre_en_memoria(int size)
 {
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
@@ -25,7 +27,9 @@ void* buscar_espacio_libre_en_memoria(int size)
 	printf("no se reconocio el algoritmo memoria \nfijarse pedir_memroria() linea 40  \n");
 	return NULL;
 }
+
 //=============================================================================
+
 void consolidar()
 {
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
@@ -37,7 +41,9 @@ void consolidar()
 	if((!string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES")) && (!string_equals_ignore_case(ALGORITMO_MEMORIA, "BS")))
 		printf("no se reconocio el algoritmo_memoria fijarse consolidar()  \n");
 }
+
 //=============================================================================
+
 void liberar(t_particion* particion, int posicion)
 {
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))

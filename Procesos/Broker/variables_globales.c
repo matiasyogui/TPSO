@@ -12,13 +12,13 @@ void iniciar_variables_globales(void){
 
 	CONFIG = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Broker/broker.config");
 
+	pthread_mutex_init(&MUTEX_LOG, NULL);
 	char* ruta_log = config_get_string_value(CONFIG, "LOG_FILE");
 	LOGGER = iniciar_logger(ruta_log, "broker", 0, LOG_LEVEL_INFO);
-	pthread_mutex_init(&MUTEX_LOG, NULL);
 
-	cola_envios = queue_create();
 	pthread_mutex_init(&mutex_cola_envios, NULL);
 	pthread_cond_init(&cond_cola_envios, NULL);
+	cola_envios = queue_create();
 }
 
 

@@ -11,8 +11,6 @@ pthread_rwlock_t RWLOCK_SUBLISTAS_SUSCRIPTORES[CANTIDAD_SUBLISTAS];
 static t_list* crear_listas(void);
 static void agregar_elemento(t_list* lista, int index, void* data);
 
-//==============
-
 static void _eliminar_nodo_por_id(t_list* lista, int id, int(*funcion_obtener_id)(void*), void(*element_destroy)(void*));
 static void* buscar_por_id(t_list* sublista, int id, int(funcion_obtener_id)(void*));
 
@@ -20,11 +18,8 @@ static void mostrar_listas(void);
 static void informe_lista_mensajes(void);
 static void informe_lista_subs(void);
 
-
-//=============
-
 static int _cambiar_estado_suscripcion(estado_conexion nuevo_estado, int id_suscriptor, int cola_suscrito);
-
+static int _cambiar_estado_mensaje(estado_mensaje nuevo_estado, int id_mensaje, int cola_mensaje);
 
 static void _limpiar_sublista_mensaje(void* sublista);
 static void _limpiar_sublista_suscriptores(void* sublista);
@@ -110,7 +105,10 @@ static void agregar_elemento(t_list* lista, int index, void* data){
 }
 
 
+
 //===========================================FUNCIONES AUXILIARES===========================================
+
+
 
 static int _obtener_id_mensaje(void* mensaje){
 	return ((t_mensaje*)mensaje)->id;
@@ -306,7 +304,7 @@ void eliminar_suscriptor_id(int id, int cod_op){
 
 
 
-//================ RECONXION Y DESCONEXION DE UN SUSCRIPTOR ===========================================
+//================ RECONEXION Y DESCONEXION DE UN SUSCRIPTOR ===========================================
 
 
 
@@ -337,6 +335,36 @@ static int _cambiar_estado_suscripcion(estado_conexion nuevo_estado, int id_susc
 
 
 
+//================ CAMBIAR ESTADO DE UN MENSAJE ===========================================
+
+
+int estado_mensaje_en_memoria(int id_mensaje, int cola_mensaje){
+	return _cambiar_estado_mensaje(EN_MEMORIA, id_mensaje, cola_mensaje);
+}
+
+
+int estado_mensaje_eliminado(int id_mensaje, int cola_mensaje){
+	return _cambiar_estado_mensaje(ELIMINADO, id_mensaje, cola_mensaje);
+}
+
+
+static int _cambiar_estado_mensaje(estado_mensaje nuevo_estado, int id_mensaje, int cola_mensaje){
+
+	t_list* sublista = list_get(LISTA_SUBS, cola_mensaje);
+
+	pthread_rwlock_wrlock(&RWLOCK_SUBLISTA_MENSAJES[cola_mensaje]);
+
+	t_mensaje* mensaje = buscar_por_id(sublista, id_mensaje, _obtener_id_suscriptor);
+
+	if (mensaje != NULL) mensaje->estado = nuevo_estado;
+
+	pthread_rwlock_unlock(&RWLOCK_SUBLISTA_MENSAJES[cola_mensaje]);
+
+	return (mensaje == NULL)? EXIT_FAILURE : EXIT_SUCCESS;
+}
+
+
+
 //==============================FUNCIONES PARA ELIMINAR LAS LISTAS====================================
 
 
@@ -359,6 +387,13 @@ void eliminar_listas(t_list* lista, void(*_funcion_limpiar_sublista)(void*)){
 
 //==============================FUNCIONES PARA MOSTRAR LAS LISTAS====================================
 
+
+
+static void mostrar_listas(void){
+
+	informe_lista_mensajes();
+	informe_lista_subs();
+}
 
 
 static void imprimir_mensaje(t_mensaje* mensaje){
@@ -432,11 +467,4 @@ static void informe_lista_subs(void){
 	printf("======================================================================================================\n\n");
 }
 
-
-static void mostrar_listas(void){
-
-	informe_lista_mensajes();
-	informe_lista_subs();
-
-}
 

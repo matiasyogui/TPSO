@@ -1,6 +1,6 @@
 #include "envio_recepcion.h"
 
-#define GESTORES_CLIENTES 100
+#define GESTORES_CLIENTES 5
 
 char* IP_SERVER;
 char* PUERTO_SERVER;
@@ -72,6 +72,8 @@ void* iniciar_servidor(void){
 
     if (s < 0) { perror("[ENVIO_RECEPCION.C] LISTEN ERROR"); raise(SIGINT); }
 
+    printf("El servidor esta activo\n");
+
     while (true) {
 
     	esperar_cliente(socket_servidor);
@@ -125,7 +127,7 @@ static void* _gestor_clientes(){
 	void *p_cliente;
 	int s;
 
-	pthread_cleanup_push(_interruptor_handler, &mutex_cola);
+
 
 	while (true) {
 
@@ -133,13 +135,15 @@ static void* _gestor_clientes(){
 
 		pthread_mutex_lock(&mutex_cola);
 
+		pthread_cleanup_push(_interruptor_handler, &mutex_cola);
+
 		p_cliente = queue_pop(cola_clientes);
 		if (p_cliente == NULL ) {
 			pthread_cond_wait(&cond, &mutex_cola);
 			p_cliente = queue_pop(cola_clientes);
 		}
 
-		pthread_mutex_unlock(&mutex_cola);
+		pthread_cleanup_pop(1);
 
 		s = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, 0);
 		if (s != 0) perror("[ENVIO_RECEPCION.C] PTHREAD_SETCANCELSTATE ERROR");
@@ -151,8 +155,6 @@ static void* _gestor_clientes(){
 		if (s != 0) perror("[ENVIO_RECEPCION.C] PTHREAD_SETCANCELSTATE ERROR");
 
 	}
-
-	pthread_cleanup_pop(1);
 
 	pthread_exit(0);
 }
@@ -238,6 +240,7 @@ static void detener_servidor(void* nada){
     }
 
     close(socket_servidor);
+
     queue_destroy_and_destroy_elements(cola_clientes, free);
 
     pthread_cond_destroy(&cond);

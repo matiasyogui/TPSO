@@ -13,8 +13,6 @@ static void cargar_envio(int cod_op, int id_mensaje, int id_suscriptor);
 void eliminar_suscriptor_tiempo(int tiempo, int id_sub, int cod_op);
 static void eliminar_sub_tiempo(void* _datos);
 
-void imprimir_lista(t_list* lista);
-
 
 
 int tratar_mensaje(int socket, int cod_op, bool esCorrelativo){
@@ -156,7 +154,9 @@ static int obtener_cod_op(t_buffer* buffer, int* tiempo){
 }
 
 
+
 //====================================================================
+
 
 
 static void cargar_envios_mensajes(int cod_op, int id_suscriptor){
@@ -179,8 +179,6 @@ static void cargar_envios_mensajes(int cod_op, int id_suscriptor){
 static void cargar_envios_subs(int cod_op, int id_mensaje){
 
 	t_list* lista_subs = obtener_lista_ids_suscriptores(cod_op);
-
-	imprimir_lista(lista_subs);
 
 	int id_suscriptor;
 
@@ -209,7 +207,9 @@ static void cargar_envio(int cod_op, int id_mensaje, int id_suscriptor){
 }
 
 
+
 //===================================================================================
+
 
 
 static void eliminar_sub_tiempo(void* _datos){
@@ -234,16 +234,5 @@ void eliminar_suscriptor_tiempo(int tiempo, int id_sub, int cod_op){
 	pthread_detach(tid);
 }
 
-//===================================================================================
 
 
-void imprimir_lista(t_list* lista){
-
-	if(list_size(lista) != 0){
-		printf("Lista: ");
-		for (int i = 0; i < list_size(lista); i++)
-			printf(" %i,", *((int*)list_get(lista, i)));
-
-		printf("\n");
-	}
-}

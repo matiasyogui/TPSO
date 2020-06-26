@@ -1,6 +1,6 @@
 #include "planificador.h"
 
-#define GESTORES_ENVIOS 10
+#define GESTORES_ENVIOS 5
 
 pthread_t thread_gestionEnvios[GESTORES_ENVIOS];
 
@@ -51,13 +51,13 @@ static void* _gestion_ficha_envios(void){
 		pthread_mutex_unlock(elemento);
 	}
 
-	pthread_cleanup_push(_interruptor_handler, &mutex_cola_envios);
-
 	while (true) {
 
 		pthread_testcancel();
 
 		pthread_mutex_lock(&mutex_cola_envios);
+
+		pthread_cleanup_push(_interruptor_handler, &mutex_cola_envios);
 
 		ficha_envio = queue_pop(cola_envios);
 		if (ficha_envio == NULL) {
@@ -66,7 +66,7 @@ static void* _gestion_ficha_envios(void){
 			ficha_envio = queue_pop(cola_envios);
 		}
 
-		pthread_mutex_unlock(&mutex_cola_envios);
+		pthread_cleanup_pop(1);
 
 		s = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_state);
 		if (s != 0) perror("[PLANIFICADOR.C] PTHREAD_SETCANCELSTATE ERROR");
@@ -78,8 +78,6 @@ static void* _gestion_ficha_envios(void){
 		if (s != 0) perror("[PLANIFICADOR.C] PTHREAD_SETCANCELSTATE ERROR");
 
 	}
-
-	pthread_cleanup_pop(1);
 
 	pthread_exit(0);
 }
