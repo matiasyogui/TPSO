@@ -19,7 +19,7 @@ typedef struct
 
 void* inicio_memoria; /* la memoria */
 t_list* particiones;  /* para la manipulacion de memoria*/
-int flag_memoria;
+int flag_memoria;  /*para la consolidacion de buddy_system*/
 int fifo;
 
 
