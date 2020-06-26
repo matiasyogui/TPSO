@@ -1,24 +1,9 @@
 #include "memoria.h"
+#include "memoria_extend.h"
 #include "particiones.h"
 #include "buddy_system.h"
 
-
-static void obtener_datos();
-
-
 //==============================================================================
-
-
-static void obtener_datos()
-{
-	TAMANO_MEMORIA = config_get_int_value(CONFIG, "TAMANO_MEMORIA");
-	TAMANO_MINIMO_PARTICION = config_get_int_value(CONFIG, "TAMANO_MINIMO_PARTICION");
-	FRECUENCIA_COMPACTACION = config_get_int_value(CONFIG, "FRECUENCIA_COMPACTACION");
-
-	ALGORITMO_MEMORIA = config_get_string_value(CONFIG, "ALGORITMO_MEMORIA");
-	ALGORITMO_REEMPLAZO = config_get_string_value(CONFIG, "ALGORITMO_REEMPLAZO");
-	ALGORITMO_PARTICION_LIBRE = config_get_string_value(CONFIG, "ALGORITMO_PARTICION_LIBRE");
-}
 
 
 void iniciar_memoria()
@@ -27,36 +12,52 @@ void iniciar_memoria()
 
 	inicio_memoria = malloc(TAMANO_MEMORIA);
 
+	particiones = list_create();
+
+	fifo = 0;
+
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
 		iniciar_memoria_particiones();
 
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "BS"))
 		iniciar_memoria_buddy();
-
 }
 
 
 //=============================================================================
 
 
-void* pedir_memoria(int size){
+void* pedir_memoria(int size)
+{
+	void* memoria_libre = NULL;
 
-	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
-		return pedir_memoria_particiones(size);
+	memoria_libre = buscar_espacio_libre_en_memoria(size);
 
-	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "BS"))
-		return 	pedir_memoria_buddy(size);
-
-	printf("no se reconocio el algoritmo memoria \nfijarse pedir_memroria()  \n");
-	return NULL;
-
+	if(memoria_libre != NULL)
+	{
+		return memoria_libre;
+	}
+	else {
+		if(FRECUENCIA_COMPACTACION == 0) {
+			FRECUENCIA_COMPACTACION = config_get_int_value(CONFIG, "FRECUENCIA_COMPACTACION");
+			compactar();
+			pedir_memoria(size);
+			printf("se va a compactar");
+		}
+		else {
+			eliminar_particion();
+			FRECUENCIA_COMPACTACION--;
+			pedir_memoria(size);
+		}
+	}
 }
 
 
 //==============================================================================
 
 
-void dump_memoria(){
+void dump_memoria()
+{
 
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
 		dump_memoria_particiones();
@@ -65,59 +66,11 @@ void dump_memoria(){
 		dump_memoria_buddy();
 
 	if((!string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES")) && (!string_equals_ignore_case(ALGORITMO_MEMORIA, "BS")))
-		printf("no se reconocio el algoritmo_memoria fijarse dump_memoria()  \n");
-
-}
-
-
-//==============================================================================
-
-
-void compactar()
-{
-	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
-		compactar_particiones();
-
-	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "BS"))
-		compactar_buddy();
-
-	if((!string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES")) && (!string_equals_ignore_case(ALGORITMO_MEMORIA, "BS")))
-		printf("no se reconocio el algoritmo_memoria fijarse compactar()  \n");
-
-
+		printf("no se reconocio el algoritmo_memoria fijarse dump_memoria() linea 54 \n");
 }
 
 
 //=============================================================================
-
-
-void consolidar()
-{
-	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
-		consolidar_particiones();
-
-	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "BS"))
-		consolidar_buddy();
-
-	if((!string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES")) && (!string_equals_ignore_case(ALGORITMO_MEMORIA, "BS")))
-		printf("no se reconocio el algoritmo_memoria fijarse consolidar()  \n");
-}
-
-
-//=============================================================================
-
-
-void liberar(t_particion* particion, int posicion)
-{
-	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
-		list_remove_and_destroy_element(particiones, posicion, free);
-
-	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "BS"))
-	{
-		particion->libre = true;
-		particion->fifo = -1;
-	}
-}
 
 
 void eliminar_particion_fifo()
@@ -176,6 +129,22 @@ void eliminar_particion()
 
 	consolidar();
 }
+
+//==============================================================================
+void compactar()
+{
+	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
+		compactar_particiones();
+
+	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "BS"))
+		compactar_buddy();
+
+
+	if((!string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES")) && (!string_equals_ignore_case(ALGORITMO_MEMORIA, "BS")))
+		printf("no se reconocio el algoritmo_memoria fijarse compactar()  \n");
+
+}
+
 
 //==============================================================================
 

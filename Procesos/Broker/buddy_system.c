@@ -52,10 +52,7 @@ void quita_ultima_palabra(char** palabra, char separador)
 
 void iniciar_memoria_buddy()
 {
-	particiones = list_create();
-
 	flag_memoria = 0;
-	fifo = 0;
 
 	t_particion* inicio = malloc(sizeof(t_particion));
 	inicio->inicio_particion = inicio_memoria;
@@ -126,6 +123,8 @@ void* creo_particiones_internas(t_particion* particion, int posicion, int size)
 	list_remove_and_destroy_element(particiones, posicion +2, free);
 
 	creo_particiones_internas(particionA, posicion, size);
+
+	return NULL;
 
 }
 
