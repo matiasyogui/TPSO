@@ -37,9 +37,8 @@ t_entrenador* elegirEntrenadorXCercania(int posx, int posy){
 
 	printf("cantidad de entrenadores dispoinbles %d \n",list_size(listaMapeada));
 
-	t_entrenador* aux;
-
-	/*for(int i = 1; i < list_size(listaMapeada); i++){ //metodo de la burbuja
+	/* 	t_entrenador* aux;
+	 	for(int i = 1; i < list_size(listaMapeada); i++){ //metodo de la burbuja
 		for(int j = 0; j < (list_size(listaMapeada) - 1); j++){
 			if(((t_entrenador*) list_get(listaMapeada, j)) -> cercania > ((t_entrenador*) list_get(listaMapeada, j + 1)) -> cercania){
 				aux = (t_entrenador*) list_remove(listaMapeada, j);
@@ -65,7 +64,7 @@ t_entrenador* elegirEntrenadorXCercania(int posx, int posy){
 
 void* algortimoCercano(void* elemento, int posicionPokemonx, int posicionPokemony){
 	t_entrenador* ent = (t_entrenador*) elemento;
-	ent -> cercania = fabs(((ent -> posicion -> posx) - posicionPokemonx) + ((ent -> posicion -> posy) - posicionPokemony));
+	ent -> cercania = (fabs((ent -> posicion -> posx) - posicionPokemonx) + fabs(((ent -> posicion -> posy) - posicionPokemony)));
 	return ((void*)ent);
 }
 
@@ -131,15 +130,10 @@ int suscribirse(char* cola){
 
 			case APPEARED_POKEMON:
 			case CAUGHT_POKEMON:
-
-
 			case LOCALIZED_POKEMON:
 
 				agregarMensajeLista(socket, cod_op);
 				printf("Se recibio un mensaje\n");
-				break;
-
-
 				break;
 		}
 	}
@@ -267,12 +261,13 @@ int main(){
 	pthread_create(&server, NULL, (void*)iniciar_servidor, NULL);
 
 	int cantEntrenadores = cant_elementos(POSICIONES_ENTRENADORES);
-	t_entrenador* entrenadores[cantEntrenadores];
+	//t_entrenador** entrenadores=calloc(cantEntrenadores,sizeof(t_entrenador));
+
 	pthread_t hilos[cantEntrenadores];
 
 	for(i=0;i<cantEntrenadores;i++){
-		entrenadores[i] = setteoEntrenador(i);
-	   	pthread_create(&hilos[i], NULL, (void*) ejecutarMensaje, (void*) entrenadores[i]);
+		t_entrenador* ent = setteoEntrenador(i);
+	   	pthread_create(&hilos[i], NULL, (void*) ejecutarMensaje, (void*) ent);
 	}
 
 	pthread_t blockAReady;
@@ -297,13 +292,13 @@ int main(){
 
 	eliminar_listas();
 
-	for(i=0;i<cantEntrenadores;i++){
+	/*for(i=0;i<cantEntrenadores;i++){
 		free(entrenadores[i]-> posicion);
 		free(entrenadores[i]-> objetivo);
 		free(entrenadores[i]-> pokemones);
 		free(entrenadores[i]);
 	}
-
+*/
 	return EXIT_SUCCESS;
 }
 
@@ -330,7 +325,7 @@ void leer_archivo_configuracion(){
 	PUERTO_BROKER= config_get_int_value(config,"PUERTO_BROKER");
 	LOG_FILE= config_get_string_value(config,"LOG_FILE");
 
-	config_destroy(config);
+	//config_destroy(config);
 }
 
 t_entrenador* setteoEntrenador(int i){
@@ -361,9 +356,7 @@ t_entrenador* setteoEntrenador(int i){
    		list_add(pokemonYaAtrapado, pokemones[jj]);
    		list_add(entrenador->pokemones,pokemones[jj]);
    	}
-
    	list_add(listaBlocked, entrenador);
-
    	return entrenador;
 }
 

@@ -2,8 +2,6 @@
 #define MEMORIA_H_
 
 #include "variables_globales.h"
-
-
 //-------------  ESTRUCTURAS  ----------------------------
 
 
@@ -11,13 +9,18 @@ typedef struct
 {
 	void* inicio_particion;
 	void* fin_particion;
+	bool libre;
+	char* flag;
+	int fifo;
 } t_particion;
 
 
 //------------  VARIABLES  --------------------------------
 
 void* inicio_memoria; /* la memoria */
-t_list* particiones;  /* para la manipulacion de memoria */
+t_list* particiones;  /* para la manipulacion de memoria*/
+int flag_memoria;
+int fifo;
 
 
 int TAMANO_MEMORIA;
@@ -41,15 +44,20 @@ desc: dado un tamnio te devuelve una particion de memoria en donde puedes guarda
 void* pedir_memoria(int size);
 /*
 name: eliminar_particion
-desc: dado una particion de memoria la "elimina"
+desc: elimina una particion por fifo o lru
 */
-void eliminar_particion(void* particion);
+void eliminar_particion();
+
 /*
 name: dump_memoria
 desc: describe toda la informacion de la memoria
 */
 void dump_memoria();
-
+/*
+name: compactar
+desc: comprime la memoria
+*/
+void compactar();
 
 #endif /* MEMORIA_H_ */
 
