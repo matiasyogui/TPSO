@@ -123,22 +123,22 @@ static int _obtener_id_notificacion(void* notificacion){
 }
 
 
-static bool _suscriptor_valido(void* suscriptor){
+static bool _verificar_suscriptor_valido(void* suscriptor){
 	return ((t_suscriptor*)suscriptor)->estado == CONECTADO;
 }
 
-static bool _mensaje_valido(void* mensaje){
+static bool _verificar_mensaje_valido(void* mensaje){
 	return ((t_mensaje*)mensaje)->estado == EN_MEMORIA;
 }
 
 
-static t_list* _obtener_lista_ids(t_list* lista, int(*funcion_obtener_id)(void*), bool(*validador_nodo)(void*)){
+static t_list* _obtener_lista_ids(t_list* lista, int(*funcion_obtener_id)(void*), bool(*_validador_nodo)(void*)){
 
 	t_list* lista_ids = list_create();
 
 	void _agregar_id_lista(void* elemento){
 
-		if (validador_nodo(elemento)) {
+		if (_validador_nodo(elemento)) {
 
 			int* p_id = malloc(sizeof(int));
 
@@ -161,7 +161,7 @@ t_list* obtener_lista_ids_mensajes(int cod_op){
 
 	pthread_rwlock_rdlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
 
-	lista = _obtener_lista_ids(list_get(LISTA_MENSAJES, cod_op), _obtener_id_mensaje, _mensaje_valido);
+	lista = _obtener_lista_ids(list_get(LISTA_MENSAJES, cod_op), _obtener_id_mensaje, _verificar_mensaje_valido);
 
 	pthread_rwlock_unlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
 
@@ -176,7 +176,7 @@ t_list* obtener_lista_ids_suscriptores(int cod_op){
 
 	pthread_rwlock_rdlock(&RWLOCK_SUBLISTAS_SUSCRIPTORES[cod_op]);
 
-	lista = _obtener_lista_ids(list_get(LISTA_SUBS, cod_op), _obtener_id_suscriptor, _suscriptor_valido);
+	lista = _obtener_lista_ids(list_get(LISTA_SUBS, cod_op), _obtener_id_suscriptor, _verificar_suscriptor_valido);
 
 	pthread_rwlock_unlock(&RWLOCK_SUBLISTAS_SUSCRIPTORES[cod_op]);
 
@@ -186,15 +186,13 @@ t_list* obtener_lista_ids_suscriptores(int cod_op){
 
 void* serializar_mensaje(int cod_op, int id, int* size){
 
-	void* stream;
-
 	t_list* sublista = list_get(LISTA_MENSAJES, cod_op);
 
 	pthread_rwlock_rdlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
 
 	t_mensaje* mensaje = buscar_por_id(sublista, id, _obtener_id_mensaje);
 
-	stream = (mensaje == NULL) ? NULL : (_mensaje_valido(mensaje) ? serializar_nodo_mensaje(mensaje, size) : NULL);
+	void* stream = (mensaje == NULL) ? NULL : (_mensaje_valido(mensaje) ? serializar_nodo_mensaje(mensaje, size) : NULL);
 
 	pthread_rwlock_unlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
 
@@ -239,15 +237,13 @@ void cambiar_estado_notificacion(int cod_op, int id_mensaje, int id_suscriptor, 
 
 int obtener_socket(int cod_op, int id_suscriptor){
 
-	int socket;
-
 	t_list* sublista = list_get(LISTA_SUBS, cod_op);
 
 	pthread_rwlock_rdlock(&RWLOCK_SUBLISTAS_SUSCRIPTORES[cod_op]);
 
 	t_suscriptor* sub = buscar_por_id(sublista, id_suscriptor, _obtener_id_suscriptor);
 
-	socket = (sub == NULL) ? -1 : (_suscriptor_valido(sub) ? sub->socket : -1) ;
+	int socket = (sub == NULL) ? -1 : (_suscriptor_valido(sub) ? sub->socket : -1) ;
 
 	pthread_rwlock_unlock(&RWLOCK_SUBLISTAS_SUSCRIPTORES[cod_op]);
 
@@ -285,7 +281,7 @@ void eliminar_mensaje_id(int id, int cod_op){
 
 	pthread_rwlock_wrlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
 
-	_eliminar_nodo_por_id(sublista, id, _obtener_id_mensaje, borrar_mensaje);
+	_eliminar_nodo_por_id(sublista, id, _obtener_id_mensaje, borrar_nodo_mensaje);
 
 	pthread_rwlock_unlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
 }
@@ -297,7 +293,7 @@ void eliminar_suscriptor_id(int id, int cod_op){
 
 	pthread_rwlock_wrlock(&RWLOCK_SUBLISTAS_SUSCRIPTORES[cod_op]);
 
-	_eliminar_nodo_por_id(sublista, id, _obtener_id_suscriptor, borrar_suscriptor);
+	_eliminar_nodo_por_id(sublista, id, _obtener_id_suscriptor, borrar_nodo_suscriptor);
 
 	pthread_rwlock_unlock(&RWLOCK_SUBLISTAS_SUSCRIPTORES[cod_op]);
 }
@@ -370,12 +366,12 @@ static int _cambiar_estado_mensaje(estado_mensaje nuevo_estado, int id_mensaje, 
 
 
 static void _limpiar_sublista_mensaje(void* sublista){
-	list_destroy_and_destroy_elements(sublista, borrar_mensaje);
+	list_destroy_and_destroy_elements(sublista, borrar_nodo_mensaje);
 }
 
 
 static void _limpiar_sublista_suscriptores(void* sublista){
-	list_destroy_and_destroy_elements(sublista, borrar_suscriptor);
+	list_destroy_and_destroy_elements(sublista, borrar_nodo_suscriptor);
 }
 
 
@@ -423,10 +419,9 @@ static void informe_lista_mensajes(void){
 
 	for (int i = 0; i < list_size(LISTA_MENSAJES); i++) {
 
-		printf("Mensajes del tipo %s\n", cod_opToString(i));
-
 		t_list* list_tipo_mensaje = list_get(LISTA_MENSAJES, i);
 
+		printf("Mensajes del tipo %s\n", cod_opToString(i));
 		printf(" | Cantidad de mensajes = %d\n", list_tipo_mensaje->elements_count);
 
 		list_iterate(list_tipo_mensaje, (void*)imprimir_mensaje);
@@ -450,10 +445,9 @@ static void informe_lista_subs(void){
 
 	for (int i = 0; i < list_size(LISTA_SUBS); i++) {
 
-		printf("Suscriptores de la cola %s \n", cod_opToString(i));
-
 		t_list* list_tipo_mensaje = list_get(LISTA_SUBS, i);
 
+		printf("Suscriptores de la cola %s \n", cod_opToString(i));
 		printf(" | Cantidad de subscriptores = %d \n", list_tipo_mensaje->elements_count);
 
 		list_iterate(list_tipo_mensaje, (void*)imprimir_suscriptor);

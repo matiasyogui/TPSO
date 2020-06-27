@@ -4,11 +4,8 @@
 
 pthread_t thread_gestionEnvios[GESTORES_ENVIOS];
 
-static void* _gestion_ficha_envios(void);
-
+static void* _obtener_ficha_envios(void);
 static int realizar_envio(void* envio);
-
-static void detener_threads(pthread_t vector_threads[], int cantidad);
 
 
 
@@ -21,7 +18,7 @@ int iniciar_envios(void){
 	int s;
 
 	for (int i = 0; i < GESTORES_ENVIOS; i++) {
-		s = pthread_create(&thread_gestionEnvios[i], NULL, (void*)_gestion_ficha_envios, NULL);
+		s = pthread_create(&thread_gestionEnvios[i], NULL, (void*)_obtener_ficha_envios, NULL);
 		if (s != 0) perror("[LISTAS.C] PTHREAD_CREATE ERROR");
 	}
 
@@ -31,7 +28,17 @@ int iniciar_envios(void){
 
 int detener_envios(void){
 
-	detener_threads(thread_gestionEnvios, GESTORES_ENVIOS);
+	int s;
+
+    for (int i = 0; i < GESTORES_ENVIOS; i++) {
+    	s = pthread_cancel(thread_gestionEnvios[i]);
+    	if (s != 0) perror("[LISTAS.C] PTHREAD_CANCEL ERROR");
+    }
+
+    for (int i = 0; i < GESTORES_ENVIOS; i++) {
+        s = pthread_join(thread_gestionEnvios[i], NULL);
+        if (s != 0) perror("[LISTAS.C] PTHREAD_JOIN ERROR");
+    }
 
     return EXIT_SUCCESS;
 }
@@ -42,7 +49,7 @@ int detener_envios(void){
 
 
 
-static void* _gestion_ficha_envios(void){
+static void* _obtener_ficha_envios(void){
 
 	void* ficha_envio;
 	int s, old_state;
@@ -111,7 +118,7 @@ static int realizar_envio(void* _envio){
 	s = recv(socket, &confirmacion, sizeof(int), 0);
 	if (s <= 0) { perror("[PLANIFICAR.C] RECV ERROR"); desconectar_suscriptor(id_suscriptor, cod_op); return EXIT_FAILURE; }
 
-	t_notificacion* notificacion = nodo_notificacion(id_suscriptor, confirmacion);
+	t_notificacion* notificacion = crear_nodo_notificacion(id_suscriptor, confirmacion);
 
 	agregar_notificacion(cod_op, id_mensaje, notificacion); // podria buscar si existe ya la notificacion en ese caso solo cambiaria el valor del ack
 
@@ -121,22 +128,3 @@ static int realizar_envio(void* _envio){
 }
 
 
-
-//===================================================================================================
-
-
-
-static void detener_threads(pthread_t vector_threads[], int cantidad){
-
-	int s;
-
-    for (int i = 0; i < cantidad; i++) {
-    	s = pthread_cancel(vector_threads[i]);
-    	if (s != 0) perror("[LISTAS.C] PTHREAD_CANCEL ERROR");
-    }
-
-    for (int i = 0; i < cantidad; i++) {
-        s = pthread_join(vector_threads[i], NULL);
-        if (s != 0) perror("[LISTAS.C] PTHREAD_JOIN ERROR");
-    }
-}

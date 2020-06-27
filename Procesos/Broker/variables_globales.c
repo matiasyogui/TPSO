@@ -37,7 +37,7 @@ void finalizar_variables_globales(void){
 }
 
 
-t_mensaje* nodo_mensaje(int cod_op, int id_correlativo, t_buffer* mensaje){
+t_mensaje* crear_nodo_mensaje(int cod_op, int id_correlativo, t_buffer* mensaje){
 
 	t_mensaje* nodo_mensaje = malloc(sizeof( t_mensaje ));
 
@@ -52,7 +52,7 @@ t_mensaje* nodo_mensaje(int cod_op, int id_correlativo, t_buffer* mensaje){
 }
 
 
-t_suscriptor* nodo_suscriptor(int cod_op, int socket){
+t_suscriptor* crear_nodo_suscriptor(int cod_op, int socket){
 
 	t_suscriptor* nodo_suscriptor = malloc(sizeof(t_suscriptor));
 
@@ -65,7 +65,7 @@ t_suscriptor* nodo_suscriptor(int cod_op, int socket){
 }
 
 
-t_notificacion* nodo_notificacion(int id_suscriptor, bool confirmacion){
+t_notificacion* crear_nodo_notificacion(int id_suscriptor, bool confirmacion){
 
 	t_notificacion* notificacion = malloc(sizeof(t_notificacion));
 
@@ -76,7 +76,7 @@ t_notificacion* nodo_notificacion(int id_suscriptor, bool confirmacion){
 }
 
 
-t_envio* nodo_envio(int cod_op, int id_mensaje, int id_suscriptor){
+t_envio* crear_nodo_envio(int cod_op, int id_mensaje, int id_suscriptor){
 
 	t_envio* nodo_envio  = malloc(sizeof(t_envio));
 
@@ -88,7 +88,7 @@ t_envio* nodo_envio(int cod_op, int id_mensaje, int id_suscriptor){
 }
 
 
-t_datos* nodo_datos(int cod_op, int id_suscriptor, int tiempo_suscripcion){
+t_datos* crear_nodo_datos(int cod_op, int id_suscriptor, int tiempo_suscripcion){
 
 	t_datos* datos = malloc(sizeof(t_datos));
 
@@ -100,7 +100,7 @@ t_datos* nodo_datos(int cod_op, int id_suscriptor, int tiempo_suscripcion){
 }
 
 
-void borrar_mensaje(void* nodo_mensaje){
+void borrar_nodo_mensaje(void* nodo_mensaje){
 
 	t_mensaje* aux = nodo_mensaje;
 	free(aux->mensaje->stream);
@@ -110,7 +110,7 @@ void borrar_mensaje(void* nodo_mensaje){
 }
 
 
-void borrar_suscriptor(void* suscriptor){
+void borrar_nodo_suscriptor(void* suscriptor){
 
 	t_suscriptor* aux = suscriptor;
 	//close(aux->socket);

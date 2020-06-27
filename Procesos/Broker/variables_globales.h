@@ -25,23 +25,6 @@ typedef enum{
 }estado_mensaje;
 
 
-typedef enum{
-
-	MENSAJE,
-	SUSCRIPCION,
-
-}tipo;
-
-
-typedef struct{
-
-	int id;
-	int cod_op;
-	int flag_estatus;
-
-}t_nodo;
-
-
 typedef struct{
 
 	uint32_t cod_op;
@@ -54,13 +37,12 @@ typedef struct{
 
 typedef struct{
 
-	estado_mensaje estado;
 	uint32_t cod_op;
 	uint32_t id;
 	int id_correlativo;
 	t_buffer* mensaje;
 	t_list* notificiones_envio;
-	pthread_mutex_t mutex;
+	estado_mensaje estado;
 
 }t_mensaje;
 
@@ -71,14 +53,6 @@ typedef struct{
 	bool ACK;
 
 }t_notificacion;
-
-
-typedef struct{
-
-	tipo tipo;
-	void* contenido;
-
-}t_tarea;
 
 
 typedef struct{
@@ -115,19 +89,19 @@ void iniciar_variables_globales(void);
 void finalizar_variables_globales(void);
 
 
-t_mensaje* nodo_mensaje(int cod_op, int id_correlativo, t_buffer* mensaje);
+t_mensaje* crear_nodo_mensaje(int cod_op, int id_correlativo, t_buffer* mensaje);
 
-t_suscriptor* nodo_suscriptor(int cod_op, int socket);
+t_suscriptor* crear_nodo_suscriptor(int cod_op, int socket);
 
-t_notificacion* nodo_notificacion(int id_suscriptor, bool confirmacion);
+t_notificacion* crear_nodo_notificacion(int id_suscriptor, bool confirmacion);
 
-t_envio* nodo_envio(int cod_op, int id_mensaje, int id_suscriptor);
+t_envio* crear_nodo_envio(int cod_op, int id_mensaje, int id_suscriptor);
 
-t_datos* nodo_datos(int cod_op, int id_suscriptor, int tiempo_suscripcion);
+t_datos* crear_nodo_datos(int cod_op, int id_suscriptor, int tiempo_suscripcion);
 
-void borrar_mensaje(void* nodo_mensaje);
+void borrar_nodo_mensaje(void* nodo_mensaje);
 
-void borrar_suscriptor(void* suscriptor);
+void borrar_nodo_suscriptor(void* suscriptor);
 
 
 //==========================MOSTRAS ENUMS============================

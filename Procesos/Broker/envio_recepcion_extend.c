@@ -1,13 +1,13 @@
 #include "envio_recepcion.h"
 
-static t_buffer* recibir_mensaje(int socket_cliente);
-static t_mensaje* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo);
+static void* recibir_mensaje(int socket_cliente);
+static void* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo);
 
 static int enviar_confirmacion(int socket, int mensaje);
 static int obtener_cod_op(t_buffer* buffer, int* tiempo);
 
 static void cargar_envios_mensajes(int cod_op, int id_suscriptor);
-static void cargar_envios_subs(int cod_op, int id_mensaje);
+static void cargar_envios_suscriptores(int cod_op, int id_mensaje);
 static void cargar_envio(int cod_op, int id_mensaje, int id_suscriptor);
 
 void eliminar_suscriptor_tiempo(int tiempo, int id_sub, int cod_op);
@@ -28,7 +28,7 @@ int tratar_mensaje(int socket, int cod_op, bool esCorrelativo){
 
 	enviar_confirmacion(socket, mensaje->id);
 
-	cargar_envios_subs(cod_op, mensaje->id);
+	cargar_envios_suscriptores(cod_op, mensaje->id);
 
 	close(socket);
 
@@ -43,7 +43,7 @@ int tratar_suscriptor(int socket){
 
 	int tiempo, cod_op = obtener_cod_op(mensaje, &tiempo);
 
-	t_suscriptor* suscriptor = nodo_suscriptor(cod_op, socket);
+	t_suscriptor* suscriptor = crear_nodo_suscriptor(cod_op, socket);
 
 	//printf("cod_op = %d, socket = %d, suscriptor = %p\n", suscriptor->cod_op, suscriptor->socket, suscriptor);
 
@@ -81,7 +81,7 @@ int tratar_reconexion(int socket){
 }
 
 
-static t_mensaje* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
+static void* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
 
 	int s, id_correlativo;
 
@@ -95,7 +95,7 @@ static t_mensaje* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativ
 	t_buffer* mensaje = recibir_mensaje(socket);
 	if (mensaje == NULL) return NULL;
 
-	t_mensaje* n_mensaje = nodo_mensaje(cod_op, id_correlativo, mensaje);
+	void* n_mensaje = crear_nodo_mensaje(cod_op, id_correlativo, mensaje);
 
 	//printf("Cod_op = %d, Id_correlativo = %d, Mensaje_size = %d\n", n_mensaje->cod_op, n_mensaje->id_correlativo, n_mensaje->mensaje->size);
 
@@ -120,7 +120,7 @@ static int enviar_confirmacion(int socket, int mensaje){
 
 
 
-static t_buffer* recibir_mensaje(int cliente_fd){
+static void* recibir_mensaje(int cliente_fd){
 
 	int s;
 	t_buffer* buffer = malloc(sizeof(t_buffer));
@@ -176,7 +176,7 @@ static void cargar_envios_mensajes(int cod_op, int id_suscriptor){
 }
 
 
-static void cargar_envios_subs(int cod_op, int id_mensaje){
+static void cargar_envios_suscriptores(int cod_op, int id_mensaje){
 
 	t_list* lista_subs = obtener_lista_ids_suscriptores(cod_op);
 
@@ -195,7 +195,7 @@ static void cargar_envios_subs(int cod_op, int id_mensaje){
 
 static void cargar_envio(int cod_op, int id_mensaje, int id_suscriptor){
 
-	t_envio* envio = nodo_envio(cod_op, id_mensaje, id_suscriptor);
+	t_envio* envio = crear_nodo_envio(cod_op, id_mensaje, id_suscriptor);
 
 	pthread_mutex_lock(&mutex_cola_envios);
 
@@ -226,7 +226,7 @@ static void eliminar_sub_tiempo(void* _datos){
 
 void eliminar_suscriptor_tiempo(int tiempo, int id_sub, int cod_op){
 
-	t_datos* datos = nodo_datos(cod_op, id_sub, tiempo);
+	t_datos* datos = crear_nodo_datos(cod_op, id_sub, tiempo);
 
 	pthread_t tid;
 
