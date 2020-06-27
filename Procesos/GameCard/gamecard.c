@@ -26,7 +26,7 @@ int main(){
 
 //	montar_TallGrass();
 
-	iniciar_suscripciones(NEW_POKEMON, CATCH_POKEMON, GET_POKEMON);
+//	iniciar_suscripciones(NEW_POKEMON, CATCH_POKEMON, GET_POKEMON);
 
 	pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
 

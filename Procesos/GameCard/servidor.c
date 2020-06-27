@@ -9,7 +9,7 @@ pthread_t thread;
 void esperar_cliente(int);
 void serve_client(int *socket);
 void process_request(int cod_op, int cliente_fd);
-t_buffer* recibir_mensaje(int socket_cliente);
+t_buffer* recibir_mensaje(int socket_cliente, int*);
 void leer_mensaje(t_buffer* buffer);
 
 
@@ -99,6 +99,7 @@ void process_request(int cod_op, int cliente_fd) {
 
 		case GET_POKEMON:
 			printf("\nRecibio get pokemon\n");
+			leer_get_pokemon(cliente_fd);
 			break;
 
 		default:
@@ -108,9 +109,20 @@ void process_request(int cod_op, int cliente_fd) {
 }
 
 
-t_buffer* recibir_mensaje(int socket_cliente){
+void leer_get_pokemon(int cliente_fd){
+
+	int idMsj;
+	t_buffer *buf = recibir_mensaje(cliente_fd, &idMsj);
+
+	leer_mensaje_getPokemon(buf);
+
+}
+
+t_buffer* recibir_mensaje(int socket_cliente,int * idMsj){
 
 	t_buffer* buffer = malloc(sizeof(t_buffer));
+
+	recv(socket_cliente, idMsj, sizeof(uint32_t), MSG_WAITALL);
 
 	recv(socket_cliente, &(buffer->size), sizeof(uint32_t), MSG_WAITALL);
 
@@ -120,6 +132,29 @@ t_buffer* recibir_mensaje(int socket_cliente){
 
 	return buffer;
 }
+
+
+void leer_mensaje_getPokemon(t_buffer* buffer){
+
+	char* pokemon;
+	int tamano_mensaje;
+	int idMensaje;
+
+	int offset=0;
+
+	memcpy(&tamano_mensaje, buffer->stream + offset, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	pokemon = malloc(tamano_mensaje);
+	memcpy(pokemon, buffer->stream + offset, tamano_mensaje);
+	offset += tamano_mensaje;
+
+	printf("GET pokemon = %s \n", pokemon);
+	fflush(stdout);
+	free(buffer->stream);
+	free(buffer);
+}
+
 
 
 void leer_mensaje(t_buffer* buffer){
