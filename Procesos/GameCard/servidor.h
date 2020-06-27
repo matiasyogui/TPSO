@@ -18,7 +18,7 @@ typedef struct{
 int mensajeActual;
 
 void iniciar_servidor(void);
-
-
+void leer_get_pokemon(int);
+void leer_mensaje_getPokemon(t_buffer*);
 
 #endif /* SERVIDOR_H_ */
