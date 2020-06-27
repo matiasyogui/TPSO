@@ -16,10 +16,26 @@ int crear_conexion(char *ip, char* puerto){
 	int s;
 
 	s = socket_cliente = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
-	if(s < 0) perror("[cosas_comunes.c] SOCKET ERROR");
+	if(s < 0){
+		perror("[cosas_comunes.c] SOCKET ERROR");
+		return s;
+	}
+
+	/*printf("s1 vale %d/n",s);
+	fflush(stdout);
+	sleep(5);
+*/
 
 	s = connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen);
-	if(s < 0) perror("[cosas_comunes.c] CONNECT ERROR");
+	if(s < 0){
+		perror("[cosas_comunes.c] CONNECT ERROR");
+		return s;
+	}
+
+/*	printf("s2 vale %d/n",s);
+	fflush(stdout);
+	sleep(5);
+*/
 
 	freeaddrinfo(server_info);
 

@@ -267,7 +267,7 @@ int main(){
 
 	for(i=0;i<cantEntrenadores;i++){
 		t_entrenador* ent = setteoEntrenador(i);
-	   	pthread_create(&hilos[i], NULL, (void*) ejecutarMensaje, (void*) ent);
+	   pthread_create(&hilos[i], NULL, (void*) ejecutarMensaje, (void*) ent);
 	}
 
 	pthread_t blockAReady;
