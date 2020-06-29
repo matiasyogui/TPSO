@@ -72,58 +72,109 @@ bool buscarPokemon(void* elemento, void* pokemon){
 	return string_equals_ignore_case((char*) pokemon, (char*)elemento);
 }
 
+
+void* mensaje_suscripcion(int cod_op, int cola_mensajes, int tiempo, int *size){
+
+	void* mensaje = stream_suscripcion(cola_mensajes, tiempo, size);
+
+	void* stream = malloc(2 * sizeof(uint32_t) + *size);
+
+	int offset = 0;
+
+	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, size, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, mensaje, *size);
+	offset += *size;
+
+	*size = offset;
+	free(mensaje);
+	return stream;
+}
+
+
+void* stream_suscripcion(int cola_mensajes, int tiempo, int* size){
+
+	*size = 2 * sizeof(uint32_t);
+	void* stream = malloc(*size);
+
+	int offset = 0;
+
+	memcpy(stream + offset, &cola_mensajes, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &tiempo, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	return stream;
+}
+
+int conectarse(void){
+
+	int socket, s;
+	do{
+		s = socket = crear_conexion("127.0.0.1", "4444");
+		if(s < 0){ perror("FALLO LA CONEXION CON EL BROKER"); sleep(TIEMPO_RECONEXION); continue; }
+		break;
+	}while(true);
+
+	return socket;
+}
+
 int suscribirse(char* cola){
 
-	int socket = crear_conexion("127.0.0.1", "4444");
-	while(socket<=0){
-		perror("FALLO LA CONEXION CON EL BROKER");
-		printf("Intento reconexion \n");
-		sleep(TIEMPO_RECONEXION);
-		socket = crear_conexion("127.0.0.1", "4444");
-	}
-	char *datos[] = {"suscriptor", cola, "-1"};
+	int s, socket;
 
-	t_paquete* paquete_enviar = armar_paquete2(datos);
 
-	enviar_mensaje(paquete_enviar, socket);
 
-	int cod_op, s;
+	int size;
+	void* mensaje = stream_suscripcion(codigo_operacion(cola), -1, &size);
+
+	s = send(socket, mensaje, size, MSG_NOSIGNAL);
+	if(s < 0) {}
+
+	int cod_op;
 	bool confirmacion_suscripcion;
 
 	s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
-	while ( s <= 0) {
+	while (s < 0) {
 		perror("RECV ERROR \n");
 		socket = crear_conexion("127.0.0.1", "4444");
-		while(socket<0){
+		while(socket < 0){
 			perror("FALLO LA CONEXION CON EL BROKER \n");
 			printf("Intento reconexion \n");
 			sleep(TIEMPO_RECONEXION);
 			socket = crear_conexion("127.0.0.1", "4444");
 		}
+
 		enviar_mensaje(paquete_enviar, socket);
 		s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
+
 	}
+
 	printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", confirmacion_suscripcion);
 
 	while(1){
 		printf("espero recibir algo \n");
 		s = recv(socket, &cod_op, sizeof(uint32_t), 0 );
-		while(s<=0)
-		{
-		while (s <= 0) {
-			perror("FALLO RECV");
-			socket = crear_conexion("127.0.0.1", "4444");
-			while(socket<0){
-				perror("FALLO LA CONEXION CON EL BROKER \n");
-				printf("Intento reconexion \n");
-				sleep(TIEMPO_RECONEXION);
+		while (s < 0) {
+			while (s < 0) {
+				perror("FALLO RECV");
 				socket = crear_conexion("127.0.0.1", "4444");
+				while(socket<0){
+					perror("FALLO LA CONEXION CON EL BROKER \n");
+					printf("Intento reconexion \n");
+					sleep(TIEMPO_RECONEXION);
+					socket = crear_conexion("127.0.0.1", "4444");
+				}
+				enviar_mensaje(paquete_enviar, socket);
+				s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
 			}
-			enviar_mensaje(paquete_enviar, socket);
-			s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
-			}
-		printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", confirmacion_suscripcion);
-		s = recv(socket, &cod_op, sizeof(uint32_t), 0 );
+			printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", confirmacion_suscripcion);
+			s = recv(socket, &cod_op, sizeof(uint32_t), 0 );
 		}
 
 		switch(cod_op){
@@ -139,6 +190,8 @@ int suscribirse(char* cola){
 	}
 	return EXIT_SUCCESS;
 }
+
+
 
 bool nosInteresaMensaje(t_mensajeTeam* msg){
 

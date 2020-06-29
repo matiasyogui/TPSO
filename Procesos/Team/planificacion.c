@@ -431,7 +431,7 @@ void enviar_mensaje(t_paquete* paquete, int socket_cliente){
 
 	void* mensaje = serializar_paquete(paquete, &bytes_enviar);
 
-	if(send(socket_cliente, mensaje, bytes_enviar, 0) < 0)
+	if(send(socket_cliente, mensaje, bytes_enviar, MSG_NOSIGNAL) < 0)
 		perror(" FALLO EL SEND");
 
 	free(paquete->buffer->stream);
@@ -465,7 +465,7 @@ void enviarGet(void* elemento){
 
 	//enviamos el mensaje
 	int socket = crear_conexion("127.0.0.1", "4444");
-	if(send(socket, stream, offset, 0) < 0)
+	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
 		perror(" FALLO EL SEND DEL GET \n");
 
 
@@ -473,7 +473,7 @@ void enviarGet(void* elemento){
 	int id_mensaje,s;
 	s = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
 	if(s>=0){
-	printf("[CONFIRMACION DE RECEPCION DE MENSAJE] mi id del mensaje = %d \n", id_mensaje);
-	list_add(lista_id_correlativos, id_mensaje);
+		printf("[CONFIRMACION DE RECEPCION DE MENSAJE] mi id del mensaje = %d \n", id_mensaje);
+		list_add(lista_id_correlativos, id_mensaje);
 	}
-	}
+}

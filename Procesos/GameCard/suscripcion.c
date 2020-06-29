@@ -103,26 +103,26 @@ static void esperando_mensajes(int socket){
 
 	while(true){
 
-			s = recv(socket, &cod_op, sizeof(uint32_t), 0 );
-			if (s < 0) { perror("FALLO RECV"); continue; }
+		s = recv(socket, &cod_op, sizeof(uint32_t), 0 );
+		if (s < 0) { perror("FALLO RECV"); continue; }
 
-			s = recv(socket, &id_correlativo, sizeof(uint32_t), 0);
-			if (s < 0) { perror("FALLO RECV"); continue; }
+		s = recv(socket, &id_correlativo, sizeof(uint32_t), 0);
+		if (s < 0) { perror("FALLO RECV"); continue; }
 
-			printf("Se recibio un %s del broker\n", cod_opToString(cod_op));
+		printf("Se recibio un %s del broker\n", cod_opToString(cod_op));
 
-			switch(cod_op){
-				// definir las acciones que debe realizar
-				case NEW_POKEMON:
-				case CATCH_POKEMON:
-				case GET_POKEMON:
+		switch(cod_op){
+			// definir las acciones que debe realizar
+			case NEW_POKEMON:
+			case CATCH_POKEMON:
+			case GET_POKEMON:
 
-					mensaje = recibir_mensaje(socket, &size);
-					if(mensaje != NULL) enviar_confirmacion(socket, true);
-					else enviar_confirmacion(socket, false);
+				mensaje = recibir_mensaje(socket, &size);
+				if(mensaje != NULL) enviar_confirmacion(socket, true);
+				else enviar_confirmacion(socket, false);
 
-					break;
-			}
+				break;
+		}
 	}
 }
 

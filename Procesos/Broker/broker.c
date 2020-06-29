@@ -2,25 +2,12 @@
 
 pthread_t thread_server;
 
-static void iniciar_programa(void);
 static void finalizar_programa(void);
 static void comenzar_servidor(void);
 static void detener_servidor(void);
 
 
 int main(void){
-
-	signal(SIGINT, (void*)finalizar_programa);
-
-	iniciar_programa();
-
-	pthread_join(thread_server, NULL);
-
-	return EXIT_SUCCESS;
-}
-
-
-static void iniciar_programa(void){
 
 	iniciar_variables_globales();
 
@@ -31,6 +18,12 @@ static void iniciar_programa(void){
 	comenzar_servidor();
 
 	iniciar_envios();
+
+	signal(SIGINT, (void*)finalizar_programa);
+
+	pthread_join(thread_server, NULL);
+
+	return EXIT_SUCCESS;
 }
 
 
