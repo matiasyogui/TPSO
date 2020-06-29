@@ -2,7 +2,8 @@
 
 void* pasajeBlockAReady(){
 
-	while(faltanAtraparPokemones()){
+	while(faltanAtraparPokemones())
+	{
 
 		sem_wait(&sem_cant_mensajes);
 
@@ -20,6 +21,7 @@ void* pasajeBlockAReady(){
 		void* stream;
 		void* streamUltimoMensaje;
 		void* pokemon;
+
 		switch(mensaje->cod_op){
 
 		bool _buscarPokemon(void* elemento){
@@ -131,10 +133,11 @@ void* pasajeBlockAReady(){
 			ent -> estaDisponible = true;
 			break;
 		}
-		while(list_size(listaBlocked)>0){
-			//iniciar deteccion de deadlock
-			//solucionar deadlock
-		}
+	}
+	while(list_size(listaBlocked)>0)
+	{
+		//iniciar deteccion de deadlock
+		//solucionar deadlock
 	}
 
 }
@@ -146,9 +149,9 @@ bool tienenLosMismosElementos(t_list* lista1, t_list* lista2){
 	listaAux = list_duplicate(lista2);
 	bool encontro = true;
 
-	while(i<list_size(lista1) && encontro){
+	while(i<(list_size(lista1)-1) && encontro){
 		encontro = false;
-		while(j<list_size(listaAux) && !encontro){
+		while(j<(list_size(listaAux)-1) && !encontro){
 			printf("comparando %s y %s \n",(char*) list_get(lista1,i), (char*) list_get(listaAux,j));
 			fflush(stdout);
 			if(strcmp((char*) list_get(lista1,i),(char*) list_get(lista2,j)) == 0){
@@ -223,9 +226,11 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 
 	//enviamos el mensaje
 	int socket = crear_conexion("127.0.0.1", "4444");
+	if(socket>0){
 	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
+	{
 		perror(" FALLO EL SEND DEL CATCH \n");
-
+	}
 
 	//esperamos respuesta del broker
 	int id_mensaje,s;
@@ -246,6 +251,7 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 	pthread_mutex_unlock(&mListaBlocked);
 
 	}
+	}
 	else{
 		int size, idAux;
 		t_mensajeTeam* nuevoMensaje = malloc(sizeof(t_mensajeTeam));
@@ -260,10 +266,10 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 		list_add(lista_mensajes,nuevoMensaje);
 		pthread_mutex_unlock(&mListaGlobal);
 
-		idAux = idFuncionesDefault+1;
-		idFuncionesDefault = idFuncionesDefault - 1;
+		ent ->idCorrelativo = idFuncionesDefault;
+		idFuncionesDefault--;
 
-		ent ->idCorrelativo = idAux;
+
 		ent -> ultimoMensajeEnviado = ent -> mensaje;
 		ent -> estaDisponible = false;
 

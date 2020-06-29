@@ -192,7 +192,7 @@ void* serializar_mensaje(int cod_op, int id, int* size){
 
 	t_mensaje* mensaje = buscar_por_id(sublista, id, _obtener_id_mensaje);
 
-	void* stream = (mensaje == NULL) ? NULL : (_mensaje_valido(mensaje) ? serializar_nodo_mensaje(mensaje, size) : NULL);
+	void* stream = (mensaje == NULL) ? NULL : (_verificar_mensaje_valido(mensaje) ? serializar_nodo_mensaje(mensaje, size) : NULL);
 
 	pthread_rwlock_unlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
 
@@ -243,7 +243,7 @@ int obtener_socket(int cod_op, int id_suscriptor){
 
 	t_suscriptor* sub = buscar_por_id(sublista, id_suscriptor, _obtener_id_suscriptor);
 
-	int socket = (sub == NULL) ? -1 : (_suscriptor_valido(sub) ? sub->socket : -1) ;
+	int socket = (sub == NULL) ? -1 : (_verificar_suscriptor_valido(sub) ? sub->socket : -1) ;
 
 	pthread_rwlock_unlock(&RWLOCK_SUBLISTAS_SUSCRIPTORES[cod_op]);
 

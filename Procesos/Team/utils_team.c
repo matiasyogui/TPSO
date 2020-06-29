@@ -85,14 +85,20 @@ void process_request(int cod_op, int cliente_fd) {
 		mensaje->buffer = msg;
 		mensaje->id = -1;
 
+		if(nosInteresaMensaje(mensaje)){
+
 		pthread_mutex_lock(&mListaGlobal);
 		list_add(lista_mensajes, mensaje);
 		printf("MENSAJES EN LA LISTA GLOBAL = %d\n\n", list_size(lista_mensajes));
 		pthread_mutex_unlock(&mListaGlobal);
 
 		sem_post(&sem_cant_mensajes);
+		}
+		else{
+			printf("no nos interesa el pokemon, capo \n");
+		}
 
-		send(cliente_fd,&(mensaje->id),sizeof(int),0);
+		send(cliente_fd,&(mensaje->id),sizeof(int),MSG_NOSIGNAL);
 
 	}else
 		pthread_exit(NULL);
