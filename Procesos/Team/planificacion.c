@@ -204,12 +204,16 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 	int cod_op = CATCH_POKEMON;
 	char* pokemon = (char*) elemento;
 	int len = strlen(pokemon) + 1;
+	int tamBloque = len + (3*sizeof(int));
 
 	int offset = 0;
 
-	void* stream = malloc( 2*sizeof(uint32_t) + len);
+	void* stream = malloc(5*sizeof(uint32_t) + len);
 
 	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &tamBloque, sizeof(int));
 	offset += sizeof(uint32_t);
 
 	memcpy(stream + offset, &len, sizeof(uint32_t));
