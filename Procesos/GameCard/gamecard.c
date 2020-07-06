@@ -24,9 +24,9 @@ int main(){
 
 	leer_archivo_configuracion();
 
-//	montar_TallGrass();
+	montar_TallGrass();
 
-//	iniciar_suscripciones(NEW_POKEMON, CATCH_POKEMON, GET_POKEMON);
+	//iniciar_suscripciones(NEW_POKEMON, CATCH_POKEMON, GET_POKEMON);
 
 	pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
 
@@ -94,7 +94,7 @@ t_list * listarTallGrassFiles(char * path) {
 
 	  struct dirent *dir;
 	  char * nombreDir = malloc(strlen(path) + strlen(FILES)+1);
-	  t_list *listaArchivos ;
+	  t_list *lista = list_create() ;
 
 	  strcpy(nombreDir,path);
 	  strcat(nombreDir,FILES);
@@ -105,19 +105,25 @@ t_list * listarTallGrassFiles(char * path) {
 	  {
 		    while ((dir = readdir(d)) != NULL)
 		    {
-		    	if (string_contains(dir->d_name, "."))
-		    	{
+		    //	if (string_contains(dir->d_name, "."))
+		    //	{
 					printf("Directorio %s archivo %s\n",FILES, dir->d_name);
-					char* nombreArchivo = strdup(dir->d_name);
-					list_add(listaArchivos, nombreArchivo);
-		    	}
+
+					t_File * file = malloc(sizeof(t_File));
+
+					file->nombre = strdup(dir->d_name);
+					file->blocks = queue_create();
+					file->size = 5153;
+
+					list_add(lista, file);
+		    //	}
 		    }
 
 	  }else{
 		  crearTallGrassFiles(PUNTO_MONTAJE_TALLGRASS);
 	  }
 
-	  return listaArchivos;
+	  return lista;
 }
 
 void crearTallGrassFiles(char*pathMontaje){
@@ -138,21 +144,7 @@ void montar_TallGrass(){
 
 	bitBloques = leerArchivoBitmap(PUNTO_MONTAJE_TALLGRASS, metadata );
 
-	int ind = 2;
-
-	if (estaUsadoBloque(ind))
-		printf("Bloque %d esta usado\n",ind);
-	else
-		printf("Bloque %d NO esta usado\n",ind);
-
-	marcarBloqueUsado(ind);
-
-		if (estaUsadoBloque(ind))
-			printf("Bloque %d esta usado\n",ind);
-		else
-			printf("Bloque %d NO esta usado\n",ind);
-
-	t_list * listaMetaData = listarTallGrassFiles(PUNTO_MONTAJE_TALLGRASS);
+	listaFiles = listarTallGrassFiles(PUNTO_MONTAJE_TALLGRASS);
 
 }
 

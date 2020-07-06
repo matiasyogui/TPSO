@@ -2,11 +2,13 @@
 #define VARIABLES_GLOBALES_H_
 
 #include <cosas_comunes.h>
+#include <commons/collections/list.h>
+#include <commons/collections/queue.h>
 
 t_log* LOGGER;
 t_config* CONFIG;
 
-#define METADATADIR "metadata/"
+#define METADATADIR "Metadata/"
 #define METADATAFILE "metadata.bin"
 #define BLOCKSIZE "BLOCK_SIZE"
 #define BLOCKS "BLOCKS"
@@ -19,6 +21,12 @@ t_config* CONFIG;
 		t_dictionary *datos;
 	} t_archivo;
 
+	typedef struct {
+		char *nombre;
+		int size;
+		t_queue  * blocks;
+	} t_File;
+
 
 
 typedef struct {
@@ -28,5 +36,6 @@ typedef struct {
 	char* Magic_Number;
 } t_metadata;
 
+t_list * listaFiles;
 
 #endif /* VARIABLES_GLOBALES_H_ */
