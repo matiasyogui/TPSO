@@ -36,6 +36,9 @@ t_entrenador* elegirEntrenadorXCercania(int posx, int posy){
 	t_list* listaMapeada = list_map(listaDisponibles,(void*) _algoritmoCercano);
 
 	printf("cantidad de entrenadores dispoinbles %d \n",list_size(listaMapeada));
+	for(int i = 0; i < list_size(listaMapeada); i++){
+		printf("entrenador %d", ((t_entrenador*) list_get(listaMapeada, i))->idEntrenador);
+	}
 
 	bool _compararCercania(void* elemento1, void* elemento2){
 		return ((t_entrenador*) elemento1)->cercania <= ((t_entrenador*) elemento2)->cercania;
