@@ -28,7 +28,7 @@ t_entrenador* elegirEntrenadorXCercania(int posx, int posy){
 	}
 
 	bool _estaDisponible(void* elemento){
-		return ((t_entrenador*) elemento) -> estaDisponible;
+		return (((t_entrenador*) elemento) -> estaDisponible && (!((t_entrenador*) elemento) -> pokemonesMaximos));
 	}
 
 	t_list* listaDisponibles = list_filter(listaBlocked, _estaDisponible);
@@ -36,17 +36,6 @@ t_entrenador* elegirEntrenadorXCercania(int posx, int posy){
 	t_list* listaMapeada = list_map(listaDisponibles,(void*) _algoritmoCercano);
 
 	printf("cantidad de entrenadores dispoinbles %d \n",list_size(listaMapeada));
-
-	/* 	t_entrenador* aux;
-	 	for(int i = 1; i < list_size(listaMapeada); i++){ //metodo de la burbuja
-		for(int j = 0; j < (list_size(listaMapeada) - 1); j++){
-			if(((t_entrenador*) list_get(listaMapeada, j)) -> cercania > ((t_entrenador*) list_get(listaMapeada, j + 1)) -> cercania){
-				aux = (t_entrenador*) list_remove(listaMapeada, j);
-				list_add_in_index(listaMapeada, j, (t_entrenador*) list_remove(listaMapeada, j + 1));
-				list_add_in_index(listaMapeada, j + 1, aux);
-			}
-		}
-	}*/
 
 	bool _compararCercania(void* elemento1, void* elemento2){
 		return ((t_entrenador*) elemento1)->cercania <= ((t_entrenador*) elemento2)->cercania;
