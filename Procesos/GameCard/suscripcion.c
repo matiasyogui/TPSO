@@ -1,12 +1,12 @@
 #include "suscripcion.h"
 
-#define CANT_COLAS_SUSCRIBIRSE 3
-
-pthread_t thread_suscripcion[CANT_COLAS_SUSCRIBIRSE];
-
 int TIEMPO_REINTENTO_CONEXION;
 char* IP_BROKER;
 char* PUERTO_BROKER;
+
+#define CANT_COLAS_SUSCRIBIRSE 3
+
+pthread_t thread_suscripcion[CANT_COLAS_SUSCRIBIRSE];
 
 static void cargar_datos_suscripcion(void);
 static void enviar_mensaje_suscripcion(void* _cola);
@@ -72,27 +72,49 @@ static void cargar_datos_suscripcion(void){
 
 static void enviar_mensaje_suscripcion(void* _cola){
 
-	int  s, socket, size, tiempo = -1, cola = *((int*)_cola);
-	bool confirmacion, flag = true;
+	int  s, tiempo, cola;
+	int id_suscripcion, size, socket;
 
-	void* mensaje = mensaje_suscripcion(SUSCRIPTOR, cola, tiempo, &size);
+	void* mensaje = mensaje_suscripcion(SUSCRIPTOR, cola=*((int*)_cola), tiempo=-1, &size);
 
-	do{
-		s = socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
-		if (s < 0) { perror("CREAR_CONEXION ERROR"); continue; }
+	esperando_mensajes(_crear_conexion(mensaje, size, &id_suscripcion));
 
-		s = send(socket, mensaje, size, 0);
-		if (s < 0) { perror("SEND ERROR"); close(socket); continue; }
+}
 
-		s = recv(socket, &confirmacion, sizeof(uint32_t), 0);
-		if (s < 0) { perror("RECV ERROR"); close(socket); continue; }
+static int _crear_conexion(void* mensaje, int size_mensaje, int *id_suscripcion){
 
-		if(confirmacion) flag = false;
-		else { close(socket); sleep(TIEMPO_REINTENTO_CONEXION); }
+	int socket;
 
-	}while(flag);
+	do {
+		if ((socket = crear_conexion(IP_BROKER, PUERTO_BROKER)) == -1){
+			sleep(TIEMPO_REINTENTO_CONEXION); continue;
+		}
 
-	esperando_mensajes(socket);
+		if (send(socket, mensaje, size_mensaje, MSG_NOSIGNAL) < 0){
+			sleep(TIEMPO_REINTENTO_CONEXION); continue;
+		}
+
+		if (recv(socket, id_suscripcion, sizeof(uint32_t), 0) <=  0){
+			sleep(TIEMPO_REINTENTO_CONEXION); continue;
+		}
+
+		if (*id_suscripcion == -1) {
+			sleep(TIEMPO_REINTENTO_CONEXION); continue;
+		}
+
+		break;
+
+	} while (true);
+
+	return socket;
+}
+
+static int reconectarse(int* id_suscripcion){
+
+	int size;
+	void* mensaje_reconexcion = NULL;
+
+	return _crear_conexion(mensaje_reconexcion, size, id_suscripcion);
 }
 
 
