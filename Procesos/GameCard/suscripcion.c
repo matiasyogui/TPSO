@@ -134,9 +134,7 @@ char* leer_get_pokemon(int cliente_fd){
 
 	pokemon = leer_mensaje_getPokemon(buf);
 
-
-
-	return ;
+	return pokemon;
 
 }
 
@@ -224,16 +222,16 @@ void finalizar_suscripciones(void){
 
 	int s;
 
-	for (int i = 0; i < CANT_COLAS_SUSCRIBIRSE; i++){
+	for (int i = 0; i < CANT_COLAS_SUSCRIBIRSE; i++) {
 
 		s = pthread_cancel(thread_suscripcion[0]);
-		if( s != 0) perror("PTHREAD_CREATE ERROR");
+		if(s != 0) perror("PTHREAD_CREATE ERROR");
 	}
 
-	for (int i = 0; i < CANT_COLAS_SUSCRIBIRSE; i++){
+	for (int i = 0; i < CANT_COLAS_SUSCRIBIRSE; i++) {
 
 		s = pthread_join(thread_suscripcion[0], NULL);
-		if( s != 0) perror("PTHREAD_JOIN ERROR");
+		if(s != 0) perror("PTHREAD_JOIN ERROR");
 	}
 
 
@@ -255,9 +253,9 @@ static void cargar_datos_suscripcion(void){
 static void enviar_mensaje_suscripcion(void* _cola){
 
 	int  s, tiempo, cola;
-	int id_suscripcion, size, socket;
+	int socket, id_suscripcion, size;
 
-	void* mensaje = mensaje_suscripcion(SUSCRIPTOR, cola=*((int*)_cola), tiempo=-1, &size);
+	void* mensaje = mensaje_suscripcion(SUSCRIPTOR, cola = *((int*)_cola), tiempo = -1, &size);
 
 	esperando_mensajes(_crear_conexion(mensaje, size, &id_suscripcion));
 
@@ -268,6 +266,7 @@ static int _crear_conexion(void* mensaje, int size_mensaje, int *id_suscripcion)
 	int socket;
 
 	do {
+
 		if ((socket = crear_conexion(IP_BROKER, PUERTO_BROKER)) == -1){
 			sleep(TIEMPO_REINTENTO_CONEXION); continue;
 		}
@@ -294,39 +293,55 @@ static int _crear_conexion(void* mensaje, int size_mensaje, int *id_suscripcion)
 static int reconectarse(int* id_suscripcion){
 
 	int size;
-	void* mensaje_reconexcion = NULL;
+	void* _mensaje_reconexion = mensaje_reconexion(RECONEXION, *id_suscripcion, &size);
 
-	return _crear_conexion(mensaje_reconexcion, size, id_suscripcion);
+	return _crear_conexion(_mensaje_reconexion, size, id_suscripcion);
 }
 
 
-static void esperando_mensajes(int socket){
+static void esperando_mensajes(int _socket, int _id_suscriptor){
+
+	int socket = _socket, id_suscriptor = _id_suscriptor;
 
 	int s, cod_op, size, id_correlativo;
 	void* mensaje;
 
+	void _realizar_reconexion(){
+		sleep(TIEMPO_REINTENTO_CONEXION);
+		socket = reconectarse();
+	}
+
 	while(true){
 
 		s = recv(socket, &cod_op, sizeof(uint32_t), 0 );
-		if (s < 0) { perror("FALLO RECV"); continue; }
+		if (s <= 0) { _realizar_reconexion(); continue; }
 
 		s = recv(socket, &id_correlativo, sizeof(uint32_t), 0);
-		if (s < 0) { perror("FALLO RECV"); continue; }
+		if (s <= 0) { _realizar_reconexion(); continue; }
 
-		printf("Se recibio un %s del broker\n", cod_opToString(cod_op));
+		s = recv(socket, &size, sizeof(uint32_t), 0);
+		if (s <= 0) { _realizar_reconexion(); continue; }
 
-		switch(cod_op){
-			// definir las acciones que debe realizar
-			case NEW_POKEMON:
-			case CATCH_POKEMON:
-			case GET_POKEMON:
+		mensaje = malloc(sizeof(size));
 
-				mensaje = recibir_mensaje(socket, &size);
-				if(mensaje != NULL) enviar_confirmacion(socket, true);
-				else enviar_confirmacion(socket, false);
+		s = recv(socket, mensaje, size, 0);
+		if (s <= 0) { _realizar_reconexion(); continue; }
 
-				break;
-		}
+		procesar_mensaje(cod_op, id_correlativo, mensaje, size);
+	}
+}
+
+static void procesar_mensaje(int cod_op, int id_correlatvio, void* mensaje, int size){
+
+	printf("Se recibio un %s del broker\n", cod_opToString(cod_op));
+
+	switch(cod_op){
+
+		case NEW_POKEMON:
+		case CATCH_POKEMON:
+		case GET_POKEMON:
+
+			break;
 	}
 }
 
@@ -355,6 +370,11 @@ static int enviar_confirmacion(int socket, bool estado){
 
 	return EXIT_SUCCESS;
 }
+
+
+
+//===========================================================================================================
+
 
 
 static void* mensaje_suscripcion(int cod_op, int cola_mensajes, int tiempo, int *size){
@@ -394,4 +414,24 @@ static void* stream_suscripcion(int cola_mensajes, int tiempo, int* size){
 	offset += sizeof(uint32_t);
 
 	return stream;
+}
+
+
+static void* mensaje_reconexion(int cod_op, id_suscriptor, int *size){
+
+	*size = sizeof(uint32_t) * 3;
+	void * mensaje = malloc(*size);
+
+	int a = sizeof(uint32_t), offset = 0;
+
+	memcpy(mensaje + offset, &cod_op, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(mensaje + offset, &a, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	mempcy(mensaje + offset, &id_suscriptor, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	return mensaje;
 }
