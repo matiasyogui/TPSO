@@ -112,16 +112,21 @@ void* pasajeBlockAReady(){
 				if(list_size(ent->objetivo) == list_size(ent -> pokemones)){
 					if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
 						list_add(listaExit, ent);
-					}
-					else{
+						printf("Entrenador %d atrapo sus pokemones, esta en exit\n", ent -> idEntrenador);
+					}else{
 						ent->pokemonesMaximos = true;
 						pthread_mutex_lock(&mListaBlocked);
 						list_add(listaBlocked, ent);
 						pthread_mutex_unlock(&mListaBlocked);
-
 					}
+				}else{
+					ent -> estaDisponible = true;
+					pthread_mutex_lock(&mListaBlocked);
+					list_add(listaBlocked, ent);
+					pthread_mutex_unlock(&mListaBlocked);
 				}
-			else{
+			}else{
+				ent -> estaDisponible = true;
 				pthread_mutex_lock(&mPokemonesAPedir);
 				list_add(pokemonesAPedir,(char*) pokemon);
 				pthread_mutex_unlock(&mPokemonesAPedir);
@@ -129,17 +134,15 @@ void* pasajeBlockAReady(){
 				list_add(listaBlocked, ent);
 				pthread_mutex_unlock(&mListaBlocked);
 			}
-			}
-			ent -> estaDisponible = true;
 			break;
 		}
 	}
 	while(list_size(listaBlocked)>0)
 	{
-		//iniciar deteccion de deadlock
-		//solucionar deadlock
+		printf("\nESTOY LISTO PARA DL\n");
+		fflush(stdout);
+		sleep(3);
 	}
-
 }
 
 bool tienenLosMismosElementos(t_list* lista1, t_list* lista2){
@@ -328,9 +331,11 @@ void ejecutarMensaje(void* entAux){
 				if(posy > ent -> posicion -> posy){
 					(ent -> posicion -> posy)++;
 					printf("se mueve arriba \n");
+					fflush(stdout);
 				}else{
 					(ent -> posicion -> posy)--;
 					printf("se mueve abajo \n");
+					fflush(stdout);
 				}
 				sleep(1);
 			}
@@ -431,7 +436,6 @@ void agregarMensajeLista(int socket, int cod_op){
 		}
 		printf("[MENSAJE DE UNA COLA DEL BROKER]cod_op = %d, id correlativo = %d, size mensaje = %d \n", cod_op, id_correlativo, size);
 	}
-	free(mensaje);
 }
 
 
