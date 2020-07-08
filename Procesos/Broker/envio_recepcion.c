@@ -127,8 +127,6 @@ static void* _gestor_clientes(){
 	void *p_cliente;
 	int s;
 
-
-
 	while (true) {
 
 		pthread_testcancel();
