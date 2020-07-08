@@ -57,6 +57,8 @@ typedef struct{
 	char* algoritmo_de_planificacion;
 	t_list* objetivo;
 	t_list* pokemones;
+	t_list* pokemonesAtrapadosDeadlock;
+	t_list* pokemonesFaltantesDeadlock;
 	int idCorrelativo;
 	t_mensajeTeam* mensaje;
 	t_mensajeTeam* ultimoMensajeEnviado;
@@ -84,7 +86,6 @@ pthread_mutex_t mPokemonesAPedir;
 pthread_mutex_t mPokemonesAPedirSinRepetidos;
 pthread_mutex_t mIdsCorrelativos;
 
-
 pthread_mutex_t semPlanificador;
 t_entrenador* entrenadorActual;
 
@@ -101,6 +102,9 @@ int PUERTO_BROKER;
 char* LOG_FILE;
 int mensajeActual;
 int i;
+
+int cantPokemonesFinales;
+int cantPokemonesActuales;
 
 void* recibir_buffer(int*, int);
 

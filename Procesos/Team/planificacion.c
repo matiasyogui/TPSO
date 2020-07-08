@@ -4,10 +4,8 @@ void* pasajeBlockAReady(){
 
 	while(faltanAtraparPokemones())
 	{
-
 		sem_wait(&sem_cant_mensajes);
 
-		// Se saca el primer mensaje
 		pthread_mutex_lock(&mListaGlobal);
 
 		t_mensajeTeam* mensaje = list_remove(lista_mensajes, 0);
@@ -108,6 +106,7 @@ void* pasajeBlockAReady(){
 
 			if(loAtrapo){
 				list_add(ent->pokemones,(char*) pokemon);
+				cantPokemonesActuales++;
 				printf("Se atrapo el pokemon %s \n",pokemon);
 				if(list_size(ent->objetivo) == list_size(ent -> pokemones)){
 					if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
@@ -137,12 +136,59 @@ void* pasajeBlockAReady(){
 			break;
 		}
 	}
+
+	t_entrenador* entAux;
+
+	for(int k=0;k<list_size(listaBlocked);k++){
+		entAux = (t_entrenador*) list_remove(listaBlocked,k);
+		entAux->pokemonesAtrapadosDeadlock = list_create();
+		entAux->pokemonesFaltantesDeadlock = list_create();
+		separarPokemonesDeadlock(entAux);
+		for(int i = 0; i< list_size(entAux->pokemonesAtrapadosDeadlock); i++){
+			printf("pokemones que sobran del entrenador %d = %s\n",entAux->idEntrenador, (char*)list_get(entAux->pokemonesAtrapadosDeadlock, i));
+		}
+		for(int j = 0; j< list_size(entAux->pokemonesFaltantesDeadlock); j++){
+			printf("pokemones que le faltan al entrenador %d = %s\n",entAux->idEntrenador, (char*)list_get(entAux->pokemonesFaltantesDeadlock, j));
+		}
+		fflush(stdout);
+		list_add(listaBlocked,entAux);
+	}
+
 	while(list_size(listaBlocked)>0)
 	{
-		printf("\nESTOY LISTO PARA DL\n");
-		fflush(stdout);
-		sleep(3);
+		//Cada ent se fija con los demas ent quien tiene el pok que le falta
+
 	}
+}
+
+void separarPokemonesDeadlock(t_entrenador* ent ){
+	int i=0;
+	int j=0;
+	bool encontro = true;
+	t_list* listaAux = list_create();
+	listaAux = list_duplicate(ent->pokemones);
+
+	while(i<(list_size(ent->objetivo))){
+		encontro = false;
+		j=0;
+		printf("/////////////////////////////////////////////////////\n");
+		while(j<(list_size(listaAux)) && !encontro){
+			printf("comparando %s y %s \n",(char*) list_get(ent->objetivo,i), (char*) list_get(listaAux,j));
+			fflush(stdout);
+			if(string_equals_ignore_case((char*) list_get(ent->objetivo,i),(char*) list_get(listaAux,j))){
+				encontro = true;
+				list_remove(listaAux,j);
+			}
+			else{
+				j++;
+			}
+		}
+		if(!encontro ){
+			list_add(ent->pokemonesFaltantesDeadlock,list_get(ent->objetivo,i));
+		}
+		i++;
+	}
+	list_add_all(ent->pokemonesAtrapadosDeadlock,listaAux);
 }
 
 bool tienenLosMismosElementos(t_list* lista1, t_list* lista2){
@@ -152,14 +198,15 @@ bool tienenLosMismosElementos(t_list* lista1, t_list* lista2){
 	listaAux = list_duplicate(lista2);
 	bool encontro = true;
 
-	while(i<(list_size(lista1)-1) && encontro){
+	while(i<(list_size(lista1)) && encontro){
 		encontro = false;
-		while(j<(list_size(listaAux)-1) && !encontro){
+		j=0;
+		while(j<(list_size(listaAux)) && !encontro){
 			printf("comparando %s y %s \n",(char*) list_get(lista1,i), (char*) list_get(listaAux,j));
 			fflush(stdout);
-			if(strcmp((char*) list_get(lista1,i),(char*) list_get(lista2,j)) == 0){
+			if(string_equals_ignore_case((char*) list_get(lista1,i),(char*) list_get(listaAux,j))){
 				encontro = true;
-				list_remove(lista2,j);
+				list_remove(listaAux,j);
 			}
 			else{
 				j++;
@@ -171,11 +218,11 @@ bool tienenLosMismosElementos(t_list* lista1, t_list* lista2){
 }
 
 bool faltanAtraparPokemones(){
-	bool tienePokemonesMaximos(void* elemento){
+	/*bool tienePokemonesMaximos(void* elemento){
 		return ((t_entrenador*) elemento)->pokemonesMaximos;
 	}
-
-	return !list_all_satisfy(listaBlocked,tienePokemonesMaximos);
+	return !list_all_satisfy(listaBlocked,tienePokemonesMaximos);*/
+	return cantPokemonesActuales != cantPokemonesFinales;
 }
 
 void planificarEntrenadoresAExec(){ //falta crear el hilo
@@ -344,7 +391,6 @@ void ejecutarMensaje(void* entAux){
 		enviarCatch(pokemon, posx, posy, ent);
 		printf("se termino de ejecutar el entrenador %d \n", ent->idEntrenador);
 		pthread_mutex_unlock(&mEjecutarMensaje);
-		pthread_mutex_lock(&(ent->semaforo));
 	}
 }
 
