@@ -244,6 +244,8 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 int main(){
 	idFuncionesDefault = -2;
+	cantPokemonesFinales = 0;
+	cantPokemonesActuales = 0;
 
 	pthread_mutex_init(&mListaGlobal, NULL);
 	pthread_mutex_init(&mListaReady, NULL);
@@ -358,11 +360,13 @@ t_entrenador* setteoEntrenador(int i){
    	for(int j = 0; j < cant_elementos(objetivo); j++){
    		list_add(objetivoGlobal, objetivo[j]);
    		list_add(entrenador->objetivo,objetivo[j]);
+   		cantPokemonesFinales++;
    	}
 
    	for(int jj = 0; jj < cant_elementos(pokemones); jj++){
    		list_add(pokemonYaAtrapado, pokemones[jj]);
    		list_add(entrenador->pokemones,pokemones[jj]);
+   		cantPokemonesActuales++;
    	}
    	list_add(listaBlocked, entrenador);
    	return entrenador;

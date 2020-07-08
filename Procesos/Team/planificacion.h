@@ -18,5 +18,6 @@ void enviar_mensaje(t_paquete* paquete, int socket_cliente);
 void enviarGet(void* elemento);
 bool tienenLosMismosElementos(t_list* lista1, t_list* lista2);
 bool faltanAtraparPokemones();
+void separarPokemonesDeadlock(t_entrenador* ent );
 
 #endif /* PLANIFICACION_H_ */
