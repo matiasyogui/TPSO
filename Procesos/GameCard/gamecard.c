@@ -24,11 +24,11 @@ int main(){
 
 	leer_archivo_configuracion();
 
-	montar_TallGrass();
+	//montar_TallGrass();
 
-	//iniciar_suscripciones(NEW_POKEMON, CATCH_POKEMON, GET_POKEMON);
+	iniciar_suscripciones(NEW_POKEMON, CATCH_POKEMON, GET_POKEMON);
 
-	pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
+	//pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
 
 	//pthread_join(thread_server, NULL);
 
@@ -227,8 +227,6 @@ t_archivo * leer_archivo(char *pathTallGrass, char*directorio, char*nombreArchiv
 
 	return archivo;
 }
-
-
 
 
 

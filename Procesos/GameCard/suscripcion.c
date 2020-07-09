@@ -10,11 +10,16 @@ pthread_t thread_suscripcion[CANT_COLAS_SUSCRIBIRSE];
 
 static void cargar_datos_suscripcion(void);
 static void enviar_mensaje_suscripcion(void* _cola);
-static void esperando_mensajes(int socket);
+static void esperando_mensajes(int _socket, int cola_suscrito, int _id_suscriptor);
 static void* recibir_mensaje(int socket, int* size);
 static int enviar_confirmacion(int socket, bool estado);
 static void* mensaje_suscripcion(int cod_op, int cola_mensajes, int tiempo, int *size);
 static void* stream_suscripcion(int cola_mensajes, int tiempo, int* size);
+
+static void* mensaje_reconexion(int cod_op, int cola_suscrito, int id_suscriptor, int *size);
+static void* stream_reconexion(int cola_suscrito, int id_suscriptor, int* size);
+static void procesar_mensaje(int cod_op, int id_correlatvio, void* mensaje, int size);
+
 
 #define IP_SERVIDOR "127.0.0.3"
 #define PUERTO_SERVIDOR "5001"
@@ -201,6 +206,7 @@ void leer_mensaje(t_buffer* buffer){
 
 
 void iniciar_suscripciones(int cola0, int cola1, int cola2){
+
 	int s;
 
 	cargar_datos_suscripcion();
@@ -250,16 +256,6 @@ static void cargar_datos_suscripcion(void){
 }
 
 
-static void enviar_mensaje_suscripcion(void* _cola){
-
-	int  s, tiempo, cola;
-	int socket, id_suscripcion, size;
-
-	void* mensaje = mensaje_suscripcion(SUSCRIPTOR, cola = *((int*)_cola), tiempo = -1, &size);
-
-	esperando_mensajes(_crear_conexion(mensaje, size, &id_suscripcion));
-
-}
 
 static int _crear_conexion(void* mensaje, int size_mensaje, int *id_suscripcion){
 
@@ -267,15 +263,15 @@ static int _crear_conexion(void* mensaje, int size_mensaje, int *id_suscripcion)
 
 	do {
 
-		if ((socket = crear_conexion(IP_BROKER, PUERTO_BROKER)) == -1){
+		if ((socket = crear_conexion(IP_BROKER, PUERTO_BROKER)) == -1) {
 			sleep(TIEMPO_REINTENTO_CONEXION); continue;
 		}
 
-		if (send(socket, mensaje, size_mensaje, MSG_NOSIGNAL) < 0){
+		if (send(socket, mensaje, size_mensaje, MSG_NOSIGNAL) < 0) {
 			sleep(TIEMPO_REINTENTO_CONEXION); continue;
 		}
 
-		if (recv(socket, id_suscripcion, sizeof(uint32_t), 0) <=  0){
+		if (recv(socket, id_suscripcion, sizeof(uint32_t), 0) <=  0) {
 			sleep(TIEMPO_REINTENTO_CONEXION); continue;
 		}
 
@@ -287,29 +283,46 @@ static int _crear_conexion(void* mensaje, int size_mensaje, int *id_suscripcion)
 
 	} while (true);
 
+	free(mensaje);
+
 	return socket;
 }
 
-static int reconectarse(int* id_suscripcion){
+
+static void enviar_mensaje_suscripcion(void* _cola){
+
+	int tiempo = -1, cola = *((int*)_cola);
+	int socket, id_suscripcion, size;
+
+	void* mensaje = mensaje_suscripcion(SUSCRIPTOR, cola, tiempo, &size);
+
+	socket = _crear_conexion(mensaje, size, &id_suscripcion);
+
+	esperando_mensajes(socket, cola, id_suscripcion);
+}
+
+
+static int reconectarse(int cola_suscrito, int* id_suscripcion){
 
 	int size;
-	void* _mensaje_reconexion = mensaje_reconexion(RECONEXION, *id_suscripcion, &size);
+	void* _mensaje_reconexion = mensaje_reconexion(7, cola_suscrito, *id_suscripcion, &size);
 
 	return _crear_conexion(_mensaje_reconexion, size, id_suscripcion);
 }
 
 
-static void esperando_mensajes(int _socket, int _id_suscriptor){
+static void esperando_mensajes(int _socket, int cola_suscrito, int _id_suscriptor){
 
-	int socket = _socket, id_suscriptor = _id_suscriptor;
-
-	int s, cod_op, size, id_correlativo;
-	void* mensaje;
+	int s, socket = _socket, id_suscriptor = _id_suscriptor;
 
 	void _realizar_reconexion(){
 		sleep(TIEMPO_REINTENTO_CONEXION);
-		socket = reconectarse();
+		printf("------------------Intentando reconectar\n\n");
+		socket = reconectarse(cola_suscrito, &id_suscriptor);
 	}
+
+	int cod_op, size, id_correlativo;
+	void* mensaje;
 
 	while(true){
 
@@ -322,18 +335,20 @@ static void esperando_mensajes(int _socket, int _id_suscriptor){
 		s = recv(socket, &size, sizeof(uint32_t), 0);
 		if (s <= 0) { _realizar_reconexion(); continue; }
 
-		mensaje = malloc(sizeof(size));
+		mensaje = malloc(size);
 
 		s = recv(socket, mensaje, size, 0);
 		if (s <= 0) { _realizar_reconexion(); continue; }
 
 		procesar_mensaje(cod_op, id_correlativo, mensaje, size);
+
+		enviar_confirmacion(socket, true);
 	}
 }
 
 static void procesar_mensaje(int cod_op, int id_correlatvio, void* mensaje, int size){
 
-	printf("Se recibio un %s del broker\n", cod_opToString(cod_op));
+	printf("Se recibio un %s del broker, id_correlativo = %d\n", cod_opToString(cod_op), id_correlatvio);
 
 	switch(cod_op){
 
@@ -343,6 +358,7 @@ static void procesar_mensaje(int cod_op, int id_correlatvio, void* mensaje, int 
 
 			break;
 	}
+
 }
 
 
@@ -379,24 +395,25 @@ static int enviar_confirmacion(int socket, bool estado){
 
 static void* mensaje_suscripcion(int cod_op, int cola_mensajes, int tiempo, int *size){
 
-	void* mensaje = stream_suscripcion(cola_mensajes, tiempo, size);
+	void* stream = stream_suscripcion(cola_mensajes, tiempo, size);
 
-	void* stream = malloc(2 * sizeof(uint32_t) + *size);
+	void* mensaje = malloc(2 * sizeof(uint32_t) + *size);
 
 	int offset = 0;
 
-	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
+	memcpy(mensaje + offset, &cod_op, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	memcpy(stream + offset, size, sizeof(uint32_t));
+	memcpy(mensaje + offset, size, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	memcpy(stream + offset, mensaje, *size);
+	memcpy(mensaje + offset, stream, *size);
 	offset += *size;
 
 	*size = offset;
-	free(mensaje);
-	return stream;
+	free(stream);
+
+	return mensaje;
 }
 
 
@@ -417,21 +434,42 @@ static void* stream_suscripcion(int cola_mensajes, int tiempo, int* size){
 }
 
 
-static void* mensaje_reconexion(int cod_op, id_suscriptor, int *size){
+static void* mensaje_reconexion(int cod_op, int cola_suscrito, int id_suscriptor, int* size){
 
-	*size = sizeof(uint32_t) * 3;
-	void * mensaje = malloc(*size);
+	void* stream = stream_reconexion(cola_suscrito, id_suscriptor, size);
 
-	int a = sizeof(uint32_t), offset = 0;
+	void* mensaje = malloc(2* sizeof(uint32_t) + *size);
+
+	int offset = 0;
 
 	memcpy(mensaje + offset, &cod_op, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	memcpy(mensaje + offset, &a, sizeof(uint32_t));
+	memcpy(mensaje + offset, size, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	mempcy(mensaje + offset, &id_suscriptor, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
+	memcpy(mensaje + offset, stream, *size);
+	offset += *size;
+
+	*size = offset;
+	free(stream);
 
 	return mensaje;
+}
+
+static void* stream_reconexion(int cola_suscrito, int id_suscriptor, int* size){
+
+	void* stream = malloc(2 * sizeof(uint32_t));
+
+	int offset = 0;
+
+	memcpy(stream, &id_suscriptor, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream, &cola_suscrito, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	*size = offset;
+
+	return stream;
 }

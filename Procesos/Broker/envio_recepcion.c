@@ -136,7 +136,7 @@ static void* _gestor_clientes(){
 		pthread_cleanup_push(_interruptor_handler, &mutex_cola);
 
 		p_cliente = queue_pop(cola_clientes);
-		if (p_cliente == NULL ) {
+		if (p_cliente == NULL) {
 			pthread_cond_wait(&cond, &mutex_cola);
 			p_cliente = queue_pop(cola_clientes);
 		}
