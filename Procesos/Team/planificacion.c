@@ -138,9 +138,10 @@ void* pasajeBlockAReady(){
 	}
 
 	t_entrenador* entAux;
-
-	for(int k=0;k<list_size(listaBlocked);k++){
-		entAux = (t_entrenador*) list_remove(listaBlocked,k);
+	int cantidadBlocked = list_size(listaBlocked);
+	printf("cantidad blocked%d", cantidadBlocked);
+	for(int k=0;k<cantidadBlocked;k++){
+		entAux = (t_entrenador*) list_remove(listaBlocked,0);
 		entAux->pokemonesAtrapadosDeadlock = list_create();
 		entAux->pokemonesFaltantesDeadlock = list_create();
 		separarPokemonesDeadlock(entAux);
@@ -154,12 +155,93 @@ void* pasajeBlockAReady(){
 		list_add(listaBlocked,entAux);
 	}
 
-	while(list_size(listaBlocked)>0)
-	{
+	for(int k=0;k<cantidadBlocked;k++){
 		//Cada ent se fija con los demas ent quien tiene el pok que le falta
+		entAux = (t_entrenador*) list_remove(listaBlocked,0);
+		entAux->entrenadoresEstoyDeadlock = list_create();
 
+		buscarEntrenadoresDL(entAux);
+		list_add(listaBlocked, entAux);
+	}
+
+	list_add_all(listaReady, listaBlocked);
+	for(int i = 0; i < list_size(listaBlocked); i++){
+		sem_post(&sem_entrenadores_ready);
+	}
+
+	list_clean(listaBlocked);
+
+
+
+}
+
+void buscarEntrenadoresDL(t_entrenador* ent){
+	int i=0;
+	int j=0;
+	int k=0;
+	bool encontro = true;
+	t_entrenador* entAux;
+
+	while(j<(list_size(listaBlocked))){
+		entAux = (t_entrenador*) list_get(listaBlocked,j);
+		i = 0;
+
+		while(i<(list_size(ent->pokemonesFaltantesDeadlock))){
+		encontro = false;
+		k=0;
+
+			while(k<(list_size(entAux -> pokemonesAtrapadosDeadlock)) && !encontro){
+				printf("comparando pokemon que me falta %s con %s\n", list_get(ent -> pokemonesFaltantesDeadlock, i), list_get(entAux -> pokemonesAtrapadosDeadlock, k));
+				if(string_equals_ignore_case(list_get(ent -> pokemonesFaltantesDeadlock, i), list_get(entAux -> pokemonesAtrapadosDeadlock, k))){
+					printf("el entrenador con id %d tiene dl con el entrenador con id %d\n", ent -> idEntrenador, entAux -> idEntrenador);
+					ent = algortimoCercano((void*) ent, entAux -> posicion -> posx, entAux -> posicion -> posy);
+					printf("nueva cercania %d\n", ent-> cercania);
+
+					int size;
+					t_mensajeTeam* nuevoMensaje = malloc(sizeof(t_mensajeTeam));
+					nuevoMensaje->cod_op = DEADLOCK;
+					nuevoMensaje->buffer = malloc(sizeof(t_buffer));
+					nuevoMensaje->buffer->stream = malloc(2 * sizeof(int));
+					int* datos[2] = {entAux -> posicion -> posx, entAux -> posicion -> posy};
+					nuevoMensaje->buffer->stream = stream_deadlock(datos,&size);
+					nuevoMensaje->buffer->size=size;
+
+					ent -> mensaje = nuevoMensaje;
+
+					printf("cod_op %d\n", ent -> mensaje -> cod_op);
+					fflush(stdout);
+
+					list_add(ent-> entrenadoresEstoyDeadlock, entAux->idEntrenador);
+					encontro = true;
+				}else{
+					k++;
+				}
+			}
+		i++;
+		}
+	j++;
 	}
 }
+
+void* stream_deadlock(int* datos[], int *size){
+
+	uint32_t posx = datos[0];
+	uint32_t posy = datos[1];
+
+	*size = sizeof(2 * sizeof(int));
+	void* stream = malloc(*size);
+
+	int offset = 0;
+
+	memcpy(stream + offset, &posx, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &posy, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	return stream;
+}
+
 
 void separarPokemonesDeadlock(t_entrenador* ent ){
 	int i=0;
@@ -218,10 +300,6 @@ bool tienenLosMismosElementos(t_list* lista1, t_list* lista2){
 }
 
 bool faltanAtraparPokemones(){
-	/*bool tienePokemonesMaximos(void* elemento){
-		return ((t_entrenador*) elemento)->pokemonesMaximos;
-	}
-	return !list_all_satisfy(listaBlocked,tienePokemonesMaximos);*/
 	return cantPokemonesActuales != cantPokemonesFinales;
 }
 

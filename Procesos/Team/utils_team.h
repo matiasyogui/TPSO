@@ -59,6 +59,9 @@ typedef struct{
 	t_list* pokemones;
 	t_list* pokemonesAtrapadosDeadlock;
 	t_list* pokemonesFaltantesDeadlock;
+	t_list* entrenadoresEstoyDeadlock; //entrenadores con los que estoy en dl
+
+
 	int idCorrelativo;
 	t_mensajeTeam* mensaje;
 	t_mensajeTeam* ultimoMensajeEnviado;

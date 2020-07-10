@@ -6,7 +6,7 @@
 #define PLANIFICACION_H_
 
 
-
+#define DEADLOCK 99;
 
 
 void* pasajeBlockAReady();
@@ -19,5 +19,6 @@ void enviarGet(void* elemento);
 bool tienenLosMismosElementos(t_list* lista1, t_list* lista2);
 bool faltanAtraparPokemones();
 void separarPokemonesDeadlock(t_entrenador* ent );
+void* stream_deadlock(int* datos[], int *size);
 
 #endif /* PLANIFICACION_H_ */
