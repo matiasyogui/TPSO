@@ -7,7 +7,9 @@
 
 
 
-
+typedef enum{
+	DEADLOCK = 99
+};
 
 void* pasajeBlockAReady();
 void planificarEntrenadoresAExec();
@@ -19,5 +21,8 @@ void enviarGet(void* elemento);
 bool tienenLosMismosElementos(t_list* lista1, t_list* lista2);
 bool faltanAtraparPokemones();
 void separarPokemonesDeadlock(t_entrenador* ent );
+void* stream_deadlock(int* datos[], int *size);
+void moverEntrenador (t_entrenador* ent, int posx, int posy);
+void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux);
 
 #endif /* PLANIFICACION_H_ */

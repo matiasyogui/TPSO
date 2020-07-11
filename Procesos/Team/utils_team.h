@@ -59,6 +59,9 @@ typedef struct{
 	t_list* pokemones;
 	t_list* pokemonesAtrapadosDeadlock;
 	t_list* pokemonesFaltantesDeadlock;
+	t_list* entrenadoresEstoyDeadlock; //entrenadores con los que estoy en dl
+
+
 	int idCorrelativo;
 	t_mensajeTeam* mensaje;
 	t_mensajeTeam* ultimoMensajeEnviado;
@@ -88,6 +91,9 @@ pthread_mutex_t mIdsCorrelativos;
 
 pthread_mutex_t semPlanificador;
 t_entrenador* entrenadorActual;
+
+t_config* config;
+//t_log* log;
 
 char** POSICIONES_ENTRENADORES;
 char** POKEMON_ENTRENADORES;
@@ -121,6 +127,8 @@ t_entrenador* setteoEntrenador(int i);
 
 bool nosInteresaMensaje(t_mensajeTeam* msg);
 int algoritmo_planificacion(char* algoritmoDePlanificacion);
+
+void terminarEjecucionTeam();
 
 
 #endif /* UTILS_TEAM_H_ */

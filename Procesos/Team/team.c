@@ -256,6 +256,8 @@ int main(){
 	pthread_mutex_init(&mPokemonesAPedirSinRepetidos, NULL);
 	pthread_mutex_init(&mIdsCorrelativos, NULL);
 
+	pthread_mutex_lock(&mEjecutarMensaje);
+
 	sem_init(&sem_cant_mensajes, 0, 0);
 	sem_init(&sem_entrenadores_ready, 0, 0);
 
@@ -302,20 +304,13 @@ int main(){
 
 	eliminar_listas();
 
-	/*for(i=0;i<cantEntrenadores;i++){
-		free(entrenadores[i]-> posicion);
-		free(entrenadores[i]-> objetivo);
-		free(entrenadores[i]-> pokemones);
-		free(entrenadores[i]);
-	}
-*/
 	return EXIT_SUCCESS;
 }
 
 
 void leer_archivo_configuracion(){
 
-	t_config* config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team1.config");
+	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team1.config");
 
 	//PASO TODOS LOS PARAMETROS
 	POSICIONES_ENTRENADORES = config_get_array_value(config,"POSICIONES_ENTRENADORES");
