@@ -64,3 +64,12 @@ void element_destroyer(void* elemento){
 	free(ent->pokemones);
 	free(ent->posicion);
 }
+
+void eliminar_pokemon_que_coincida(void* pokemon, t_list* lista){
+	bool _buscarPokemon(void* elemento){
+		return buscarPokemon(elemento,pokemon);
+	}
+
+	list_remove_by_condition(lista,_buscarPokemon);
+
+}

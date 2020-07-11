@@ -92,6 +92,9 @@ pthread_mutex_t mIdsCorrelativos;
 pthread_mutex_t semPlanificador;
 t_entrenador* entrenadorActual;
 
+t_config* config;
+//t_log* log;
+
 char** POSICIONES_ENTRENADORES;
 char** POKEMON_ENTRENADORES;
 char** OBJETIVOS_ENTRENADORES;
@@ -124,6 +127,8 @@ t_entrenador* setteoEntrenador(int i);
 
 bool nosInteresaMensaje(t_mensajeTeam* msg);
 int algoritmo_planificacion(char* algoritmoDePlanificacion);
+
+void terminarEjecucionTeam();
 
 
 #endif /* UTILS_TEAM_H_ */

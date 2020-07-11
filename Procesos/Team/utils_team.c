@@ -185,3 +185,11 @@ int algoritmo_planificacion(char* algoritmoDePlanificacion){
 	printf("No se reconocio el tipo de mensaje\n");
 	exit(-1);
 }
+
+void terminarEjecucionTeam(){
+	/*config_destroy(config);
+	log_destroy(log);
+	liberar_conexion()*/
+	printf("GANASTE!!! \n\n\n\n\n");
+	sleep(1000);
+}
