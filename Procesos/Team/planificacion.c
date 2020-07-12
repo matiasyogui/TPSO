@@ -1,3 +1,4 @@
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #include "planificacion.h"
 
 void* pasajeBlockAReady(){
@@ -62,6 +63,21 @@ void* pasajeBlockAReady(){
 			pthread_mutex_unlock(&mListaBlocked);
 
 			ent -> mensaje = mensaje;
+
+
+			if(string_equals_ignore_case(ALGORITMO_PLANIFICACION,"SJFCD") || string_equals_ignore_case(ALGORITMO_PLANIFICACION,"SJFSD")){
+				if(ent->estimacion == 0){
+					ent -> estimacion = ESTIMACION_INICIAL;
+				}else{
+					ent -> estimacion = ent -> estimacion * ALPHA + ent -> rafagaAnteriorReal * (1 - ALPHA);
+					if(entrenadorEnEjecucion != NULL && ent -> estimacion < entrenadorEnEjecucion -> estimacion){
+						pthread_mutex_lock(&mHayDesalojo);
+						hayDesalojo = true;
+						pthread_mutex_unlock(&mHayDesalojo);
+					}
+				}
+				ent -> rafagaAnteriorReal = 0;
+			}
 
 			pthread_mutex_lock(&mListaReady);
 			list_add(listaReady, ent);
@@ -175,8 +191,6 @@ void* pasajeBlockAReady(){
 	}
 
 	list_clean(listaBlocked);
-
-
 
 }
 
@@ -303,15 +317,23 @@ bool faltanAtraparPokemones(){
 	return cantPokemonesActuales != cantPokemonesFinales;
 }
 
+bool ordenarSJF(void* elemento1, void* elemento2){
+	t_entrenador* ent1 = (t_entrenador*) elemento1;
+	t_entrenador* ent2 = (t_entrenador*) elemento2;
+	return ent1 -> estimacion < ent2 -> estimacion;
+}
+
 void planificarEntrenadoresAExec(){
+	t_link_element* nodo;
 	while(true){
 		sem_wait(&sem_entrenadores_ready);
 		t_entrenador* ent;
 		printf("el algoritmo de planificacion es %s \n",ALGORITMO_PLANIFICACION);
 		switch(algoritmo_planificacion(ALGORITMO_PLANIFICACION)){
 			case FIFO:
+			case RR:
 				pthread_mutex_lock(&mListaReady);
-				t_link_element* nodo = list_remove(listaReady, 0);
+				nodo = list_remove(listaReady, 0);
 				pthread_mutex_unlock(&mListaReady);
 				ent = (t_entrenador*) nodo;
 				pthread_mutex_unlock(&(ent -> semaforo));
@@ -319,9 +341,18 @@ void planificarEntrenadoresAExec(){
 
 				break;
 
-			/*case "SJFCD":
-			case "SFJSD":
-			case "RR":*/
+			case SJFCD:
+			case SJFSD:
+				pthread_mutex_lock(&mListaReady);
+				list_sort(listaReady, ordenarSJF);
+				nodo = list_remove(listaReady, 0);
+				pthread_mutex_unlock(&mListaReady);
+				ent = (t_entrenador*) nodo;
+				entrenadorEnEjecucion = ent;
+				pthread_mutex_unlock(&(ent -> semaforo));
+				pthread_mutex_lock(&mEjecutarMensaje);
+
+				break;
 		}
 	}
 }
@@ -443,7 +474,21 @@ void ejecutarMensaje(void* entAux){
 
 			moverEntrenador(ent,posx,posy);
 
-			enviarCatch(pokemon, posx, posy, ent);
+			if(ent -> posicion -> posx != posx || ent -> posicion -> posy != posy){
+				pthread_mutex_lock(&mHayDesalojo);
+				hayDesalojo = false;
+				pthread_mutex_unlock(&mHayDesalojo);
+
+				pthread_mutex_lock(&mListaReady);
+				list_add(listaReady, ent);
+				pthread_mutex_unlock(&mListaReady);
+
+				printf("FIN DE Q, todavia no llego\n");
+				sem_post(&sem_entrenadores_ready);
+			}else{
+				enviarCatch(pokemon, posx, posy, ent);
+			}
+
 			break;
 		case DEADLOCK:
 
@@ -459,7 +504,7 @@ void ejecutarMensaje(void* entAux){
 
 			t_entrenador* entAux = (t_entrenador*) list_find(listaReady, _entrenadorTieneID);
 
-			moverEntrenador(ent,entAux->posicion->posx,entAux->posicion->posy);
+			moverEntrenadorDL(ent,entAux->posicion->posx,entAux->posicion->posy);
 
 			realizarIntercambio(ent,entAux);
 
@@ -483,6 +528,7 @@ void ejecutarMensaje(void* entAux){
 			break;
 		}
 		printf("se termino de ejecutar el entrenador %d \n", ent->idEntrenador);
+		entrenadorEnEjecucion = NULL;
 		pthread_mutex_unlock(&mEjecutarMensaje);
 	}
 }
@@ -529,8 +575,43 @@ void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux){
 
 }
 
-void moverEntrenador (t_entrenador* ent, int posx, int posy){
+
+void moverEntrenadorDL(t_entrenador* ent, int posx, int posy){
 	for(int i = 0; i < ent -> cercania; i++){
+		if(posx != ent -> posicion -> posx){
+			if(posx > ent -> posicion -> posx){
+				(ent -> posicion -> posx)++;
+				printf("se mueve a la derecha el entrenador %d\n",ent->idEntrenador);
+			}else{
+				(ent -> posicion -> posx)--;
+				printf("se mueve a la izquierda el entrenador %d\n",ent->idEntrenador);
+			}
+			sleep(1);
+		}
+
+		if(posy != ent -> posicion -> posy){
+			if(posy > ent -> posicion -> posy){
+				(ent -> posicion -> posy)++;
+				printf("se mueve arriba el entrenador %d\n",ent->idEntrenador);
+				fflush(stdout);
+			}else{
+				(ent -> posicion -> posy)--;
+				printf("se mueve abajo el entrenador %d\n",ent->idEntrenador);
+				fflush(stdout);
+			}
+			sleep(1);
+		}
+	}
+}
+
+void moverEntrenador(t_entrenador* ent, int posx, int posy){
+	int cercania = ent -> cercania;
+	int i = 0;
+	printf("                     ENTRO EN MOVER ENTRENADOR\n");
+	switch(algoritmo_planificacion(ALGORITMO_PLANIFICACION)){
+	case FIFO:
+	case SJFSD:
+		for(int i = 0; i < ent -> cercania; i++){
 				if(posx != ent -> posicion -> posx){
 					if(posx > ent -> posicion -> posx){
 						(ent -> posicion -> posx)++;
@@ -555,7 +636,88 @@ void moverEntrenador (t_entrenador* ent, int posx, int posy){
 					sleep(1);
 				}
 			}
+
+		break;
+
+	case RR:
+		while(i < MIN(cercania, QUANTUM)){
+			if(posx != ent -> posicion -> posx){
+				if(posx > ent -> posicion -> posx){
+					(ent -> posicion -> posx)++;
+					printf("se mueve a la derecha el entrenador %d\n",ent->idEntrenador);
+					i++;
+					(ent -> cercania)--;
+				}else{
+					(ent -> posicion -> posx)--;
+					printf("se mueve a la izquierda el entrenador %d\n",ent->idEntrenador);
+					i++;
+					(ent -> cercania)--;
+				}
+				sleep(1);
+			}else{
+				if(posy != ent -> posicion -> posy){
+					if(posy > ent -> posicion -> posy){
+						(ent -> posicion -> posy)++;
+						printf("se mueve arriba el entrenador %d\n",ent->idEntrenador);
+						fflush(stdout);
+						i++;
+						(ent -> cercania)--;
+					}else{
+						(ent -> posicion -> posy)--;
+						printf("se mueve abajo el entrenador %d\n",ent->idEntrenador);
+						fflush(stdout);
+						i++;
+						(ent -> cercania)--;
+					}
+					sleep(1);
+				}
+			}
+
+		}
+		break;
+
+	case SJFCD:
+		while(ent -> rafagaAnteriorReal < cercania){
+		pthread_mutex_lock(&mHayDesalojo);
+		if(hayDesalojo)
+			break;
+		pthread_mutex_unlock(&mHayDesalojo);
+			if(posx != ent -> posicion -> posx){
+				if(posx > ent -> posicion -> posx){
+					(ent -> posicion -> posx)++;
+					printf("se mueve a la derecha el entrenador %d\n",ent->idEntrenador);
+					(ent -> estimacion)--;
+					(ent -> rafagaAnteriorReal)++;
+				}else{
+					(ent -> posicion -> posx)--;
+					printf("se mueve a la izquierda el entrenador %d\n",ent->idEntrenador);
+					(ent -> estimacion)--;
+					(ent -> rafagaAnteriorReal)++;
+				}
+				sleep(1);
+			}else{
+				if(posy != ent -> posicion -> posy){
+					if(posy > ent -> posicion -> posy){
+						(ent -> posicion -> posy)++;
+						printf("se mueve arriba el entrenador %d\n",ent->idEntrenador);
+						fflush(stdout);
+						(ent -> estimacion)--;
+						(ent -> rafagaAnteriorReal)++;
+					}else{
+						(ent -> posicion -> posy)--;
+						printf("se mueve abajo el entrenador %d\n",ent->idEntrenador);
+						fflush(stdout);
+						(ent -> estimacion)--;
+						(ent -> rafagaAnteriorReal)++;
+					}
+					sleep(1);
+				}
+			}
+	}
+	break;
 }
+}
+
 
 void agregarMensajeLista(int socket, int cod_op){
 

@@ -246,6 +246,7 @@ int main(){
 	idFuncionesDefault = -2;
 	cantPokemonesFinales = 0;
 	cantPokemonesActuales = 0;
+	hayDesalojo = false;
 
 	pthread_mutex_init(&mListaGlobal, NULL);
 	pthread_mutex_init(&mListaReady, NULL);
@@ -255,6 +256,7 @@ int main(){
 	pthread_mutex_init(&mPokemonesAPedir, NULL);
 	pthread_mutex_init(&mPokemonesAPedirSinRepetidos, NULL);
 	pthread_mutex_init(&mIdsCorrelativos, NULL);
+	pthread_mutex_init(&mHayDesalojo, NULL);
 
 	pthread_mutex_lock(&mEjecutarMensaje);
 
@@ -320,11 +322,13 @@ void leer_archivo_configuracion(){
 	RETARDO_CICLO_CPU = config_get_int_value(config,"RETARDO_CICLO_CPU");
 	ALGORITMO_PLANIFICACION = config_get_string_value(config,"ALGORITMO_PLANIFICACION");
 
-	if(strcmp(ALGORITMO_PLANIFICACION,"RR"))
+	if(string_equals_ignore_case(ALGORITMO_PLANIFICACION,"RR"))
 		QUANTUM = config_get_int_value(config,"QUANTUM");
 
-	if(strcmp(ALGORITMO_PLANIFICACION,"SJF"))
+	if(string_equals_ignore_case(ALGORITMO_PLANIFICACION,"SJFCD") || string_equals_ignore_case(ALGORITMO_PLANIFICACION,"SJFSD")){
 		ESTIMACION_INICIAL = config_get_int_value(config,"ESTIMACION_INICIAL");
+		ALPHA = config_get_int_value(config, "ALPHA");
+	}
 
 	IP_BROKER = config_get_string_value(config,"IP_BROKER");
 	PUERTO_BROKER= config_get_int_value(config,"PUERTO_BROKER");
@@ -348,6 +352,7 @@ t_entrenador* setteoEntrenador(int i){
    	pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
    	entrenador->estaDisponible = true;
     entrenador->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
+    entrenador -> estimacion = 0;
 
    	pthread_mutex_init(&(entrenador->semaforo), NULL);
    	pthread_mutex_lock(&(entrenador->semaforo));
