@@ -2,9 +2,9 @@
 #include "utils_team.h"
 #include "team.h"
 #include "listas.h"
+#include <math.h>
 #ifndef PLANIFICACION_H_
 #define PLANIFICACION_H_
-
 
 
 typedef enum{
@@ -23,6 +23,7 @@ bool faltanAtraparPokemones();
 void separarPokemonesDeadlock(t_entrenador* ent );
 void* stream_deadlock(int* datos[], int *size);
 void moverEntrenador (t_entrenador* ent, int posx, int posy);
+void moverEntrenadorDL(t_entrenador* ent, int posx, int posy);
 void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux);
 
 #endif /* PLANIFICACION_H_ */
