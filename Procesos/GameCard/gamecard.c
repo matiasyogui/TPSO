@@ -26,13 +26,23 @@ int main(){
 
 	montar_TallGrass();
 
-	//iniciar_suscripciones(NEW_POKEMON, CATCH_POKEMON, GET_POKEMON);
+	iniciar_suscripciones(NEW_POKEMON, CATCH_POKEMON, GET_POKEMON);
 
 	pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
 
 	//pthread_join(thread_server, NULL);
 
-	while(1){
+	bool ciclo = 1;
+	char line[100];
+	while(ciclo){
+
+	 if (scanf("%s",line) != -1)
+	 {
+		 printf("se ingreso: %s",line);
+	 }else
+	 {
+		 ciclo = 0;
+	 }
 
 	}
 

@@ -134,9 +134,7 @@ char* leer_get_pokemon(int cliente_fd){
 
 	pokemon = leer_mensaje_getPokemon(buf);
 
-
-
-	return ;
+	return pokemon;
 
 }
 
@@ -346,11 +344,11 @@ static void* mensaje_suscripcion(int cod_op, int cola_mensajes, int tiempo, int 
 	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	memcpy(stream + offset, size, sizeof(uint32_t));
+	memcpy(stream + offset, &cola_mensajes, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	memcpy(stream + offset, mensaje, *size);
-	offset += *size;
+	memcpy(stream + offset, &tiempo, *size);
+	offset += sizeof(uint32_t);
 
 	*size = offset;
 	free(mensaje);
