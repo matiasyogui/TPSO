@@ -11,10 +11,10 @@
 #include <string.h>
 #include <pthread.h>
 #include <cosas_comunes.h>
+#include <commons/log.h>
 #include "listas.h"
 #include <stdbool.h>
 #include <semaphore.h>
-
 
 #define IP "127.0.0.2"
 #define PUERTO "5002"
@@ -100,7 +100,7 @@ pthread_mutex_t semPlanificador;
 t_entrenador* entrenadorActual;
 
 t_config* config;
-//t_log* log;
+t_log* logger;
 
 char** POSICIONES_ENTRENADORES;
 char** POKEMON_ENTRENADORES;

@@ -2,6 +2,7 @@
 #include <semaphore.h>
 #include <math.h>
 #include "team.h"
+#include "utils_team.h"
 
 pthread_mutex_t mBlockAReady;
 
@@ -69,8 +70,11 @@ int conectarse(void){
 
 	int socket, s;
 	do{
-		s = socket = crear_conexion("127.0.0.1", "4444");
-		if(s < 0){ perror("FALLO LA CONEXION CON EL BROKER"); sleep(TIEMPO_RECONEXION); continue; }
+		s = socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
+		if(s < 0){
+			sleep(TIEMPO_RECONEXION);
+			continue;
+		}
 		break;
 	}while(true);
 
@@ -313,6 +317,7 @@ int main(){
 void leer_archivo_configuracion(){
 
 	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team1.config");
+	logger = iniciar_logger("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team.log", "TEAM", 0, LOG_LEVEL_INFO);
 
 	//PASO TODOS LOS PARAMETROS
 	POSICIONES_ENTRENADORES = config_get_array_value(config,"POSICIONES_ENTRENADORES");
@@ -369,6 +374,9 @@ t_entrenador* setteoEntrenador(int i){
    		cantPokemonesActuales++;
    	}
    	list_add(listaBlocked, entrenador);
+
+   	log_info(logger, "Entrenador %d entra a la lista Bloqueado, por inicio del proceso", i);
+
    	return entrenador;
 }
 

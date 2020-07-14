@@ -191,5 +191,5 @@ void terminarEjecucionTeam(){
 	log_destroy(log);
 	liberar_conexion()*/
 	printf("GANASTE!!! \n\n\n\n\n");
-	sleep(1000);
+	sleep(9999);
 }
