@@ -211,13 +211,22 @@ void iniciar_suscripciones(int cola0, int cola1, int cola2){
 
 	cargar_datos_suscripcion();
 
-	s = pthread_create(&thread_suscripcion[0], NULL, (void*)enviar_mensaje_suscripcion, &cola0);
+	int* p_cola = malloc(sizeof(int));
+	*p_cola = cola0;
+
+	s = pthread_create(&thread_suscripcion[0], NULL, (void*)enviar_mensaje_suscripcion, p_cola);
 	if (s != 0) perror("PTHREAD_CREATE ERROR");
 
-	s = pthread_create(&thread_suscripcion[1], NULL, (void*)enviar_mensaje_suscripcion, &cola1);
+	p_cola = malloc(sizeof(int));
+	*p_cola = cola1;
+
+	s = pthread_create(&thread_suscripcion[1], NULL, (void*)enviar_mensaje_suscripcion, p_cola);
 	if (s != 0) perror("PTHREAD_CREATE ERROR");
 
-	s = pthread_create(&thread_suscripcion[1], NULL, (void*)enviar_mensaje_suscripcion, &cola2);
+	p_cola = malloc(sizeof(int));
+	*p_cola = cola2;
+
+	s = pthread_create(&thread_suscripcion[1], NULL, (void*)enviar_mensaje_suscripcion, p_cola);
 	if (s != 0) perror("PTHREAD_CREATE ERROR");
 
 }
@@ -294,6 +303,8 @@ static void enviar_mensaje_suscripcion(void* _cola){
 	int tiempo = -1, cola = *((int*)_cola);
 	int socket, id_suscripcion, size;
 
+	free(_cola);
+
 	void* mensaje = mensaje_suscripcion(SUSCRIPTOR, cola, tiempo, &size);
 
 	socket = _crear_conexion(mensaje, size, &id_suscripcion);
@@ -345,6 +356,7 @@ static void esperando_mensajes(int _socket, int cola_suscrito, int _id_suscripto
 		enviar_confirmacion(socket, true);
 	}
 }
+
 
 static void procesar_mensaje(int cod_op, int id_correlatvio, void* mensaje, int size){
 
@@ -456,6 +468,7 @@ static void* mensaje_reconexion(int cod_op, int cola_suscrito, int id_suscriptor
 
 	return mensaje;
 }
+
 
 static void* stream_reconexion(int cola_suscrito, int id_suscriptor, int* size){
 
