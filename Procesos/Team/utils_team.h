@@ -61,8 +61,6 @@ typedef struct{
 	t_list* pokemonesFaltantesDeadlock;
 	t_list* entrenadoresEstoyDeadlock; //entrenadores con los que estoy en dl
 
-	int estimacion;
-	int rafagaAnteriorReal;
 
 	int idCorrelativo;
 	t_mensajeTeam* mensaje;
@@ -73,10 +71,6 @@ typedef struct{
 }t_entrenador;
 
 bool falloConexionBroker;
-
-bool hayDesalojo;
-
-t_entrenador* entrenadorEnEjecucion;
 
 sem_t sem_cant_mensajes;
 sem_t sem_entrenadores_ready;
@@ -94,7 +88,6 @@ pthread_mutex_t mEjecutarMensaje;
 pthread_mutex_t mPokemonesAPedir;
 pthread_mutex_t mPokemonesAPedirSinRepetidos;
 pthread_mutex_t mIdsCorrelativos;
-pthread_mutex_t mHayDesalojo;
 
 pthread_mutex_t semPlanificador;
 t_entrenador* entrenadorActual;
@@ -113,10 +106,8 @@ char* IP_BROKER;
 int ESTIMACION_INICIAL;
 int PUERTO_BROKER;
 char* LOG_FILE;
-int ALPHA;
 int mensajeActual;
 int i;
-
 
 int cantPokemonesFinales;
 int cantPokemonesActuales;
