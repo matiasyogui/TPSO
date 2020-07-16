@@ -11,10 +11,10 @@
 #include <string.h>
 #include <pthread.h>
 #include <cosas_comunes.h>
-#include <commons/log.h>
 #include "listas.h"
 #include <stdbool.h>
 #include <semaphore.h>
+
 
 #define IP "127.0.0.2"
 #define PUERTO "5002"
@@ -94,9 +94,10 @@ pthread_mutex_t mEjecutarMensaje;
 pthread_mutex_t mPokemonesAPedir;
 pthread_mutex_t mPokemonesAPedirSinRepetidos;
 pthread_mutex_t mIdsCorrelativos;
-pthread_mutex_t mHayDesalojo;
 
 pthread_mutex_t semPlanificador;
+
+pthread_mutex_t mHayDesalojo;
 
 pthread_t hiloSuscriptor[3], server;
 
@@ -117,9 +118,10 @@ char* IP_BROKER;
 int ESTIMACION_INICIAL;
 char* PUERTO_BROKER;
 char* LOG_FILE;
-int ALPHA;
 int mensajeActual;
 int i;
+int ALPHA;
+
 
 pthread_t* hilos;
 

@@ -7,6 +7,7 @@
 #define PLANIFICACION_H_
 
 
+
 typedef enum{
 	DEADLOCK = 99
 };
@@ -24,7 +25,8 @@ void separarPokemonesDeadlock(t_entrenador* ent );
 void* stream_deadlock(int* datos[], int *size);
 void moverEntrenador (t_entrenador* ent, int posx, int posy);
 void moverEntrenadorDL(t_entrenador* ent, int posx, int posy);
+
 void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux);
-void buscarEntrenadoresDL(entAux);
+void buscarEntrenadoresDL(t_entrenador* entAux);
 
 #endif /* PLANIFICACION_H_ */

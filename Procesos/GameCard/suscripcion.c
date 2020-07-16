@@ -205,13 +205,21 @@ void iniciar_suscripciones(int cola0, int cola1, int cola2){
 
 	cargar_datos_suscripcion();
 
-	s = pthread_create(&thread_suscripcion[0], NULL, (void*)enviar_mensaje_suscripcion, &cola0);
+
+	int * p_cola = malloc(sizeof(int));
+	*p_cola = cola0;
+	s = pthread_create(&thread_suscripcion[0], NULL, (void*)enviar_mensaje_suscripcion, p_cola);
 	if (s != 0) perror("PTHREAD_CREATE ERROR");
 
-	s = pthread_create(&thread_suscripcion[1], NULL, (void*)enviar_mensaje_suscripcion, &cola1);
+	p_cola = malloc(sizeof(int));
+	*p_cola = cola1;
+	s = pthread_create(&thread_suscripcion[1], NULL, (void*)enviar_mensaje_suscripcion, p_cola);
 	if (s != 0) perror("PTHREAD_CREATE ERROR");
 
-	s = pthread_create(&thread_suscripcion[1], NULL, (void*)enviar_mensaje_suscripcion, &cola2);
+
+	p_cola = malloc(sizeof(int));
+	*p_cola = cola2;
+	s = pthread_create(&thread_suscripcion[2], NULL, (void*)enviar_mensaje_suscripcion, p_cola);
 	if (s != 0) perror("PTHREAD_CREATE ERROR");
 
 }
@@ -344,10 +352,10 @@ static void* mensaje_suscripcion(int cod_op, int cola_mensajes, int tiempo, int 
 	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	memcpy(stream + offset, &cola_mensajes, sizeof(uint32_t));
+	memcpy(stream + offset, size, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	memcpy(stream + offset, &tiempo, *size);
+	memcpy(stream + offset, mensaje, *size);
 	offset += sizeof(uint32_t);
 
 	*size = offset;

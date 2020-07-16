@@ -39,6 +39,7 @@ int estado_mensaje_eliminado(int id_mensaje, int cola_mensaje);
 
 t_list* obtener_lista_ids_mensajes(int cod_op);
 t_list* obtener_lista_ids_suscriptores(int cod_op);
+t_list* obtener_lista_ids_mensajes_restantes(int cod_op, int id_suscriptor);
 
 
 void* serializar_mensaje(int cod_op, int id, int* size);
