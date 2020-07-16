@@ -14,11 +14,7 @@ typedef struct{
 }t_mensajeTeam;
 
 
-int mensajeActual;
 
-void iniciar_servidor(void);
-char* leer_get_pokemon(int);
-char* leer_mensaje_getPokemon(t_buffer*);
 void iniciar_suscripciones(int cola0, int cola1, int cola2);
 void finalizar_suscripciones(void);
 
