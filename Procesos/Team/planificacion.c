@@ -130,8 +130,9 @@ void* pasajeBlockAReady(){
 					if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
 						list_add(listaExit, ent);
 						log_info(logger, "Entrenador %d entra a la lista Exit porque logro su objetivo personal.", ent -> idEntrenador);
+						pthread_cancel(hilos[ent -> idEntrenador]);
 
-						if (list_size(listaExit)==cant_elementos(POSICIONES_ENTRENADORES)){
+						if (list_size(listaExit) == cant_elementos(POSICIONES_ENTRENADORES)){
 							terminarEjecucionTeam();
 						}
 
@@ -198,6 +199,7 @@ void* pasajeBlockAReady(){
 
 	list_clean(listaBlocked);
 
+	return NULL;
 }
 
 void buscarEntrenadoresDL(t_entrenador* ent){
@@ -329,9 +331,9 @@ bool ordenarSJF(void* elemento1, void* elemento2){
 	return ent1 -> estimacion < ent2 -> estimacion;
 }
 
-void planificarEntrenadoresAExec(){
+void* planificarEntrenadoresAExec(){
 	t_link_element* nodo;
-	while(true){
+	while(list_size(listaExit) != cant_elementos(POSICIONES_ENTRENADORES)){
 		sem_wait(&sem_entrenadores_ready);
 		t_entrenador* ent;
 		printf("el algoritmo de planificacion es %s \n",ALGORITMO_PLANIFICACION);
@@ -361,6 +363,7 @@ void planificarEntrenadoresAExec(){
 				break;
 		}
 	}
+return NULL;
 }
 
 void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
@@ -393,7 +396,7 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 	offset += sizeof(uint32_t);
 
 	//enviamos el mensaje
-	int socket = crear_conexion("127.0.0.1", "4444");
+	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 	if(socket>0){
 	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
 	{
@@ -455,9 +458,20 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 }
 
 
-void ejecutarMensaje(void* entAux){
+bool entrenadorEnExit(t_entrenador* ent){
+	for(int i = 0; i < list_size(listaExit); i++){
+		if(((t_entrenador*) list_get(listaExit, i)) -> idEntrenador == ent -> idEntrenador){
+			return true;
+		}
+	}
+return false;
+}
+
+void* ejecutarMensaje(void* entAux){
 	t_entrenador* ent = (t_entrenador*) entAux;
-	while(true){
+	t_entrenador* entAux1;
+
+	while(!entrenadorEnExit(ent)){
 		pthread_mutex_lock(&(ent->semaforo));
 		printf("se empezo a ejecutar el entrenador %d \n", ent->idEntrenador);
 		int size, offset, idEntDeadLock;
@@ -502,49 +516,50 @@ void ejecutarMensaje(void* entAux){
 			break;
 		case DEADLOCK:
 
-
 			for(int i=0;i<list_size(ent->entrenadoresEstoyDeadlock);i++){
 
-			idEntDeadLock = (int) list_remove(ent->entrenadoresEstoyDeadlock,0);
+				idEntDeadLock = (int) list_remove(ent->entrenadoresEstoyDeadlock,0);
 
-			bool _entrenadorTieneID(void* elemento){
-				t_entrenador* entAuxiliar = (t_entrenador*) elemento;
-				return entAuxiliar -> idEntrenador == idEntDeadLock;
-			}
+				bool _entrenadorTieneID(void* elemento){
+					t_entrenador* entAuxiliar = (t_entrenador*) elemento;
+					return entAuxiliar -> idEntrenador == idEntDeadLock;
+				}
 
-			t_entrenador* entAux = list_find(listaReady, _entrenadorTieneID);
+				if(list_size(listaReady) != 0){
+					if(list_size(listaReady) > 1){
+						entAux1 = (t_entrenador*) list_find(listaReady, _entrenadorTieneID);
+					}else{
+						entAux1 = (t_entrenador*) list_get(listaReady, 0);
+					}
 
-			if(entAux == NULL){
-				printf("ASDFASDFAAAAAAAAAAAAAAAAa");
-			}
+					moverEntrenadorDL(ent, entAux1->posicion->posx, entAux1->posicion->posy);
 
-			moverEntrenadorDL(ent, entAux->posicion->posx, entAux->posicion->posy);
+					realizarIntercambio(ent,entAux1);
+				}
 
-			realizarIntercambio(ent,entAux);
-
-			if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
+				if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
 					list_add(listaExit, ent);
 					log_info(logger, "Entrenador %d entra a lista Exit porque logro su objetivo personal.", ent -> idEntrenador);
+					//pthread_cancel(ent -> idEntrenador);
 				}
 
-			if(tienenLosMismosElementos(entAux->pokemones,entAux->objetivo)){
-				list_remove_by_condition(listaReady,_entrenadorTieneID);
-				sem_wait(&sem_entrenadores_ready);
-				list_add(listaExit, entAux);
-				log_info(logger, "Entrenador %d entra a lista Exit porque logro su objetivo personal.", entAux -> idEntrenador);
-				}
-			}
-
-			if (list_size(listaExit)==cant_elementos(POSICIONES_ENTRENADORES)){
-				terminarEjecucionTeam();
+				/*if(tienenLosMismosElementos(entAux1 -> pokemones, entAux1 -> objetivo)){
+					list_remove_by_condition(listaReady,_entrenadorTieneID);
+					sem_wait(&sem_entrenadores_ready);
+					list_add(listaExit, entAux1);
+					log_info(logger, "Entrenador %d entra a lista Exit porque logro su objetivo personal.", entAux1 -> idEntrenador);
+					//pthread_cancel(hilos[entAux1 -> idEntrenador]);
+				}*/
 			}
 
 			break;
 		}
 		printf("se termino de ejecutar el entrenador %d \n", ent->idEntrenador);
+
 		entrenadorEnEjecucion = NULL;
 		pthread_mutex_unlock(&mEjecutarMensaje);
 	}
+	return NULL;
 }
 
 void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux){
@@ -860,7 +875,7 @@ void enviarGet(void* elemento){
 
 
 	//enviamos el mensaje
-	int socket = crear_conexion("127.0.0.1", "4444");
+	int socket = crear_conexion(IP_BROKER, (int) PUERTO_BROKER);
 	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
 		perror(" FALLO EL SEND DEL GET \n");
 

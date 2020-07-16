@@ -84,12 +84,12 @@ int conectarse(void){
 
 int suscribirse(char* cola){
 
-	int socket = crear_conexion("127.0.0.1", "4444");
+	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 	while(socket<=0){
 		perror("FALLO LA CONEXION CON EL BROKER");
 		printf("Intento reconexion \n");
 		sleep(TIEMPO_RECONEXION);
-		socket = crear_conexion("127.0.0.1", "4444");
+		socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 	}
 	char *datos[] = {"suscriptor", cola, "-1"};
 
@@ -103,31 +103,31 @@ int suscribirse(char* cola){
 	s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
 	while ( s <= 0) {
 		perror("RECV ERROR \n");
-		socket = crear_conexion("127.0.0.1", "4444");
+		socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 		while(socket<0){
 			perror("FALLO LA CONEXION CON EL BROKER \n");
 			printf("Intento reconexion \n");
 			sleep(TIEMPO_RECONEXION);
-			socket = crear_conexion("127.0.0.1", "4444");
+			socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 		}
 		enviar_mensaje(paquete_enviar, socket);
 		s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
 	}
 	printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", confirmacion_suscripcion);
 
-	while(1){
+	while(list_size(listaExit) != cant_elementos(POSICIONES_ENTRENADORES)){
 		printf("espero recibir algo \n");
 		s = recv(socket, &cod_op, sizeof(uint32_t), 0 );
 		while(s<=0)
 		{
 		while (s <= 0) {
 			perror("FALLO RECV");
-			socket = crear_conexion("127.0.0.1", "4444");
+			socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 			while(socket<0){
 				perror("FALLO LA CONEXION CON EL BROKER \n");
 				printf("Intento reconexion \n");
 				sleep(TIEMPO_RECONEXION);
-				socket = crear_conexion("127.0.0.1", "4444");
+				socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 			}
 			enviar_mensaje(paquete_enviar, socket);
 			s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
@@ -147,6 +147,7 @@ int suscribirse(char* cola){
 				break;
 		}
 	}
+
 	return EXIT_SUCCESS;
 }
 
@@ -279,13 +280,12 @@ int main(){
 	pthread_create(&server, NULL, (void*)iniciar_servidor, NULL);
 
 	int cantEntrenadores = cant_elementos(POSICIONES_ENTRENADORES);
-	//t_entrenador** entrenadores=calloc(cantEntrenadores,sizeof(t_entrenador));
 
-	pthread_t hilos[cantEntrenadores];
+	hilos = calloc(cantEntrenadores, sizeof(*hilos));
 
 	for(i=0;i<cantEntrenadores;i++){
 		t_entrenador* ent = setteoEntrenador(i);
-	   pthread_create(&hilos[i], NULL, (void*) ejecutarMensaje, (void*) ent);
+	    pthread_create(hilos + 1, NULL, (void*) ejecutarMensaje, (void*) ent);
 	}
 
 	pthread_t blockAReady;
@@ -293,31 +293,45 @@ int main(){
 
 
 	pthread_mutex_init(&mBlockAReady, NULL);
-	pthread_create(&blockAReady, NULL, (void*)pasajeBlockAReady, NULL);
+	pthread_create(&blockAReady, NULL, (void*) pasajeBlockAReady, NULL);
 	pthread_create(&planificarEntrenadorAEjecutar,NULL, (void*) planificarEntrenadoresAExec, NULL);
 
 	pedir_pokemones();
 
-	for(i=0;i<cantEntrenadores;i++){
-		pthread_join(hilos[i],NULL);
-	}
-
 	for(i=0;i<3;i++){
-		pthread_join(hiloSuscriptor[i],NULL);
+		pthread_detach(hiloSuscriptor[i]);
 	}
 
-	pthread_join(server, NULL);
+	pthread_detach(server);
 
-	eliminar_listas();
+	pthread_detach(blockAReady);
+	pthread_detach(planificarEntrenadorAEjecutar);
 
-	return EXIT_SUCCESS;
+	printf("TERM_INARASFOJDSaaaaa\n");
+
+	int* valRet;
+
+	for(i=0;i<cantEntrenadores;i++){
+		valRet = pthread_join(hilos[i],NULL);
+		if(valRet == NULL){
+			pthread_cancel(hilos[i]);
+		}
+	}
+
+	printf("termino el main\n");
+
+	terminarEjecucionTeam();
+
+	return 0;
 }
 
 
 void leer_archivo_configuracion(){
 
 	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team1.config");
-	logger = iniciar_logger("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team.log", "TEAM", 0, LOG_LEVEL_INFO);
+
+	LOG_FILE= config_get_string_value(config,"LOG_FILE");
+	logger = iniciar_logger(LOG_FILE, "TEAM", 0, LOG_LEVEL_INFO);
 
 	//PASO TODOS LOS PARAMETROS
 	POSICIONES_ENTRENADORES = config_get_array_value(config,"POSICIONES_ENTRENADORES");
@@ -336,10 +350,7 @@ void leer_archivo_configuracion(){
 	}
 
 	IP_BROKER = config_get_string_value(config,"IP_BROKER");
-	PUERTO_BROKER= config_get_int_value(config,"PUERTO_BROKER");
-	LOG_FILE= config_get_string_value(config,"LOG_FILE");
-
-	//config_destroy(config);
+	PUERTO_BROKER = config_get_string_value(config,"PUERTO_BROKER");
 }
 
 t_entrenador* setteoEntrenador(int i){

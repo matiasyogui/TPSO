@@ -36,7 +36,7 @@ void iniciar_servidor(void)
 
     freeaddrinfo(servinfo);
     server_team = socket_servidor;
-    while(1)
+    while(list_size(listaExit) != cant_elementos(POSICIONES_ENTRENADORES))
     	esperar_cliente(socket_servidor);
 
 }
@@ -187,9 +187,9 @@ int algoritmo_planificacion(char* algoritmoDePlanificacion){
 }
 
 void terminarEjecucionTeam(){
-	/*config_destroy(config);
-	log_destroy(log);
-	liberar_conexion()*/
-	printf("GANASTE!!! \n\n\n\n\n");
-	sleep(9999);
+	config_destroy(config);
+	log_destroy(logger);
+	eliminar_listas();
+
+	printf("TODOS LOS ENTRENADORES EN EXIT!!! \n");
 }
