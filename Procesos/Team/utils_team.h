@@ -97,6 +97,10 @@ pthread_mutex_t mIdsCorrelativos;
 pthread_mutex_t mHayDesalojo;
 
 pthread_mutex_t semPlanificador;
+
+pthread_t hiloSuscriptor[3], server;
+
+
 t_entrenador* entrenadorActual;
 
 t_config* config;
@@ -111,12 +115,13 @@ char* ALGORITMO_PLANIFICACION;
 int QUANTUM;
 char* IP_BROKER;
 int ESTIMACION_INICIAL;
-int PUERTO_BROKER;
+char* PUERTO_BROKER;
 char* LOG_FILE;
 int ALPHA;
 int mensajeActual;
 int i;
 
+pthread_t* hilos;
 
 int cantPokemonesFinales;
 int cantPokemonesActuales;
