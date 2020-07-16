@@ -4,7 +4,6 @@
 #include <commons/collections/list.h>
 #include <pthread.h>
 #include <signal.h>
-#include <cosas_comunes.h>
 #include "variables_globales.h"
 
 

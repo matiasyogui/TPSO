@@ -31,7 +31,7 @@ static void informe_lista_mensajes(void);
 static void informe_lista_subs(void);
 static void mostrar_listas(void);
 
-
+t_list* filtar_mensajes_restantes_suscriptor(t_list* lista_mensajes, int id_suscriptor);
 //====================================================================================================
 
 
@@ -168,6 +168,45 @@ t_list* obtener_lista_ids_mensajes(int cod_op){
 	return lista;
 
 }
+
+t_list* obtener_lista_ids_mensajes_restantes(int cod_op, int id_suscriptor){
+
+	t_list* lista;
+
+	pthread_rwlock_rdlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
+
+	t_list* lista_mensajes_pendientes = filtar_mensajes_restantes_suscriptor(list_get(LISTA_MENSAJES, cod_op), id_suscriptor);
+
+	lista = _obtener_lista_ids(lista_mensajes_pendientes, _obtener_id_mensaje, _verificar_mensaje_valido);
+
+	pthread_rwlock_unlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
+
+	list_destroy(lista_mensajes_pendientes);
+
+	return lista;
+
+}
+
+
+bool mensaje_se_envio_suscriptor(void* _mensaje, int id_suscriptor){
+
+	bool _suscriptor_en_notificacion(void* elemento){
+		return ((t_notificacion*)elemento)->id_suscriptor == id_suscriptor;
+	}
+
+	return list_any_satisfy(((t_mensaje*)_mensaje)->notificiones_envio, _suscriptor_en_notificacion);
+}
+
+t_list* filtar_mensajes_restantes_suscriptor(t_list* lista_mensajes, int id_suscriptor){
+
+	bool _mensaje_se_envio_suscriptor(void* mensaje){
+		return mensaje_se_envio_suscriptor(mensaje, id_suscriptor);
+	}
+
+	return list_filter(lista_mensajes, _mensaje_se_envio_suscriptor);
+}
+
+
 
 
 t_list* obtener_lista_ids_suscriptores(int cod_op){

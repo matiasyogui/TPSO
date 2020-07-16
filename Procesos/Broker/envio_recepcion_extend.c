@@ -8,6 +8,7 @@ static int obtener_cod_op(t_buffer* buffer, int* tiempo);
 
 static void cargar_envios_mensajes(int cod_op, int id_suscriptor);
 static void cargar_envios_suscriptores(int cod_op, int id_mensaje);
+static void cargar_envios_mensajes_faltantes(int cod_op, int id_suscriptor);
 static void cargar_envio(int cod_op, int id_mensaje, int id_suscriptor);
 
 void eliminar_suscriptor_tiempo(int tiempo, int id_sub, int cod_op);
@@ -75,7 +76,9 @@ int tratar_reconexion(int socket){
 	s = reconectar_suscriptor(id_suscriptor, cola_suscrito);
 	if (s == EXIT_FAILURE) { printf("No se encontro al suscriptor"); enviar_confirmacion(socket, false); return EXIT_FAILURE; }
 
-	enviar_confirmacion(socket, true);//analizar que devuelve la confirmacion un bool o el id del suscriptor
+	enviar_confirmacion(socket, id_suscriptor);
+
+	cargar_envios_mensajes_faltantes(cola_suscrito, id_suscriptor);
 
 	return EXIT_SUCCESS;
 }
@@ -207,7 +210,22 @@ static void cargar_envio(int cod_op, int id_mensaje, int id_suscriptor){
 }
 
 
+static void cargar_envios_mensajes_faltantes(int cod_op, int id_suscriptor){
 
+	t_list* lista_mensajes_pendientes = obtener_lista_ids_mensajes_restantes(cod_op, id_suscriptor);
+
+	int id_mensaje;
+
+	for (int i = 0; i < list_size(lista_mensajes_pendientes); i++){
+
+		id_mensaje = *((int*)list_get(lista_mensajes_pendientes, i));
+
+		cargar_envio(cod_op, id_mensaje, id_suscriptor);
+	}
+
+	list_destroy_and_destroy_elements(lista_mensajes_pendientes, free);
+
+}
 //===================================================================================
 
 
