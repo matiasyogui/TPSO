@@ -188,8 +188,23 @@ int algoritmo_planificacion(char* algoritmoDePlanificacion){
 
 void terminarEjecucionTeam(){
 	config_destroy(config);
+
+	printf("TODOS LOS ENTRENADORES EN EXIT!!! \n");
+
+	log_info(logger, "CICLOS DE CPU TOTALES = %d", rafagasCPUTotales);
+
+	for(int i = 0; i < cant_elementos(POSICIONES_ENTRENADORES); i++){
+		log_info(logger, "CANTIDAD DE CICLOS DE CPU DEL ENTRENADOR %d = %d", i, ((t_entrenador*) list_get(listaExit, i)) -> rafagasCPUDelEntrenador);
+	}
+
+	log_info(logger, "CANTIDAD DE DEADLOCKS = %d", deadlocks);
+
+	log_info(logger, "CANTIDAD DE DEADLOCKS RESUELTOS = %d", deadlocksResueltos);
+
+	log_info(logger, "CANTIDAD DE CAMBIOS DE CONTEXTO = %d", cambiosDeContexto);
+
 	log_destroy(logger);
 	eliminar_listas();
 
-	printf("TODOS LOS ENTRENADORES EN EXIT!!! \n");
+	exit(-1);
 }

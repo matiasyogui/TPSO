@@ -64,6 +64,8 @@ typedef struct{
 	int estimacion;
 	int rafagaAnteriorReal;
 
+	int rafagasCPUDelEntrenador;
+
 	int idCorrelativo;
 	t_mensajeTeam* mensaje;
 	t_mensajeTeam* ultimoMensajeEnviado;
@@ -71,6 +73,13 @@ typedef struct{
 	bool pokemonesMaximos;
 
 }t_entrenador;
+
+//METRICAS
+int rafagasCPUTotales;
+int deadlocks;
+int deadlocksResueltos;
+int cambiosDeContexto;
+
 
 bool falloConexionBroker;
 

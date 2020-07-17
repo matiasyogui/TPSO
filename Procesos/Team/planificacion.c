@@ -85,6 +85,9 @@ void* pasajeBlockAReady(){
 
 			log_info(logger, "Entrenador %d entra a la lista Ready para poder ejecutar su mensaje.", ent -> idEntrenador);
 
+			//metricas
+			cambiosDeContexto += 2;
+
 			sem_post(&sem_entrenadores_ready);
 
 			break;
@@ -125,12 +128,14 @@ void* pasajeBlockAReady(){
 			if(loAtrapo){
 				list_add(ent->pokemones,(char*) pokemon);
 				cantPokemonesActuales++;
-				printf("Se atrapo el pokemon %s \n",pokemon);
+				printf("Se atrapo el pokemon %s \n", (char*) pokemon);
 				if(list_size(ent->objetivo) == list_size(ent -> pokemones)){
 					if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
 						list_add(listaExit, ent);
 						log_info(logger, "Entrenador %d entra a la lista Exit porque logro su objetivo personal.", ent -> idEntrenador);
-						pthread_cancel(hilos[ent -> idEntrenador]);
+
+						//metricas
+						cambiosDeContexto += 2;
 
 						if (list_size(listaExit) == cant_elementos(POSICIONES_ENTRENADORES)){
 							terminarEjecucionTeam();
@@ -243,6 +248,8 @@ void buscarEntrenadoresDL(t_entrenador* ent){
 		}
 	j++;
 	}
+
+	deadlocks++;
 }
 
 void* stream_deadlock(int* datos[], int *size){
@@ -424,6 +431,9 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 
 	log_info(logger, "Entrenador %d entra en lista Blocked esperando respuesta del Catch.", ent -> idEntrenador);
 
+	//metricas;
+	cambiosDeContexto += 2;
+
 	}
 	}
 	else{ //FUNCION DEFAULT
@@ -506,7 +516,16 @@ void ejecutarMensaje(void* entAux){
 				pthread_mutex_lock(&mListaReady);
 				list_add(listaReady, ent);
 				pthread_mutex_unlock(&mListaReady);
-				log_info(logger, "Entrenador entra a lista Ready por fin de Quantum.", ent -> idEntrenador);
+
+				if(ALGORITMO_PLANIFICACION == "RR"){
+					log_info(logger, "Entrenador entra a lista Ready por fin de Quantum.", ent -> idEntrenador);
+				}else{
+					log_info(logger, "Entrenador entra a lista Ready por desalojo del SJFCD.", ent -> idEntrenador);
+
+				}
+
+				//metricas;
+				cambiosDeContexto += 2;
 
 				sem_post(&sem_entrenadores_ready);
 			}else{
@@ -539,6 +558,10 @@ void ejecutarMensaje(void* entAux){
 				if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
 					list_add(listaExit, ent);
 					log_info(logger, "Entrenador %d entra a lista Exit porque logro su objetivo personal.", ent -> idEntrenador);
+
+					//metricas
+					deadlocksResueltos++;
+					cambiosDeContexto += 2;
 				}
 
 				if(tienenLosMismosElementos(entAux1->pokemones, entAux1->objetivo)){
@@ -547,6 +570,10 @@ void ejecutarMensaje(void* entAux){
 						sem_wait(&sem_entrenadores_ready);
 						list_add(listaExit, entAux1);
 						log_info(logger, "Entrenador %d entra a lista Exit porque logro su objetivo personal.", entAux1 -> idEntrenador);
+
+						//metricas
+						deadlocksResueltos++;
+						cambiosDeContexto += 2;
 				}
 
 			}
@@ -559,7 +586,7 @@ void ejecutarMensaje(void* entAux){
 	}
 	pthread_mutex_unlock(&mEjecutarMensaje);
 }
-	pthread_cancel(hiloMain);
+	terminarEjecucionTeam();
 }
 
 void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux){
@@ -602,7 +629,12 @@ void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux){
 				}
 			i++;
 			}
-	sleep(5);
+		sleep(5);
+
+	//metricas
+	ent -> rafagasCPUDelEntrenador += 5;
+	entAux -> rafagasCPUDelEntrenador += 5;
+	rafagasCPUTotales += 5;
 
 }
 
@@ -621,6 +653,10 @@ void moverEntrenadorDL(t_entrenador* ent, int posx, int posy){
 				loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
 			}
 			sleep(1);
+
+			//metricas
+			(ent -> rafagasCPUDelEntrenador)++;
+			rafagasCPUTotales++;
 		}
 
 		if(posy != ent -> posicion -> posy){
@@ -632,6 +668,10 @@ void moverEntrenadorDL(t_entrenador* ent, int posx, int posy){
 				loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
 			}
 			sleep(1);
+
+			//metricas
+			(ent -> rafagasCPUDelEntrenador)++;
+			rafagasCPUTotales++;
 		}
 	}
 }
@@ -652,6 +692,10 @@ void moverEntrenador(t_entrenador* ent, int posx, int posy){
 						loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
 					}
 					sleep(1);
+
+					//metricas
+					(ent -> rafagasCPUDelEntrenador)++;
+					rafagasCPUTotales++;
 				}
 
 				if(posy != ent -> posicion -> posy){
@@ -665,6 +709,10 @@ void moverEntrenador(t_entrenador* ent, int posx, int posy){
 						fflush(stdout);
 					}
 					sleep(1);
+
+					//metricas
+					(ent -> rafagasCPUDelEntrenador)++;
+					rafagasCPUTotales++;
 				}
 			}
 
@@ -685,6 +733,10 @@ void moverEntrenador(t_entrenador* ent, int posx, int posy){
 					(ent -> cercania)--;
 				}
 				sleep(1);
+				//metricas
+				(ent -> rafagasCPUDelEntrenador)++;
+				rafagasCPUTotales++;
+
 			}else{
 				if(posy != ent -> posicion -> posy){
 					if(posy > ent -> posicion -> posy){
@@ -699,6 +751,10 @@ void moverEntrenador(t_entrenador* ent, int posx, int posy){
 						(ent -> cercania)--;
 					}
 					sleep(1);
+
+					//metricas
+					(ent -> rafagasCPUDelEntrenador)++;
+					rafagasCPUTotales++;
 				}
 			}
 
@@ -724,6 +780,10 @@ void moverEntrenador(t_entrenador* ent, int posx, int posy){
 					(ent -> rafagaAnteriorReal)++;
 				}
 				sleep(1);
+
+				//metricas
+				(ent -> rafagasCPUDelEntrenador)++;
+				rafagasCPUTotales++;
 			}else{
 				if(posy != ent -> posicion -> posy){
 					if(posy > ent -> posicion -> posy){
@@ -738,6 +798,10 @@ void moverEntrenador(t_entrenador* ent, int posx, int posy){
 						(ent -> rafagaAnteriorReal)++;
 					}
 					sleep(1);
+
+					//metricas
+					(ent -> rafagasCPUDelEntrenador)++;
+					rafagasCPUTotales++;
 				}
 			}
 	}

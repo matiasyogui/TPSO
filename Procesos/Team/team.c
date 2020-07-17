@@ -2,6 +2,7 @@
 #include <semaphore.h>
 #include <math.h>
 #include "team.h"
+#include <commons/string.h>
 
 pthread_mutex_t mBlockAReady;
 
@@ -182,7 +183,8 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 	void* pokemon;
 
-	log_info(logger, "Llego el mensaje %s con los datos %s", cod_opToString(msg->cod_op), (char*) stream);
+	int* posx, posy;
+	int* valorCaught;
 
 	bool _buscarPokemon(void* elemento){
 		return buscarPokemon(elemento, pokemon);
@@ -200,6 +202,16 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 			pokemon = malloc(size);
 			memcpy(pokemon, stream + offset, size);
+			offset += size;
+
+			memcpy(&posx, stream + offset, sizeof(int));
+			offset += sizeof(int);
+
+			memcpy(&posy, stream + offset, sizeof(int));
+			offset += sizeof(int);
+
+			log_info(logger, "Llego el mensaje %s con los datos %s %d %d", cod_opToString(msg->cod_op), (char*) pokemon, posx, posy);
+
 
 			pthread_mutex_lock(&mPokemonesAPedir);
 			valor = list_any_satisfy(pokemonesAPedir, _buscarPokemon);
@@ -258,6 +270,16 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 		case CAUGHT_POKEMON:
 
+			offset = 0;
+
+			//logs
+			memcpy(&size, stream, sizeof(int));
+			offset += sizeof(int);
+
+			memcpy(&valorCaught, stream + offset, sizeof(int));
+
+			log_info(logger, "Llego el mensaje %s con los datos %d", cod_opToString(msg->cod_op), valorCaught);
+
 			pthread_mutex_lock(&mIdsCorrelativos);
 			return list_any_satisfy(lista_id_correlativos, _buscarID);
 			pthread_mutex_unlock(&mIdsCorrelativos);
@@ -272,6 +294,7 @@ int main(){
 	cantPokemonesFinales = 0;
 	cantPokemonesActuales = 0;
 	hayDesalojo = false;
+	rafagasCPUTotales = 0;
 
 	pthread_mutex_init(&mListaGlobal, NULL);
 	pthread_mutex_init(&mListaReady, NULL);
@@ -391,6 +414,8 @@ t_entrenador* setteoEntrenador(int i){
    	entrenador->estaDisponible = true;
     entrenador->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
 	entrenador -> estimacion = 0;
+
+	entrenador -> rafagasCPUDelEntrenador = 0;
 
 
    	pthread_mutex_init(&(entrenador->semaforo), NULL);
