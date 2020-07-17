@@ -14,7 +14,7 @@ typedef enum{
 void* pasajeBlockAReady();
 void* planificarEntrenadoresAExec();
 void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent);
-void* ejecutarMensaje();
+void ejecutarMensaje(void* ent);
 void agregarMensajeLista(int socket, int cod_op);
 void enviar_mensaje(t_paquete* paquete, int socket_cliente);
 void enviarGet(void* elemento);

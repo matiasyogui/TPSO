@@ -333,7 +333,7 @@ bool ordenarSJF(void* elemento1, void* elemento2){
 
 void* planificarEntrenadoresAExec(){
 	t_link_element* nodo;
-	while(list_size(listaExit) != cant_elementos(POSICIONES_ENTRENADORES)){
+	while(true){
 		sem_wait(&sem_entrenadores_ready);
 		t_entrenador* ent;
 		printf("el algoritmo de planificacion es %s \n",ALGORITMO_PLANIFICACION);
@@ -467,11 +467,11 @@ bool entrenadorEnExit(t_entrenador* ent){
 return false;
 }
 
-void* ejecutarMensaje(void* entAux){
+void ejecutarMensaje(void* entAux){
 	t_entrenador* ent = (t_entrenador*) entAux;
 	t_entrenador* entAux1;
 
-	while(!entrenadorEnExit(ent)){
+	while(list_size(listaExit) != cant_elementos(POSICIONES_ENTRENADORES)){
 		pthread_mutex_lock(&(ent->semaforo));
 		printf("se empezo a ejecutar el entrenador %d \n", ent->idEntrenador);
 		int size, offset, idEntDeadLock;
@@ -525,41 +525,41 @@ void* ejecutarMensaje(void* entAux){
 					return entAuxiliar -> idEntrenador == idEntDeadLock;
 				}
 
-				if(list_size(listaReady) != 0){
-					if(list_size(listaReady) > 1){
-						entAux1 = (t_entrenador*) list_find(listaReady, _entrenadorTieneID);
-					}else{
-						entAux1 = (t_entrenador*) list_get(listaReady, 0);
-					}
-
-					moverEntrenadorDL(ent, entAux1->posicion->posx, entAux1->posicion->posy);
-
-					realizarIntercambio(ent,entAux1);
+				if(list_size(listaReady) > 1){
+					entAux1 = (t_entrenador*) list_find(listaReady, _entrenadorTieneID);
+				}else{
+					entAux1 = (t_entrenador*) list_get(listaReady, 0);
 				}
+
+				moverEntrenadorDL(ent, entAux1->posicion->posx, entAux1->posicion->posy);
+
+				realizarIntercambio(ent,entAux1);
+
 
 				if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
 					list_add(listaExit, ent);
 					log_info(logger, "Entrenador %d entra a lista Exit porque logro su objetivo personal.", ent -> idEntrenador);
-					//pthread_cancel(ent -> idEntrenador);
 				}
 
-				/*if(tienenLosMismosElementos(entAux1 -> pokemones, entAux1 -> objetivo)){
-					list_remove_by_condition(listaReady,_entrenadorTieneID);
-					sem_wait(&sem_entrenadores_ready);
-					list_add(listaExit, entAux1);
-					log_info(logger, "Entrenador %d entra a lista Exit porque logro su objetivo personal.", entAux1 -> idEntrenador);
-					//pthread_cancel(hilos[entAux1 -> idEntrenador]);
-				}*/
-			}
+				if(tienenLosMismosElementos(entAux1->pokemones, entAux1->objetivo)){
+					if(tienenLosMismosElementos(entAux1->pokemones,entAux1->objetivo)){
+						list_remove_by_condition(listaReady,_entrenadorTieneID);
+						sem_wait(&sem_entrenadores_ready);
+						list_add(listaExit, entAux1);
+						log_info(logger, "Entrenador %d entra a lista Exit porque logro su objetivo personal.", entAux1 -> idEntrenador);
+				}
 
-			break;
+			}
 		}
 		printf("se termino de ejecutar el entrenador %d \n", ent->idEntrenador);
 
 		entrenadorEnEjecucion = NULL;
-		pthread_mutex_unlock(&mEjecutarMensaje);
+
+		break;
 	}
-	return NULL;
+	pthread_mutex_unlock(&mEjecutarMensaje);
+}
+	pthread_cancel(hiloMain);
 }
 
 void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux){
@@ -714,12 +714,12 @@ void moverEntrenador(t_entrenador* ent, int posx, int posy){
 			if(posx != ent -> posicion -> posx){
 				if(posx > ent -> posicion -> posx){
 					(ent -> posicion -> posx)++;
-					printf("se mueve a la derecha el entrenador %d\n",ent->idEntrenador);
+					loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
 					(ent -> estimacion)--;
 					(ent -> rafagaAnteriorReal)++;
 				}else{
 					(ent -> posicion -> posx)--;
-					printf("se mueve a la izquierda el entrenador %d\n",ent->idEntrenador);
+					loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
 					(ent -> estimacion)--;
 					(ent -> rafagaAnteriorReal)++;
 				}
@@ -728,14 +728,12 @@ void moverEntrenador(t_entrenador* ent, int posx, int posy){
 				if(posy != ent -> posicion -> posy){
 					if(posy > ent -> posicion -> posy){
 						(ent -> posicion -> posy)++;
-						printf("se mueve arriba el entrenador %d\n",ent->idEntrenador);
-						fflush(stdout);
+						loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
 						(ent -> estimacion)--;
 						(ent -> rafagaAnteriorReal)++;
 					}else{
 						(ent -> posicion -> posy)--;
-						printf("se mueve abajo el entrenador %d\n",ent->idEntrenador);
-						fflush(stdout);
+						loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
 						(ent -> estimacion)--;
 						(ent -> rafagaAnteriorReal)++;
 					}
@@ -762,6 +760,8 @@ void agregarMensajeLista(int socket, int cod_op){
 	mensajeAGuardar -> buffer = malloc(sizeof(t_buffer));
 	mensajeAGuardar -> buffer -> size = size;
 	mensajeAGuardar -> buffer -> stream = mensaje;
+
+	log_info(logger, "Llego el mensaje %s con los datos %s", cod_opToString(cod_op), (char*) mensaje);
 
 	mensajeAGuardar -> id = id_correlativo;
 	mensajeAGuardar -> cod_op = cod_op;
@@ -886,5 +886,7 @@ void enviarGet(void* elemento){
 	if(s>=0){
 		printf("[CONFIRMACION DE RECEPCION DE MENSAJE] mi id del mensaje = %d \n", id_mensaje);
 		list_add(lista_id_correlativos, id_mensaje);
+	}else{
+		log_info(logger, "Fallo conexión con el BROKER se procedera a realizar la funcion DEFAULT del Get.");
 	}
 }

@@ -70,7 +70,17 @@ int conectarse(void){
 	int socket, s;
 	do{
 		s = socket = crear_conexion("127.0.0.1", "4444");
-		if(s < 0){ perror("FALLO LA CONEXION CON EL BROKER"); sleep(TIEMPO_RECONEXION); continue; }
+		if(s < 0){
+			log_info(logger, "Inicio del proceso de reintento de comunicación.");
+			sleep(TIEMPO_RECONEXION);
+			socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
+			if(socket > 0){
+				log_info(logger, "Se reconecto con el BROKER correctamente.");
+			}else{
+				log_info(logger, "No se pudo reconectar con el BROKER");
+			}
+			continue;
+		}
 		break;
 	}while(true);
 
@@ -82,10 +92,14 @@ int suscribirse(char* cola){
 
 	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 	while(socket<=0){
-		perror("FALLO LA CONEXION CON EL BROKER");
-		printf("Intento reconexion \n");
+		log_info(logger, "Inicio del proceso de reintento de comunicación.");
 		sleep(TIEMPO_RECONEXION);
 		socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
+		if(socket > 0){
+			log_info(logger, "Se reconecto con el BROKER correctamente.");
+		}else{
+			log_info(logger, "No se pudo reconectar con el BROKER");
+		}
 	}
 	char *datos[] = {"suscriptor", cola, "-1"};
 
@@ -101,10 +115,14 @@ int suscribirse(char* cola){
 		perror("RECV ERROR \n");
 		socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 		while(socket<0){
-			perror("FALLO LA CONEXION CON EL BROKER \n");
-			printf("Intento reconexion \n");
+			log_info(logger, "Inicio del proceso de reintento de comunicación.");
 			sleep(TIEMPO_RECONEXION);
 			socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
+			if(socket > 0){
+				log_info(logger, "Se reconecto con el BROKER correctamente.");
+			}else{
+				log_info(logger, "No se pudo reconectar con el BROKER");
+			}
 		}
 		enviar_mensaje(paquete_enviar, socket);
 		s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
@@ -120,10 +138,14 @@ int suscribirse(char* cola){
 			perror("FALLO RECV");
 			socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 			while(socket<0){
-				perror("FALLO LA CONEXION CON EL BROKER \n");
-				printf("Intento reconexion \n");
+				log_info(logger, "Inicio del proceso de reintento de comunicación.");
 				sleep(TIEMPO_RECONEXION);
 				socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
+				if(socket > 0){
+					log_info(logger, "Se reconecto con el BROKER correctamente.");
+				}else{
+					log_info(logger, "No se pudo reconectar con el BROKER");
+				}
 			}
 			enviar_mensaje(paquete_enviar, socket);
 			s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
@@ -159,6 +181,8 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 	}
 
 	void* pokemon;
+
+	log_info(logger, "Llego el mensaje %s con los datos %s", cod_opToString(msg->cod_op), (char*) stream);
 
 	bool _buscarPokemon(void* elemento){
 		return buscarPokemon(elemento, pokemon);
@@ -268,6 +292,8 @@ int main(){
 
 	leer_archivo_configuracion();
 
+	hiloMain = pthread_self();
+
 	pthread_t hiloSuscriptor[3], server;
 	pthread_create(&hiloSuscriptor[1], NULL, (void*)suscribirse, "appeared_pokemon");
 	pthread_create(&hiloSuscriptor[2], NULL, (void*)suscribirse, "caught_pokemon");
@@ -282,7 +308,7 @@ int main(){
 	for(i=0;i<cantEntrenadores;i++){
 		t_entrenador* ent = setteoEntrenador(i);
 
-	    pthread_create(hilos + 1, NULL, ejecutarMensaje, (void*) ent);
+	    pthread_create(hilos + 1, NULL, (void*) ejecutarMensaje, (void*) ent);
 	}
 
 	pthread_t blockAReady;
@@ -308,13 +334,8 @@ int main(){
 
 	printf("TERM_INARASFOJDSaaaaa\n");
 
-	int* valRet;
-
 	for(i=0;i<cantEntrenadores;i++){
-		valRet = pthread_join(hilos[i],NULL);
-		if(valRet == NULL){
-			pthread_cancel(hilos[i]);
-		}
+		pthread_join(hilos[i],NULL);
 	}
 
 	printf("termino el main\n");
@@ -387,6 +408,9 @@ t_entrenador* setteoEntrenador(int i){
    		cantPokemonesActuales++;
    	}
    	list_add(listaBlocked, entrenador);
+   	log_info(logger, "Entrenador %d entra a la lista Bloqueado, por inicio del proceso", i);
+
+
    	return entrenador;
 }
 

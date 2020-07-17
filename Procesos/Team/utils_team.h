@@ -99,6 +99,8 @@ pthread_mutex_t semPlanificador;
 
 pthread_mutex_t mHayDesalojo;
 
+pthread_t hiloMain;
+
 
 pthread_t hiloSuscriptor[3], server;
 
