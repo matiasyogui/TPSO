@@ -265,6 +265,8 @@ static void enviar_mensaje_suscripcion(void* _cola){
 
 	void* mensaje = mensaje_suscripcion(SUSCRIPTOR, cola, tiempo, &size);
 
+	printf("intentando subscripcion cola %d\n",cola);
+
 	do{
 		s = socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 		if (s < 0) { perror("CREAR_CONEXION ERROR"); continue; }
@@ -280,6 +282,8 @@ static void enviar_mensaje_suscripcion(void* _cola){
 
 	}while(flag);
 
+	printf("terminada subscripcion cola %d\n",cola);
+
 	esperando_mensajes(socket);
 }
 
@@ -291,8 +295,12 @@ static void esperando_mensajes(int socket){
 
 	while(true){
 
+		printf("esperando mensaje socket %d\n",socket);
+
 		s = recv(socket, &cod_op, sizeof(uint32_t), 0 );
 		if (s < 0) { perror("FALLO RECV"); continue; }
+
+		printf("recibido mensaje socket %d\n",socket);
 
 		s = recv(socket, &id_correlativo, sizeof(uint32_t), 0);
 		if (s < 0) { perror("FALLO RECV"); continue; }
@@ -306,6 +314,8 @@ static void esperando_mensajes(int socket){
 			case GET_POKEMON:
 
 				mensaje = recibir_mensaje(socket, &size);
+				printf("get pokemon pokemon: %s\n", mensaje);
+
 				if(mensaje != NULL) enviar_confirmacion(socket, true);
 				else enviar_confirmacion(socket, false);
 
