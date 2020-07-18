@@ -564,20 +564,18 @@ void ejecutarMensaje(void* entAux){
 					cambiosDeContexto += 2;
 				}
 
-				if(tienenLosMismosElementos(entAux1->pokemones, entAux1->objetivo)){
-					if(tienenLosMismosElementos(entAux1->pokemones,entAux1->objetivo)){
-						list_remove_by_condition(listaReady,_entrenadorTieneID);
-						sem_wait(&sem_entrenadores_ready);
-						list_add(listaExit, entAux1);
-						log_info(logger, "Entrenador %d entra a lista Exit porque logro su objetivo personal.", entAux1 -> idEntrenador);
+				if(tienenLosMismosElementos(entAux1->pokemones,entAux1->objetivo)){
+					list_remove_by_condition(listaReady,_entrenadorTieneID);
+					sem_wait(&sem_entrenadores_ready);
+					list_add(listaExit, entAux1);
+					log_info(logger, "Entrenador %d entra a lista Exit porque logro su objetivo personal.", entAux1 -> idEntrenador);
 
-						//metricas
-						deadlocksResueltos++;
-						cambiosDeContexto += 2;
+					//metricas
+					deadlocksResueltos++;
+					cambiosDeContexto += 2;
 				}
 
 			}
-		}
 		printf("se termino de ejecutar el entrenador %d \n", ent->idEntrenador);
 
 		entrenadorEnEjecucion = NULL;
