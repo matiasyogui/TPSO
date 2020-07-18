@@ -49,12 +49,28 @@ t_list* listaSinRepetidos(t_list* lista){
 }
 
 
-void eliminar_listas(){ //HAY QUE VERLO
+void liberarEntrenadores(void* elemento){
+	t_entrenador* entrenadorALiberar = (t_entrenador*) elemento;
 
-	list_destroy_and_destroy_elements(listaReady, free);
-	list_destroy_and_destroy_elements(listaExecute, free);
-	list_destroy_and_destroy_elements(listaBlocked, free);
-	list_destroy_and_destroy_elements(listaExit, free);
+	free(entrenadorALiberar -> posicion);
+	free(entrenadorALiberar);
+}
+
+void liberarMensajes(void* elemento){
+	t_mensajeTeam* mensajeALiberar = (t_mensajeTeam*) elemento;
+
+	free(mensajeALiberar -> buffer -> stream);
+	free(mensajeALiberar -> buffer);
+	free(mensajeALiberar);
+}
+
+void eliminar_listas(){ //HAY QUE VERLO
+	list_destroy(listaReady);
+	list_destroy(listaBlocked);
+	list_destroy(listaExecute);
+	list_destroy_and_destroy_elements(listaExit, liberarEntrenadores);
+
+	list_destroy_and_destroy_elements(lista_mensajes, liberarMensajes);
 }
 
 

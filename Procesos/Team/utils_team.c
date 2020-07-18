@@ -36,7 +36,7 @@ void iniciar_servidor(void)
 
     freeaddrinfo(servinfo);
     server_team = socket_servidor;
-    while(1)
+    while(list_size(listaExit) != cant_elementos(POSICIONES_ENTRENADORES))
     	esperar_cliente(socket_servidor);
 
 }
@@ -187,9 +187,24 @@ int algoritmo_planificacion(char* algoritmoDePlanificacion){
 }
 
 void terminarEjecucionTeam(){
-	/*config_destroy(config);
-	log_destroy(log);
-	liberar_conexion()*/
-	printf("GANASTE!!! \n\n\n\n\n");
-	sleep(1000);
+	config_destroy(config);
+
+	printf("TODOS LOS ENTRENADORES EN EXIT!!! \n");
+
+	log_info(logger, "CICLOS DE CPU TOTALES = %d", rafagasCPUTotales);
+
+	for(int i = 0; i < cant_elementos(POSICIONES_ENTRENADORES); i++){
+		log_info(logger, "CANTIDAD DE CICLOS DE CPU DEL ENTRENADOR %d = %d", i, ((t_entrenador*) list_get(listaExit, i)) -> rafagasCPUDelEntrenador);
+	}
+
+	log_info(logger, "CANTIDAD DE DEADLOCKS = %d", deadlocks);
+
+	log_info(logger, "CANTIDAD DE DEADLOCKS RESUELTOS = %d", deadlocksResueltos);
+
+	log_info(logger, "CANTIDAD DE CAMBIOS DE CONTEXTO = %d", cambiosDeContexto);
+
+	log_destroy(logger);
+	eliminar_listas();
+
+	exit(-1);
 }
