@@ -30,8 +30,6 @@ int main(){
 
 	pthread_create(&thread_server, NULL, (void*)iniciar_servidor, NULL);
 
-	pthread_join(thread_server, NULL);
-
 	bool ciclo = 1;
 	char line[100];
 	while(ciclo){
@@ -45,6 +43,8 @@ int main(){
 	 }
 
 	}
+
+	pthread_join(thread_server, NULL);
 
 	finalizar_programa();
 
