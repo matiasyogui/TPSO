@@ -1,3 +1,4 @@
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #include "planificacion.h"
 
 void* pasajeBlockAReady(){
@@ -12,8 +13,6 @@ void* pasajeBlockAReady(){
 
 		pthread_mutex_unlock(&mListaGlobal);
 
-		printf("\n el puntero del mensaje es %p \n",mensaje);
-
 		t_entrenador* ent;
 		int size, offset, id, loAtrapo;
 		void* stream;
@@ -27,6 +26,15 @@ void* pasajeBlockAReady(){
 		}
 
 		case APPEARED_POKEMON:
+
+			if(!hayEntrenadoresDisponiblesBlocked()){
+				pthread_mutex_lock(&mListaGlobal);
+				list_add(lista_mensajes, mensaje);
+				pthread_mutex_unlock(&mListaGlobal);
+				sem_post(&sem_cant_mensajes);
+				break;
+			}
+
 			stream = mensaje -> buffer -> stream;
 			offset = 0;
 
@@ -63,9 +71,29 @@ void* pasajeBlockAReady(){
 
 			ent -> mensaje = mensaje;
 
+
+			if(string_equals_ignore_case(ALGORITMO_PLANIFICACION,"SJFCD") || string_equals_ignore_case(ALGORITMO_PLANIFICACION,"SJFSD")){
+				if(ent->estimacion == 0){
+					ent -> estimacion = ESTIMACION_INICIAL;
+				}else{
+					ent -> estimacion = ent -> estimacion * ALPHA + ent -> rafagaAnteriorReal * (1 - ALPHA);
+					if(entrenadorEnEjecucion != NULL && ent -> estimacion < entrenadorEnEjecucion -> estimacion){
+						pthread_mutex_lock(&mHayDesalojo);
+						hayDesalojo = true;
+						pthread_mutex_unlock(&mHayDesalojo);
+					}
+				}
+				ent -> rafagaAnteriorReal = 0;
+			}
+
 			pthread_mutex_lock(&mListaReady);
 			list_add(listaReady, ent);
 			pthread_mutex_unlock(&mListaReady);
+
+			log_info(logger, "Entrenador %d entra a la lista Ready para poder ejecutar su mensaje.", ent -> idEntrenador);
+
+			//metricas
+			cambiosDeContexto += 2;
 
 			sem_post(&sem_entrenadores_ready);
 
@@ -107,13 +135,16 @@ void* pasajeBlockAReady(){
 			if(loAtrapo){
 				list_add(ent->pokemones,(char*) pokemon);
 				cantPokemonesActuales++;
-				printf("Se atrapo el pokemon %s \n",pokemon);
+				printf("Se atrapo el pokemon %s \n", (char*) pokemon);
 				if(list_size(ent->objetivo) == list_size(ent -> pokemones)){
 					if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
 						list_add(listaExit, ent);
-						printf("Entrenador %d atrapo sus pokemones, esta en exit\n", ent -> idEntrenador);
+						log_info(logger, "Entrenador %d entra a la lista Exit porque logro su objetivo personal.", ent -> idEntrenador);
 
-						if (list_size(listaExit)==cant_elementos(POSICIONES_ENTRENADORES)){
+						//metricas
+						cambiosDeContexto += 2;
+
+						if (list_size(listaExit) == cant_elementos(POSICIONES_ENTRENADORES)){
 							terminarEjecucionTeam();
 						}
 
@@ -144,7 +175,11 @@ void* pasajeBlockAReady(){
 
 	t_entrenador* entAux;
 	int cantidadBlocked = list_size(listaBlocked);
-	printf("cantidad blocked%d", cantidadBlocked);
+
+	if(cantidadBlocked > 1){
+		log_info(logger, "Se inicio la deteccion de Deadlock.");
+	}
+
 	for(int k=0;k<cantidadBlocked;k++){
 		entAux = (t_entrenador*) list_remove(listaBlocked,0);
 		entAux->pokemonesAtrapadosDeadlock = list_create();
@@ -169,6 +204,7 @@ void* pasajeBlockAReady(){
 		list_add(listaBlocked, entAux);
 	}
 
+	ALGORITMO_PLANIFICACION = "FIFO";
 	list_add_all(listaReady, listaBlocked);
 	for(int i = 0; i < list_size(listaBlocked); i++){
 		sem_post(&sem_entrenadores_ready);
@@ -176,8 +212,20 @@ void* pasajeBlockAReady(){
 
 	list_clean(listaBlocked);
 
+	return NULL;
+}
 
+bool hayEntrenadoresDisponiblesBlocked(){
 
+	bool _estaDisponible(void* elemento){
+		return ((t_entrenador*) elemento)->estaDisponible;
+	}
+
+	pthread_mutex_lock(&mListaBlocked);
+	bool hayAlguno = list_any_satisfy(listaBlocked,_estaDisponible);
+	pthread_mutex_unlock(&mListaBlocked);
+
+	return hayAlguno;
 }
 
 void buscarEntrenadoresDL(t_entrenador* ent){
@@ -196,9 +244,9 @@ void buscarEntrenadoresDL(t_entrenador* ent){
 		k=0;
 
 			while(k<(list_size(entAux -> pokemonesAtrapadosDeadlock)) && !encontro){
-				printf("comparando pokemon que me falta %s con %s\n", list_get(ent -> pokemonesFaltantesDeadlock, i), list_get(entAux -> pokemonesAtrapadosDeadlock, k));
+				printf("comparando pokemon que me falta %s con %s\n", (char*) list_get(ent -> pokemonesFaltantesDeadlock, i), (char*) list_get(entAux -> pokemonesAtrapadosDeadlock, k));
 				if(string_equals_ignore_case(list_get(ent -> pokemonesFaltantesDeadlock, i), list_get(entAux -> pokemonesAtrapadosDeadlock, k))){
-					printf("el entrenador con id %d tiene dl con el entrenador con id %d\n", ent -> idEntrenador, entAux -> idEntrenador);
+					log_info(logger, "El entrenador %d se encuentra en DEADLOCK con el Entrenador %d.", ent -> idEntrenador, entAux -> idEntrenador);
 					ent = algortimoCercano((void*) ent, entAux -> posicion -> posx, entAux -> posicion -> posy);
 					printf("nueva cercania %d\n", ent-> cercania);
 
@@ -221,6 +269,8 @@ void buscarEntrenadoresDL(t_entrenador* ent){
 		}
 	j++;
 	}
+
+	deadlocks++;
 }
 
 void* stream_deadlock(int* datos[], int *size){
@@ -303,15 +353,23 @@ bool faltanAtraparPokemones(){
 	return cantPokemonesActuales != cantPokemonesFinales;
 }
 
-void planificarEntrenadoresAExec(){
+bool ordenarSJF(void* elemento1, void* elemento2){
+	t_entrenador* ent1 = (t_entrenador*) elemento1;
+	t_entrenador* ent2 = (t_entrenador*) elemento2;
+	return ent1 -> estimacion < ent2 -> estimacion;
+}
+
+void* planificarEntrenadoresAExec(){
+	t_link_element* nodo;
 	while(true){
 		sem_wait(&sem_entrenadores_ready);
 		t_entrenador* ent;
 		printf("el algoritmo de planificacion es %s \n",ALGORITMO_PLANIFICACION);
 		switch(algoritmo_planificacion(ALGORITMO_PLANIFICACION)){
 			case FIFO:
+			case RR:
 				pthread_mutex_lock(&mListaReady);
-				t_link_element* nodo = list_remove(listaReady, 0);
+				nodo = list_remove(listaReady, 0);
 				pthread_mutex_unlock(&mListaReady);
 				ent = (t_entrenador*) nodo;
 				pthread_mutex_unlock(&(ent -> semaforo));
@@ -319,13 +377,22 @@ void planificarEntrenadoresAExec(){
 
 				break;
 
-			/*case "SJFCD":
-			case "SFJSD":
-			case "RR":*/
+			case SJFCD:
+			case SJFSD:
+				pthread_mutex_lock(&mListaReady);
+				list_sort(listaReady, ordenarSJF);
+				nodo = list_remove(listaReady, 0);
+				pthread_mutex_unlock(&mListaReady);
+				ent = (t_entrenador*) nodo;
+				entrenadorEnEjecucion = ent;
+				pthread_mutex_unlock(&(ent -> semaforo));
+				pthread_mutex_lock(&mEjecutarMensaje);
+
+				break;
 		}
 	}
+return NULL;
 }
-
 
 void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 
@@ -357,7 +424,7 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 	offset += sizeof(uint32_t);
 
 	//enviamos el mensaje
-	int socket = crear_conexion("127.0.0.1", "4444");
+	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 	if(socket>0){
 	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
 	{
@@ -369,7 +436,8 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 	s = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
 	if(s>=0)
 	{
-	printf("[CONFIRMACION DE RECEPCION DE MENSAJE] mi id del mensaje = %d \n", id_mensaje);
+
+	log_info(logger, "Enviamos Catch y recibimos confirmación por parte del BROKER del pokemon %s en la posicion X = %d | Y = %d.", pokemon, posx, posy);
 
 	pthread_mutex_lock(&mIdsCorrelativos);
 	list_add(lista_id_correlativos, id_mensaje);
@@ -382,10 +450,18 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 	list_add(listaBlocked, ent);
 	pthread_mutex_unlock(&mListaBlocked);
 
+	log_info(logger, "Entrenador %d entra en lista Blocked esperando respuesta del Catch.", ent -> idEntrenador);
+
+	//metricas;
+	cambiosDeContexto += 2;
+
 	}
 	}
-	else{
+	else{ //FUNCION DEFAULT
 		int size, idAux;
+
+		log_info(logger, "Fallo conexión con el BROKER se procedera a realizar la funcion DEFAULT del Catch, pokemon %s en la posicion X = %d | Y = %d.", pokemon, posx, posy);
+
 		t_mensajeTeam* nuevoMensaje = malloc(sizeof(t_mensajeTeam));
 		nuevoMensaje->cod_op = CAUGHT_POKEMON;
 		nuevoMensaje->id = idFuncionesDefault;
@@ -401,7 +477,6 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 		ent ->idCorrelativo = idFuncionesDefault;
 		idFuncionesDefault--;
 
-
 		ent -> ultimoMensajeEnviado = ent -> mensaje;
 		ent -> estaDisponible = false;
 
@@ -414,9 +489,20 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 }
 
 
+bool entrenadorEnExit(t_entrenador* ent){
+	for(int i = 0; i < list_size(listaExit); i++){
+		if(((t_entrenador*) list_get(listaExit, i)) -> idEntrenador == ent -> idEntrenador){
+			return true;
+		}
+	}
+return false;
+}
+
 void ejecutarMensaje(void* entAux){
 	t_entrenador* ent = (t_entrenador*) entAux;
-	while(true){
+	t_entrenador* entAux1;
+
+	while(list_size(listaExit) != cant_elementos(POSICIONES_ENTRENADORES)){
 		pthread_mutex_lock(&(ent->semaforo));
 		printf("se empezo a ejecutar el entrenador %d \n", ent->idEntrenador);
 		int size, offset, idEntDeadLock;
@@ -443,53 +529,121 @@ void ejecutarMensaje(void* entAux){
 
 			moverEntrenador(ent,posx,posy);
 
-			enviarCatch(pokemon, posx, posy, ent);
+			if(ent -> posicion -> posx != posx || ent -> posicion -> posy != posy){
+				pthread_mutex_lock(&mHayDesalojo);
+				hayDesalojo = false;
+				pthread_mutex_unlock(&mHayDesalojo);
+
+				pthread_mutex_lock(&mListaReady);
+				list_add(listaReady, ent);
+				pthread_mutex_unlock(&mListaReady);
+
+				if(string_equals_ignore_case(ALGORITMO_PLANIFICACION,"RR")){
+					log_info(logger, "Entrenador %d entra a lista Ready por fin de Quantum.", ent -> idEntrenador);
+				}else{
+					log_info(logger, "Entrenador %d entra a lista Ready por desalojo del SJFCD.", ent -> idEntrenador);
+
+				}
+
+				//metricas;
+				cambiosDeContexto += 2;
+
+				sem_post(&sem_entrenadores_ready);
+			}else{
+				enviarCatch(pokemon, posx, posy, ent);
+			}
+
 			break;
 		case DEADLOCK:
 
-
 			for(int i=0;i<list_size(ent->entrenadoresEstoyDeadlock);i++){
 
-			idEntDeadLock = (int) list_remove(ent->entrenadoresEstoyDeadlock,0);
+				idEntDeadLock = (int) list_remove(ent->entrenadoresEstoyDeadlock,0);
 
-			bool _entrenadorTieneID(void* elemento){
-				t_entrenador* entAux = (t_entrenador*) elemento;
-				return entAux->idEntrenador == idEntDeadLock;
+				bool _entrenadorTieneID(void* elemento){
+					t_entrenador* entAuxiliar = (t_entrenador*) elemento;
+					return entAuxiliar -> idEntrenador == idEntDeadLock;
+				}
+
+				//if(list_size(listaReady) > 1){
+				entAux1 = (t_entrenador*) list_find(listaReady, _entrenadorTieneID);
+
+			if(entAux1 == NULL){
+				printf("El entrenador con el que esta en deadlock ya esta en exit \n");
+				sem_post(&sem_entrenadores_ready);
+				list_add(listaReady, ent);
+				break;
 			}
+				//}else{
+					//entAux1 = (t_entrenador*) list_get(listaReady, 0);
+				//}
 
-			t_entrenador* entAux = (t_entrenador*) list_find(listaReady, _entrenadorTieneID);
+				moverEntrenadorDL(ent, entAux1->posicion->posx, entAux1->posicion->posy);
 
-			moverEntrenador(ent,entAux->posicion->posx,entAux->posicion->posy);
+				realizarIntercambio(ent,entAux1);
 
-			realizarIntercambio(ent,entAux);
 
-			if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
+				if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
 					list_add(listaExit, ent);
-					printf("Entrenador %d atrapo sus pokemones, esta en exit\n", ent -> idEntrenador);
+					log_info(logger, "Entrenador %d entra a lista Exit porque logro su objetivo personal.", ent -> idEntrenador);
+
+					//metricas
+					deadlocksResueltos++;
+					cambiosDeContexto += 2;
 				}
 
-			if(tienenLosMismosElementos(entAux->pokemones,entAux->objetivo)){
-				list_remove_by_condition(listaReady,_entrenadorTieneID);
-				sem_wait(&sem_entrenadores_ready);
-				list_add(listaExit, entAux);
-				printf("Entrenador %d atrapo sus pokemones, esta en exit\n", entAux -> idEntrenador);
+				if(tienenLosMismosElementos(entAux1->pokemones,entAux1->objetivo)){
+					list_remove_by_condition(listaReady,_entrenadorTieneID);
+					sem_wait(&sem_entrenadores_ready);
+					list_add(listaExit, entAux1);
+					log_info(logger, "Entrenador %d entra a lista Exit porque logro su objetivo personal.", entAux1 -> idEntrenador);
+
+					//metricas
+					deadlocksResueltos++;
+					cambiosDeContexto += 2;
 				}
-			}
 
-			if (list_size(listaExit)==cant_elementos(POSICIONES_ENTRENADORES)){
-				terminarEjecucionTeam();
 			}
-
-			break;
-		}
 		printf("se termino de ejecutar el entrenador %d \n", ent->idEntrenador);
-		pthread_mutex_unlock(&mEjecutarMensaje);
+
+		entrenadorEnEjecucion = NULL;
+
+		break;
 	}
+	pthread_mutex_unlock(&mEjecutarMensaje);
+}
+	terminarEjecucionTeam();
 }
 
 void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux){
 	bool encontro = false;
 	int k,i = 0;
+
+	printf("//////////////////////ANTES DEL INTERCAMBIO//////////////////////////////\n");
+			printf("Termino el intercambio entre %d y %d \n", ent->idEntrenador,entAux->idEntrenador);
+			printf("\nEnt %d\n",ent->idEntrenador);
+			for(int i = 0; i< list_size(ent->pokemones); i++){
+					printf("pokemon que tiene = %s\n", (char*)list_get(ent->pokemones, i));
+				}
+			for(int i = 0; i< list_size(ent->pokemonesAtrapadosDeadlock); i++){
+					printf("pokemon atrapado = %s\n", (char*)list_get(ent->pokemonesAtrapadosDeadlock, i));
+				}
+			for(int i = 0; i< list_size(ent->pokemonesFaltantesDeadlock); i++){
+					printf("pokemon faltante = %s\n", (char*)list_get(ent->pokemonesFaltantesDeadlock, i));
+				}
+			printf("\nEnt %d\n",entAux->idEntrenador);
+			for(int i = 0; i< list_size(entAux->pokemones); i++){
+					printf("pokemon que tiene = %s\n", (char*)list_get(entAux->pokemones, i));
+				}
+			for(int i = 0; i< list_size(entAux->pokemonesAtrapadosDeadlock); i++){
+					printf("pokemon atrapado = %s\n", (char*)list_get(entAux->pokemonesAtrapadosDeadlock, i));
+				}
+			for(int i = 0; i< list_size(entAux->pokemonesFaltantesDeadlock); i++){
+					printf("pokemon faltante = %s\n", (char*)list_get(entAux->pokemonesFaltantesDeadlock, i));
+				}
+			printf("////////////////////////////////////////////////////\n");
+
+	log_info(logger, "Se realizara intercambio entre Entrenador %d y Entrenador %d.", ent -> idEntrenador, entAux -> idEntrenador);
 
 	while(i<(list_size(ent->pokemonesFaltantesDeadlock)) && !encontro){
 			encontro = false;
@@ -506,12 +660,12 @@ void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux){
 						//eliminamos de la lista de pokemones de aux  y de sus pokemones sobrantes, el pokemon que nos intercambio
 						eliminar_pokemon_que_coincida(list_remove(entAux->pokemonesAtrapadosDeadlock,k),entAux->pokemones);
 						if(//nos fijamos si el pokemon que le vamos a intercambiar le interesa (MEJORAR)
-								!buscarElemento(entAux->pokemonesFaltantesDeadlock,list_get(ent->pokemonesAtrapadosDeadlock,0))){
+								!buscarElemento2(entAux->pokemonesFaltantesDeadlock,list_get(ent->pokemonesAtrapadosDeadlock,0))){
 							//eliminamos de sus pokemones faltantes el pokemon que le vamos a intercambiar
 							eliminar_pokemon_que_coincida(list_get(ent->pokemonesAtrapadosDeadlock,0),entAux->pokemonesFaltantesDeadlock);
 						}
 						else{
-							//lo agregamos a sus pokemones
+							//lo agregamos a sus pokemones atrapados en deadlock
 							list_add(entAux->pokemonesAtrapadosDeadlock,list_get(ent->pokemonesAtrapadosDeadlock,0));
 						}
 						//lo agregamos a sus pokemones
@@ -525,37 +679,210 @@ void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux){
 				}
 			i++;
 			}
-	sleep(5);
+		sleep(5);
+
+		printf("//////////////////DESPUES DEL ITNERCAMBIO//////////////////////////////////\n");
+		printf("Termino el intercambio entre %d y %d \n", ent->idEntrenador,entAux->idEntrenador);
+		printf("\nEnt %d\n",ent->idEntrenador);
+		for(int i = 0; i< list_size(ent->pokemones); i++){
+				printf("pokemon que tiene = %s\n", (char*)list_get(ent->pokemones, i));
+			}
+		for(int i = 0; i< list_size(ent->pokemonesAtrapadosDeadlock); i++){
+				printf("pokemon atrapado = %s\n", (char*)list_get(ent->pokemonesAtrapadosDeadlock, i));
+			}
+		for(int i = 0; i< list_size(ent->pokemonesFaltantesDeadlock); i++){
+				printf("pokemon faltante = %s\n", (char*)list_get(ent->pokemonesFaltantesDeadlock, i));
+			}
+		printf("\nEnt %d\n",entAux->idEntrenador);
+		for(int i = 0; i< list_size(entAux->pokemones); i++){
+				printf("pokemon que tiene = %s\n", (char*)list_get(entAux->pokemones, i));
+			}
+		for(int i = 0; i< list_size(entAux->pokemonesAtrapadosDeadlock); i++){
+				printf("pokemon atrapado = %s\n", (char*)list_get(entAux->pokemonesAtrapadosDeadlock, i));
+			}
+		for(int i = 0; i< list_size(entAux->pokemonesFaltantesDeadlock); i++){
+				printf("pokemon faltante = %s\n", (char*)list_get(entAux->pokemonesFaltantesDeadlock, i));
+			}
+		printf("////////////////////////////////////////////////////\n");
+
+	//metricas
+	ent -> rafagasCPUDelEntrenador += 5;
+	entAux -> rafagasCPUDelEntrenador += 5;
+	rafagasCPUTotales += 5;
 
 }
 
-void moverEntrenador (t_entrenador* ent, int posx, int posy){
+void loggear_movimiento(t_entrenador* ent, int posx, int posy){
+	log_info(logger, "El entrenador %d se movio a posicion X = %d | Y = %d.", ent -> idEntrenador, posx, posy);
+}
+
+void moverEntrenadorDL(t_entrenador* ent, int posx, int posy){
 	for(int i = 0; i < ent -> cercania; i++){
+		if(posx != ent -> posicion -> posx){
+			if(posx > ent -> posicion -> posx){
+				(ent -> posicion -> posx)++;
+				loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
+			}else{
+				(ent -> posicion -> posx)--;
+				loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
+			}
+			sleep(1);
+
+			//metricas
+			(ent -> rafagasCPUDelEntrenador)++;
+			rafagasCPUTotales++;
+		}
+
+		if(posy != ent -> posicion -> posy){
+			if(posy > ent -> posicion -> posy){
+				(ent -> posicion -> posy)++;
+				loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
+			}else{
+				(ent -> posicion -> posy)--;
+				loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
+			}
+			sleep(1);
+
+			//metricas
+			(ent -> rafagasCPUDelEntrenador)++;
+			rafagasCPUTotales++;
+		}
+	}
+}
+
+void moverEntrenador(t_entrenador* ent, int posx, int posy){
+	int cercania = ent -> cercania;
+	int i = 0;
+	switch(algoritmo_planificacion(ALGORITMO_PLANIFICACION)){
+	case FIFO:
+	case SJFSD:
+		for(int i = 0; i < ent -> cercania; i++){
 				if(posx != ent -> posicion -> posx){
 					if(posx > ent -> posicion -> posx){
 						(ent -> posicion -> posx)++;
-						printf("se mueve a la derecha el entrenador %d\n",ent->idEntrenador);
+						loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
 					}else{
 						(ent -> posicion -> posx)--;
-						printf("se mueve a la izquierda el entrenador %d\n",ent->idEntrenador);
+						loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
 					}
 					sleep(1);
+
+					//metricas
+					(ent -> rafagasCPUDelEntrenador)++;
+					rafagasCPUTotales++;
 				}
 
 				if(posy != ent -> posicion -> posy){
 					if(posy > ent -> posicion -> posy){
 						(ent -> posicion -> posy)++;
-						printf("se mueve arriba el entrenador %d\n",ent->idEntrenador);
+						loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
 						fflush(stdout);
 					}else{
 						(ent -> posicion -> posy)--;
-						printf("se mueve abajo el entrenador %d\n",ent->idEntrenador);
+						loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
 						fflush(stdout);
 					}
 					sleep(1);
+
+					//metricas
+					(ent -> rafagasCPUDelEntrenador)++;
+					rafagasCPUTotales++;
 				}
 			}
+
+		break;
+
+	case RR:
+		while(i < MIN(cercania, QUANTUM)){
+			if(posx != ent -> posicion -> posx){
+				if(posx > ent -> posicion -> posx){
+					(ent -> posicion -> posx)++;
+					loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
+					i++;
+					(ent -> cercania)--;
+				}else{
+					(ent -> posicion -> posx)--;
+					loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
+					i++;
+					(ent -> cercania)--;
+				}
+				sleep(1);
+				//metricas
+				(ent -> rafagasCPUDelEntrenador)++;
+				rafagasCPUTotales++;
+
+			}else{
+				if(posy != ent -> posicion -> posy){
+					if(posy > ent -> posicion -> posy){
+						(ent -> posicion -> posy)++;
+						loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
+						i++;
+						(ent -> cercania)--;
+					}else{
+						(ent -> posicion -> posy)--;
+						loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
+						i++;
+						(ent -> cercania)--;
+					}
+					sleep(1);
+
+					//metricas
+					(ent -> rafagasCPUDelEntrenador)++;
+					rafagasCPUTotales++;
+				}
+			}
+
+		}
+		break;
+
+	case SJFCD:
+		while(ent -> rafagaAnteriorReal < cercania){
+		pthread_mutex_lock(&mHayDesalojo);
+		if(hayDesalojo)
+			break;
+		pthread_mutex_unlock(&mHayDesalojo);
+			if(posx != ent -> posicion -> posx){
+				if(posx > ent -> posicion -> posx){
+					(ent -> posicion -> posx)++;
+					loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
+					(ent -> estimacion)--;
+					(ent -> rafagaAnteriorReal)++;
+				}else{
+					(ent -> posicion -> posx)--;
+					loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
+					(ent -> estimacion)--;
+					(ent -> rafagaAnteriorReal)++;
+				}
+				sleep(1);
+
+				//metricas
+				(ent -> rafagasCPUDelEntrenador)++;
+				rafagasCPUTotales++;
+			}else{
+				if(posy != ent -> posicion -> posy){
+					if(posy > ent -> posicion -> posy){
+						(ent -> posicion -> posy)++;
+						loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
+						(ent -> estimacion)--;
+						(ent -> rafagaAnteriorReal)++;
+					}else{
+						(ent -> posicion -> posy)--;
+						loggear_movimiento(ent, ent -> posicion -> posx, ent -> posicion -> posy);
+						(ent -> estimacion)--;
+						(ent -> rafagaAnteriorReal)++;
+					}
+					sleep(1);
+
+					//metricas
+					(ent -> rafagasCPUDelEntrenador)++;
+					rafagasCPUTotales++;
+				}
+			}
+	}
+	break;
 }
+}
+
 
 void agregarMensajeLista(int socket, int cod_op){
 
@@ -571,6 +898,8 @@ void agregarMensajeLista(int socket, int cod_op){
 	mensajeAGuardar -> buffer = malloc(sizeof(t_buffer));
 	mensajeAGuardar -> buffer -> size = size;
 	mensajeAGuardar -> buffer -> stream = mensaje;
+
+	log_info(logger, "Llego el mensaje %s con los datos %s", cod_opToString(cod_op), (char*) mensaje);
 
 	mensajeAGuardar -> id = id_correlativo;
 	mensajeAGuardar -> cod_op = cod_op;
@@ -669,8 +998,6 @@ void enviarGet(void* elemento){
 	char* pokemon = (char*) elemento;
 	int len = strlen(pokemon) + 1;
 
-	//printf("pokemon = %s\n", pokemon);
-
 	int offset = 0;
 
 	void* stream = malloc( 2*sizeof(uint32_t) + len);
@@ -686,7 +1013,7 @@ void enviarGet(void* elemento){
 
 
 	//enviamos el mensaje
-	int socket = crear_conexion("127.0.0.1", "4444");
+	int socket = crear_conexion(IP_BROKER, (int) PUERTO_BROKER);
 	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
 		perror(" FALLO EL SEND DEL GET \n");
 
@@ -697,5 +1024,7 @@ void enviarGet(void* elemento){
 	if(s>=0){
 		printf("[CONFIRMACION DE RECEPCION DE MENSAJE] mi id del mensaje = %d \n", id_mensaje);
 		list_add(lista_id_correlativos, id_mensaje);
+	}else{
+		log_info(logger, "Fallo conexión con el BROKER se procedera a realizar la funcion DEFAULT del Get.");
 	}
 }

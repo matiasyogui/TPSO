@@ -61,6 +61,10 @@ typedef struct{
 	t_list* pokemonesFaltantesDeadlock;
 	t_list* entrenadoresEstoyDeadlock; //entrenadores con los que estoy en dl
 
+	int estimacion;
+	int rafagaAnteriorReal;
+
+	int rafagasCPUDelEntrenador;
 
 	int idCorrelativo;
 	t_mensajeTeam* mensaje;
@@ -70,7 +74,18 @@ typedef struct{
 
 }t_entrenador;
 
+//METRICAS
+int rafagasCPUTotales;
+int deadlocks;
+int deadlocksResueltos;
+int cambiosDeContexto;
+
+
 bool falloConexionBroker;
+
+bool hayDesalojo;
+
+t_entrenador* entrenadorEnEjecucion;
 
 sem_t sem_cant_mensajes;
 sem_t sem_entrenadores_ready;
@@ -90,10 +105,19 @@ pthread_mutex_t mPokemonesAPedirSinRepetidos;
 pthread_mutex_t mIdsCorrelativos;
 
 pthread_mutex_t semPlanificador;
+
+pthread_mutex_t mHayDesalojo;
+
+pthread_t hiloMain;
+
+
+pthread_t hiloSuscriptor[3], server;
+
+
 t_entrenador* entrenadorActual;
 
 t_config* config;
-//t_log* log;
+t_log* logger;
 
 char** POSICIONES_ENTRENADORES;
 char** POKEMON_ENTRENADORES;
@@ -104,10 +128,14 @@ char* ALGORITMO_PLANIFICACION;
 int QUANTUM;
 char* IP_BROKER;
 int ESTIMACION_INICIAL;
-int PUERTO_BROKER;
+char* PUERTO_BROKER;
 char* LOG_FILE;
 int mensajeActual;
 int i;
+int ALPHA;
+
+
+pthread_t* hilos;
 
 int cantPokemonesFinales;
 int cantPokemonesActuales;

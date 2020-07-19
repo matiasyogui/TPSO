@@ -27,6 +27,15 @@ bool buscarElemento(t_list* lista, void* elemento){
 	return true;
 }
 
+bool buscarElemento2(t_list* lista, void* elemento){
+
+	for(int i= 0; i<list_size(lista); i++){
+		if( string_equals_ignore_case(list_get(lista, i), (char*)elemento) == 1)
+			return false;
+	}
+	return true;
+}
+
 bool igualdadListas(void* elemento){
 
 	for(int i = 0; i < list_size(pokemonYaAtrapado); i++){
@@ -49,12 +58,28 @@ t_list* listaSinRepetidos(t_list* lista){
 }
 
 
-void eliminar_listas(){ //HAY QUE VERLO
+void liberarEntrenadores(void* elemento){
+	t_entrenador* entrenadorALiberar = (t_entrenador*) elemento;
 
-	list_destroy_and_destroy_elements(listaReady, free);
-	list_destroy_and_destroy_elements(listaExecute, free);
-	list_destroy_and_destroy_elements(listaBlocked, free);
-	list_destroy_and_destroy_elements(listaExit, free);
+	free(entrenadorALiberar -> posicion);
+	free(entrenadorALiberar);
+}
+
+void liberarMensajes(void* elemento){
+	t_mensajeTeam* mensajeALiberar = (t_mensajeTeam*) elemento;
+
+	free(mensajeALiberar -> buffer -> stream);
+	free(mensajeALiberar -> buffer);
+	free(mensajeALiberar);
+}
+
+void eliminar_listas(){ //HAY QUE VERLO
+	list_destroy(listaReady);
+	list_destroy(listaBlocked);
+	list_destroy(listaExecute);
+	list_destroy_and_destroy_elements(listaExit, liberarEntrenadores);
+
+	list_destroy_and_destroy_elements(lista_mensajes, liberarMensajes);
 }
 
 
@@ -67,9 +92,17 @@ void element_destroyer(void* elemento){
 
 void eliminar_pokemon_que_coincida(void* pokemon, t_list* lista){
 	bool _buscarPokemon(void* elemento){
-		return buscarPokemon(elemento,pokemon);
+		return buscarPokemon(elemento,pokemon) == 1;
 	}
+	printf("EL pokemon es %s \n", (char*) pokemon);
+	for(int i = 0; i< list_size(lista); i++){
+			printf("lista eliminar pokemon antes = %s\n", (char*)list_get(lista, i));
+		}
 
 	list_remove_by_condition(lista,_buscarPokemon);
+
+	for(int i = 0; i< list_size(lista); i++){
+		printf("lista eliminar pokemon despues = %s\n", (char*)list_get(lista, i));
+	}
 
 }

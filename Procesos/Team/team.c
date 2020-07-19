@@ -2,6 +2,7 @@
 #include <semaphore.h>
 #include <math.h>
 #include "team.h"
+#include <commons/string.h>
 
 pthread_mutex_t mBlockAReady;
 
@@ -61,6 +62,7 @@ void* algortimoCercano(void* elemento, int posicionPokemonx, int posicionPokemon
 }
 
 bool buscarPokemon(void* elemento, void* pokemon){
+	printf("pokemon1 %s se compara con pokemon2 %s en BUSCAR POKEMON \n",(char*) pokemon, (char*)elemento);
 	return string_equals_ignore_case((char*) pokemon, (char*)elemento);
 }
 
@@ -70,7 +72,17 @@ int conectarse(void){
 	int socket, s;
 	do{
 		s = socket = crear_conexion("127.0.0.1", "4444");
-		if(s < 0){ perror("FALLO LA CONEXION CON EL BROKER"); sleep(TIEMPO_RECONEXION); continue; }
+		if(s < 0){
+			log_info(logger, "Inicio del proceso de reintento de comunicación.");
+			sleep(TIEMPO_RECONEXION);
+			socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
+			if(socket > 0){
+				log_info(logger, "Se reconecto con el BROKER correctamente.");
+			}else{
+				log_info(logger, "No se pudo reconectar con el BROKER");
+			}
+			continue;
+		}
 		break;
 	}while(true);
 
@@ -80,12 +92,16 @@ int conectarse(void){
 
 int suscribirse(char* cola){
 
-	int socket = crear_conexion("127.0.0.1", "4444");
+	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 	while(socket<=0){
-		perror("FALLO LA CONEXION CON EL BROKER");
-		printf("Intento reconexion \n");
+		log_info(logger, "Inicio del proceso de reintento de comunicación.");
 		sleep(TIEMPO_RECONEXION);
-		socket = crear_conexion("127.0.0.1", "4444");
+		socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
+		if(socket > 0){
+			log_info(logger, "Se reconecto con el BROKER correctamente.");
+		}else{
+			log_info(logger, "No se pudo reconectar con el BROKER");
+		}
 	}
 	char *datos[] = {"suscriptor", cola, "-1"};
 
@@ -99,31 +115,39 @@ int suscribirse(char* cola){
 	s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
 	while ( s <= 0) {
 		perror("RECV ERROR \n");
-		socket = crear_conexion("127.0.0.1", "4444");
+		socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 		while(socket<0){
-			perror("FALLO LA CONEXION CON EL BROKER \n");
-			printf("Intento reconexion \n");
+			log_info(logger, "Inicio del proceso de reintento de comunicación.");
 			sleep(TIEMPO_RECONEXION);
-			socket = crear_conexion("127.0.0.1", "4444");
+			socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
+			if(socket > 0){
+				log_info(logger, "Se reconecto con el BROKER correctamente.");
+			}else{
+				log_info(logger, "No se pudo reconectar con el BROKER");
+			}
 		}
 		enviar_mensaje(paquete_enviar, socket);
 		s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
 	}
 	printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", confirmacion_suscripcion);
 
-	while(1){
+	while(list_size(listaExit) != cant_elementos(POSICIONES_ENTRENADORES)){
 		printf("espero recibir algo \n");
 		s = recv(socket, &cod_op, sizeof(uint32_t), 0 );
 		while(s<=0)
 		{
 		while (s <= 0) {
 			perror("FALLO RECV");
-			socket = crear_conexion("127.0.0.1", "4444");
+			socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 			while(socket<0){
-				perror("FALLO LA CONEXION CON EL BROKER \n");
-				printf("Intento reconexion \n");
+				log_info(logger, "Inicio del proceso de reintento de comunicación.");
 				sleep(TIEMPO_RECONEXION);
-				socket = crear_conexion("127.0.0.1", "4444");
+				socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
+				if(socket > 0){
+					log_info(logger, "Se reconecto con el BROKER correctamente.");
+				}else{
+					log_info(logger, "No se pudo reconectar con el BROKER");
+				}
 			}
 			enviar_mensaje(paquete_enviar, socket);
 			s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
@@ -143,6 +167,7 @@ int suscribirse(char* cola){
 				break;
 		}
 	}
+
 	return EXIT_SUCCESS;
 }
 
@@ -158,6 +183,9 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 	}
 
 	void* pokemon;
+
+	int* posx, posy;
+	int* valorCaught;
 
 	bool _buscarPokemon(void* elemento){
 		return buscarPokemon(elemento, pokemon);
@@ -175,6 +203,16 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 			pokemon = malloc(size);
 			memcpy(pokemon, stream + offset, size);
+			offset += size;
+
+			memcpy(&posx, stream + offset, sizeof(int));
+			offset += sizeof(int);
+
+			memcpy(&posy, stream + offset, sizeof(int));
+			offset += sizeof(int);
+
+			log_info(logger, "Llego el mensaje %s con los datos %s %d %d", cod_opToString(msg->cod_op), (char*) pokemon, posx, posy);
+
 
 			pthread_mutex_lock(&mPokemonesAPedir);
 			valor = list_any_satisfy(pokemonesAPedir, _buscarPokemon);
@@ -233,6 +271,16 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 		case CAUGHT_POKEMON:
 
+			offset = 0;
+
+			//logs
+			memcpy(&size, stream, sizeof(int));
+			offset += sizeof(int);
+
+			memcpy(&valorCaught, stream + offset, sizeof(int));
+
+			log_info(logger, "Llego el mensaje %s con los datos %d", cod_opToString(msg->cod_op), valorCaught);
+
 			pthread_mutex_lock(&mIdsCorrelativos);
 			return list_any_satisfy(lista_id_correlativos, _buscarID);
 			pthread_mutex_unlock(&mIdsCorrelativos);
@@ -246,6 +294,8 @@ int main(){
 	idFuncionesDefault = -2;
 	cantPokemonesFinales = 0;
 	cantPokemonesActuales = 0;
+	hayDesalojo = false;
+	rafagasCPUTotales = 0;
 
 	pthread_mutex_init(&mListaGlobal, NULL);
 	pthread_mutex_init(&mListaReady, NULL);
@@ -255,6 +305,7 @@ int main(){
 	pthread_mutex_init(&mPokemonesAPedir, NULL);
 	pthread_mutex_init(&mPokemonesAPedirSinRepetidos, NULL);
 	pthread_mutex_init(&mIdsCorrelativos, NULL);
+	pthread_mutex_init(&mHayDesalojo, NULL);
 
 	pthread_mutex_lock(&mEjecutarMensaje);
 
@@ -265,6 +316,8 @@ int main(){
 
 	leer_archivo_configuracion();
 
+	hiloMain = pthread_self();
+
 	pthread_t hiloSuscriptor[3], server;
 	pthread_create(&hiloSuscriptor[1], NULL, (void*)suscribirse, "appeared_pokemon");
 	pthread_create(&hiloSuscriptor[2], NULL, (void*)suscribirse, "caught_pokemon");
@@ -273,13 +326,13 @@ int main(){
 	pthread_create(&server, NULL, (void*)iniciar_servidor, NULL);
 
 	int cantEntrenadores = cant_elementos(POSICIONES_ENTRENADORES);
-	//t_entrenador** entrenadores=calloc(cantEntrenadores,sizeof(t_entrenador));
 
-	pthread_t hilos[cantEntrenadores];
+	hilos = calloc(cantEntrenadores, sizeof(*hilos));
 
 	for(i=0;i<cantEntrenadores;i++){
 		t_entrenador* ent = setteoEntrenador(i);
-	   pthread_create(&hilos[i], NULL, (void*) ejecutarMensaje, (void*) ent);
+
+	    pthread_create(hilos + 1, NULL, (void*) ejecutarMensaje, (void*) ent);
 	}
 
 	pthread_t blockAReady;
@@ -287,30 +340,44 @@ int main(){
 
 
 	pthread_mutex_init(&mBlockAReady, NULL);
-	pthread_create(&blockAReady, NULL, (void*)pasajeBlockAReady, NULL);
-	pthread_create(&planificarEntrenadorAEjecutar,NULL, (void*) planificarEntrenadoresAExec, NULL);
+
+	pthread_create(&blockAReady, NULL, pasajeBlockAReady, NULL);
+	pthread_create(&planificarEntrenadorAEjecutar,NULL, planificarEntrenadoresAExec, NULL);
+
 
 	pedir_pokemones();
+
+	for(i=0;i<3;i++){
+		pthread_detach(hiloSuscriptor[i]);
+	}
+
+	pthread_detach(server);
+
+	pthread_detach(blockAReady);
+	pthread_detach(planificarEntrenadorAEjecutar);
+
+	printf("TERM_INARASFOJDSaaaaa\n");
 
 	for(i=0;i<cantEntrenadores;i++){
 		pthread_join(hilos[i],NULL);
 	}
 
-	for(i=0;i<3;i++){
-		pthread_join(hiloSuscriptor[i],NULL);
-	}
+	printf("termino el main\n");
 
-	pthread_join(server, NULL);
+	terminarEjecucionTeam();
 
-	eliminar_listas();
-
-	return EXIT_SUCCESS;
+	return 0;
 }
 
 
 void leer_archivo_configuracion(){
 
 	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team1.config");
+
+
+	LOG_FILE= config_get_string_value(config,"LOG_FILE");
+	logger = iniciar_logger(LOG_FILE, "TEAM", 0, LOG_LEVEL_INFO);
+
 
 	//PASO TODOS LOS PARAMETROS
 	POSICIONES_ENTRENADORES = config_get_array_value(config,"POSICIONES_ENTRENADORES");
@@ -320,17 +387,16 @@ void leer_archivo_configuracion(){
 	RETARDO_CICLO_CPU = config_get_int_value(config,"RETARDO_CICLO_CPU");
 	ALGORITMO_PLANIFICACION = config_get_string_value(config,"ALGORITMO_PLANIFICACION");
 
-	if(strcmp(ALGORITMO_PLANIFICACION,"RR"))
+	if(string_equals_ignore_case(ALGORITMO_PLANIFICACION,"RR"))
 		QUANTUM = config_get_int_value(config,"QUANTUM");
 
-	if(strcmp(ALGORITMO_PLANIFICACION,"SJF"))
+	if(string_equals_ignore_case(ALGORITMO_PLANIFICACION,"SJFCD") || string_equals_ignore_case(ALGORITMO_PLANIFICACION,"SJFSD")){
 		ESTIMACION_INICIAL = config_get_int_value(config,"ESTIMACION_INICIAL");
+		ALPHA = config_get_int_value(config, "ALPHA");
+	}
 
 	IP_BROKER = config_get_string_value(config,"IP_BROKER");
-	PUERTO_BROKER= config_get_int_value(config,"PUERTO_BROKER");
-	LOG_FILE= config_get_string_value(config,"LOG_FILE");
-
-	//config_destroy(config);
+	PUERTO_BROKER = config_get_string_value(config,"PUERTO_BROKER");
 }
 
 t_entrenador* setteoEntrenador(int i){
@@ -348,6 +414,10 @@ t_entrenador* setteoEntrenador(int i){
    	pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
    	entrenador->estaDisponible = true;
     entrenador->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
+	entrenador -> estimacion = 0;
+
+	entrenador -> rafagasCPUDelEntrenador = 0;
+
 
    	pthread_mutex_init(&(entrenador->semaforo), NULL);
    	pthread_mutex_lock(&(entrenador->semaforo));
@@ -364,6 +434,9 @@ t_entrenador* setteoEntrenador(int i){
    		cantPokemonesActuales++;
    	}
    	list_add(listaBlocked, entrenador);
+   	log_info(logger, "Entrenador %d entra a la lista Bloqueado, por inicio del proceso", i);
+
+
    	return entrenador;
 }
 
