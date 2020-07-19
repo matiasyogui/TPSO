@@ -13,6 +13,11 @@ typedef struct{
 	t_buffer* buffer;
 }t_mensajeTeam;
 
+typedef struct{
+	int id_msg;
+	char* pokemon;
+}t_getPokemon;
+
 
 int mensajeActual;
 

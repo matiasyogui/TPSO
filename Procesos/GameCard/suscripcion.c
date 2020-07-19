@@ -15,6 +15,7 @@ static void* recibir_mensaje(int socket, int* size);
 static int enviar_confirmacion(int socket, bool estado);
 static void* mensaje_suscripcion(int cod_op, int cola_mensajes, int tiempo, int *size);
 static void* stream_suscripcion(int cola_mensajes, int tiempo, int* size);
+t_getPokemon * recibirGetPokemon(int socket);
 
 #define IP_SERVIDOR "127.0.0.3"
 #define PUERTO_SERVIDOR "5001"
@@ -27,6 +28,9 @@ void serve_client(int *socket);
 void process_request(int cod_op, int cliente_fd);
 t_buffer* recibir_mensaje_id(int socket_cliente, int*);
 void leer_mensaje(t_buffer* buffer);
+void enviarLocalizeVacio();
+void crearArchivoPokemon(char*);
+bool existePokemon(char*);
 
 
 
@@ -207,7 +211,7 @@ void iniciar_suscripciones(int cola0, int cola1, int cola2){
 
 
 	int * p_cola = malloc(sizeof(int));
-	*p_cola = cola0;
+		*p_cola = cola0;
 	s = pthread_create(&thread_suscripcion[0], NULL, (void*)enviar_mensaje_suscripcion, p_cola);
 	if (s != 0) perror("PTHREAD_CREATE ERROR");
 
@@ -215,7 +219,6 @@ void iniciar_suscripciones(int cola0, int cola1, int cola2){
 	*p_cola = cola1;
 	s = pthread_create(&thread_suscripcion[1], NULL, (void*)enviar_mensaje_suscripcion, p_cola);
 	if (s != 0) perror("PTHREAD_CREATE ERROR");
-
 
 	p_cola = malloc(sizeof(int));
 	*p_cola = cola2;
@@ -282,7 +285,7 @@ static void enviar_mensaje_suscripcion(void* _cola){
 
 	}while(flag);
 
-	printf("terminada subscripcion cola %d\n",cola);
+	printf("terminada subscripcion cola %d\ socket %dn",cola,socket);
 
 	esperando_mensajes(socket);
 }
@@ -292,6 +295,7 @@ static void esperando_mensajes(int socket){
 
 	int s, cod_op, size, id_correlativo;
 	void* mensaje;
+	t_getPokemon * getpok;
 
 	while(true){
 
@@ -313,17 +317,64 @@ static void esperando_mensajes(int socket){
 			case CATCH_POKEMON:
 			case GET_POKEMON:
 
-				mensaje = recibir_mensaje(socket, &size);
-				printf("get pokemon pokemon: %s\n", mensaje);
+				getpok = recibirGetPokemon(socket);
 
-				if(mensaje != NULL) enviar_confirmacion(socket, true);
-				else enviar_confirmacion(socket, false);
+				if (existePokemon(getpok->pokemon)){
+
+				}else
+				{
+					crearArchivoPokemon(getpok->pokemon);
+					enviarLocalizeVacio();
+				}
+
+
+
+				printf("get pokemon: %s\n", getpok->pokemon);
+
 
 				break;
 		}
 	}
 }
 
+
+void enviarLocalizeVacio(){
+
+}
+
+void crearArchivoPokemon(char* pokemon){
+
+}
+
+bool existePokemon(char* pokemon){
+
+	return true;
+}
+
+
+t_getPokemon * recibirGetPokemon(int socket){
+
+	t_getPokemon * ret = malloc(sizeof(t_getPokemon));
+
+	int size;
+	int s;
+
+	s = recv(socket, &size, sizeof(uint32_t), 0);
+	if (s < 0) { perror("FALLO RECV recibirGetPokemon"); return NULL; }
+
+	s = recv(socket, &(ret->id_msg), sizeof(uint32_t), 0);
+	if (s < 0) { perror("FALLO RECV recibirGetPokemon");  return NULL; }
+
+	size -= sizeof(uint32_t);
+
+	ret->pokemon = malloc(size);
+	s = recv(socket, ret->pokemon, size, 0);
+	if (s < 0) { perror("FALLO RECV recibirGetPokemon");  return NULL; }
+
+	enviar_confirmacion(socket, true);
+
+	return ret;
+}
 
 static void* recibir_mensaje(int socket, int* size){
 
@@ -366,7 +417,7 @@ static void* mensaje_suscripcion(int cod_op, int cola_mensajes, int tiempo, int 
 	offset += sizeof(uint32_t);
 
 	memcpy(stream + offset, mensaje, *size);
-	offset += sizeof(uint32_t);
+	offset += *size;
 
 	*size = offset;
 	free(mensaje);
