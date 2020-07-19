@@ -24,6 +24,7 @@ void separarPokemonesDeadlock(t_entrenador* ent );
 void* stream_deadlock(int* datos[], int *size);
 void moverEntrenador (t_entrenador* ent, int posx, int posy);
 void moverEntrenadorDL(t_entrenador* ent, int posx, int posy);
+bool hayEntrenadoresDisponiblesBlocked();
 
 void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux);
 void buscarEntrenadoresDL(t_entrenador* entAux);

@@ -23,6 +23,7 @@ void inicializar_listas();
 void eliminar_listas();
 void element_destroyer(void* elemento);
 bool buscarElemento(t_list* lista, void* elemento);
+bool buscarElemento2(t_list* lista, void* elemento);
 t_list* listaSinRepetidos(t_list* lista);
 bool igualdadListas(void* elemento);
 
