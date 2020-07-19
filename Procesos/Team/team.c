@@ -62,6 +62,7 @@ void* algortimoCercano(void* elemento, int posicionPokemonx, int posicionPokemon
 }
 
 bool buscarPokemon(void* elemento, void* pokemon){
+	printf("pokemon1 %s se compara con pokemon2 %s en BUSCAR POKEMON \n",(char*) pokemon, (char*)elemento);
 	return string_equals_ignore_case((char*) pokemon, (char*)elemento);
 }
 

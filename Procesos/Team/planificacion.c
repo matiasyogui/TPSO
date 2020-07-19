@@ -13,8 +13,6 @@ void* pasajeBlockAReady(){
 
 		pthread_mutex_unlock(&mListaGlobal);
 
-		printf("\n el puntero del mensaje es %p \n",mensaje);
-
 		t_entrenador* ent;
 		int size, offset, id, loAtrapo;
 		void* stream;
@@ -28,6 +26,15 @@ void* pasajeBlockAReady(){
 		}
 
 		case APPEARED_POKEMON:
+
+			if(!hayEntrenadoresDisponiblesBlocked()){
+				pthread_mutex_lock(&mListaGlobal);
+				list_add(lista_mensajes, mensaje);
+				pthread_mutex_unlock(&mListaGlobal);
+				sem_post(&sem_cant_mensajes);
+				break;
+			}
+
 			stream = mensaje -> buffer -> stream;
 			offset = 0;
 
@@ -197,6 +204,7 @@ void* pasajeBlockAReady(){
 		list_add(listaBlocked, entAux);
 	}
 
+	ALGORITMO_PLANIFICACION = "FIFO";
 	list_add_all(listaReady, listaBlocked);
 	for(int i = 0; i < list_size(listaBlocked); i++){
 		sem_post(&sem_entrenadores_ready);
@@ -205,6 +213,19 @@ void* pasajeBlockAReady(){
 	list_clean(listaBlocked);
 
 	return NULL;
+}
+
+bool hayEntrenadoresDisponiblesBlocked(){
+
+	bool _estaDisponible(void* elemento){
+		return ((t_entrenador*) elemento)->estaDisponible;
+	}
+
+	pthread_mutex_lock(&mListaBlocked);
+	bool hayAlguno = list_any_satisfy(listaBlocked,_estaDisponible);
+	pthread_mutex_unlock(&mListaBlocked);
+
+	return hayAlguno;
 }
 
 void buscarEntrenadoresDL(t_entrenador* ent){
@@ -517,10 +538,10 @@ void ejecutarMensaje(void* entAux){
 				list_add(listaReady, ent);
 				pthread_mutex_unlock(&mListaReady);
 
-				if(ALGORITMO_PLANIFICACION == "RR"){
-					log_info(logger, "Entrenador entra a lista Ready por fin de Quantum.", ent -> idEntrenador);
+				if(string_equals_ignore_case(ALGORITMO_PLANIFICACION,"RR")){
+					log_info(logger, "Entrenador %d entra a lista Ready por fin de Quantum.", ent -> idEntrenador);
 				}else{
-					log_info(logger, "Entrenador entra a lista Ready por desalojo del SJFCD.", ent -> idEntrenador);
+					log_info(logger, "Entrenador %d entra a lista Ready por desalojo del SJFCD.", ent -> idEntrenador);
 
 				}
 
@@ -544,11 +565,18 @@ void ejecutarMensaje(void* entAux){
 					return entAuxiliar -> idEntrenador == idEntDeadLock;
 				}
 
-				if(list_size(listaReady) > 1){
-					entAux1 = (t_entrenador*) list_find(listaReady, _entrenadorTieneID);
-				}else{
-					entAux1 = (t_entrenador*) list_get(listaReady, 0);
-				}
+				//if(list_size(listaReady) > 1){
+				entAux1 = (t_entrenador*) list_find(listaReady, _entrenadorTieneID);
+
+			if(entAux1 == NULL){
+				printf("El entrenador con el que esta en deadlock ya esta en exit \n");
+				sem_post(&sem_entrenadores_ready);
+				list_add(listaReady, ent);
+				break;
+			}
+				//}else{
+					//entAux1 = (t_entrenador*) list_get(listaReady, 0);
+				//}
 
 				moverEntrenadorDL(ent, entAux1->posicion->posx, entAux1->posicion->posy);
 
@@ -591,6 +619,30 @@ void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux){
 	bool encontro = false;
 	int k,i = 0;
 
+	printf("//////////////////////ANTES DEL INTERCAMBIO//////////////////////////////\n");
+			printf("Termino el intercambio entre %d y %d \n", ent->idEntrenador,entAux->idEntrenador);
+			printf("\nEnt %d\n",ent->idEntrenador);
+			for(int i = 0; i< list_size(ent->pokemones); i++){
+					printf("pokemon que tiene = %s\n", (char*)list_get(ent->pokemones, i));
+				}
+			for(int i = 0; i< list_size(ent->pokemonesAtrapadosDeadlock); i++){
+					printf("pokemon atrapado = %s\n", (char*)list_get(ent->pokemonesAtrapadosDeadlock, i));
+				}
+			for(int i = 0; i< list_size(ent->pokemonesFaltantesDeadlock); i++){
+					printf("pokemon faltante = %s\n", (char*)list_get(ent->pokemonesFaltantesDeadlock, i));
+				}
+			printf("\nEnt %d\n",entAux->idEntrenador);
+			for(int i = 0; i< list_size(entAux->pokemones); i++){
+					printf("pokemon que tiene = %s\n", (char*)list_get(entAux->pokemones, i));
+				}
+			for(int i = 0; i< list_size(entAux->pokemonesAtrapadosDeadlock); i++){
+					printf("pokemon atrapado = %s\n", (char*)list_get(entAux->pokemonesAtrapadosDeadlock, i));
+				}
+			for(int i = 0; i< list_size(entAux->pokemonesFaltantesDeadlock); i++){
+					printf("pokemon faltante = %s\n", (char*)list_get(entAux->pokemonesFaltantesDeadlock, i));
+				}
+			printf("////////////////////////////////////////////////////\n");
+
 	log_info(logger, "Se realizara intercambio entre Entrenador %d y Entrenador %d.", ent -> idEntrenador, entAux -> idEntrenador);
 
 	while(i<(list_size(ent->pokemonesFaltantesDeadlock)) && !encontro){
@@ -608,12 +660,12 @@ void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux){
 						//eliminamos de la lista de pokemones de aux  y de sus pokemones sobrantes, el pokemon que nos intercambio
 						eliminar_pokemon_que_coincida(list_remove(entAux->pokemonesAtrapadosDeadlock,k),entAux->pokemones);
 						if(//nos fijamos si el pokemon que le vamos a intercambiar le interesa (MEJORAR)
-								!buscarElemento(entAux->pokemonesFaltantesDeadlock,list_get(ent->pokemonesAtrapadosDeadlock,0))){
+								!buscarElemento2(entAux->pokemonesFaltantesDeadlock,list_get(ent->pokemonesAtrapadosDeadlock,0))){
 							//eliminamos de sus pokemones faltantes el pokemon que le vamos a intercambiar
 							eliminar_pokemon_que_coincida(list_get(ent->pokemonesAtrapadosDeadlock,0),entAux->pokemonesFaltantesDeadlock);
 						}
 						else{
-							//lo agregamos a sus pokemones
+							//lo agregamos a sus pokemones atrapados en deadlock
 							list_add(entAux->pokemonesAtrapadosDeadlock,list_get(ent->pokemonesAtrapadosDeadlock,0));
 						}
 						//lo agregamos a sus pokemones
@@ -628,6 +680,30 @@ void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux){
 			i++;
 			}
 		sleep(5);
+
+		printf("//////////////////DESPUES DEL ITNERCAMBIO//////////////////////////////////\n");
+		printf("Termino el intercambio entre %d y %d \n", ent->idEntrenador,entAux->idEntrenador);
+		printf("\nEnt %d\n",ent->idEntrenador);
+		for(int i = 0; i< list_size(ent->pokemones); i++){
+				printf("pokemon que tiene = %s\n", (char*)list_get(ent->pokemones, i));
+			}
+		for(int i = 0; i< list_size(ent->pokemonesAtrapadosDeadlock); i++){
+				printf("pokemon atrapado = %s\n", (char*)list_get(ent->pokemonesAtrapadosDeadlock, i));
+			}
+		for(int i = 0; i< list_size(ent->pokemonesFaltantesDeadlock); i++){
+				printf("pokemon faltante = %s\n", (char*)list_get(ent->pokemonesFaltantesDeadlock, i));
+			}
+		printf("\nEnt %d\n",entAux->idEntrenador);
+		for(int i = 0; i< list_size(entAux->pokemones); i++){
+				printf("pokemon que tiene = %s\n", (char*)list_get(entAux->pokemones, i));
+			}
+		for(int i = 0; i< list_size(entAux->pokemonesAtrapadosDeadlock); i++){
+				printf("pokemon atrapado = %s\n", (char*)list_get(entAux->pokemonesAtrapadosDeadlock, i));
+			}
+		for(int i = 0; i< list_size(entAux->pokemonesFaltantesDeadlock); i++){
+				printf("pokemon faltante = %s\n", (char*)list_get(entAux->pokemonesFaltantesDeadlock, i));
+			}
+		printf("////////////////////////////////////////////////////\n");
 
 	//metricas
 	ent -> rafagasCPUDelEntrenador += 5;
