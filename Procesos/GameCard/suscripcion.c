@@ -25,7 +25,6 @@ pthread_t thread;
 
 void esperar_cliente(int);
 void serve_client(int *socket);
-void process_request(int cod_op, int cliente_fd);
 t_buffer* recibir_mensaje_id(int socket_cliente, int*);
 void leer_mensaje(t_buffer* buffer);
 void enviarLocalizeVacio();
@@ -91,14 +90,17 @@ void serve_client(int* p_socket){
 	int cod_op, socket = *p_socket;
 	free(p_socket);
 
-	if(recv(socket, &cod_op, sizeof(int), MSG_WAITALL) == -1)
+	esperando_mensajes(socket);
+
+/*	if(recv(socket, &cod_op, sizeof(int), MSG_WAITALL) == -1)
 		cod_op = -1;
 
 	process_request(cod_op, socket);
+*/
 
 }
 
-
+/*
 void process_request(int cod_op, int cliente_fd) {
 
     //t_buffer* msg = recibir_mensaje(cliente_fd);
@@ -127,20 +129,7 @@ void process_request(int cod_op, int cliente_fd) {
 	}
 
 }
-
-
-char* leer_get_pokemon(int cliente_fd){
-
-	int idMsj;
-	char* pokemon;
-
-	t_buffer *buf = recibir_mensaje_id(cliente_fd, &idMsj);
-
-	pokemon = leer_mensaje_getPokemon(buf);
-
-	return pokemon;
-
-}
+*/
 
 t_buffer* recibir_mensaje_id(int socket_cliente,int * idMsj){
 
@@ -309,7 +298,7 @@ static void esperando_mensajes(int socket){
 		s = recv(socket, &id_correlativo, sizeof(uint32_t), 0);
 		if (s < 0) { perror("FALLO RECV"); continue; }
 
-		printf("Se recibio un %s del broker\n", cod_opToString(cod_op));
+		printf("Se recibio un %s\n", cod_opToString(cod_op));
 
 		switch(cod_op){
 			// definir las acciones que debe realizar
@@ -320,16 +309,17 @@ static void esperando_mensajes(int socket){
 				getpok = recibirGetPokemon(socket);
 
 				if (existePokemon(getpok->pokemon)){
+					printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
 
 				}else
 				{
+					printf("el pokemon: %s NO EXISTE en TALLGRASS\n", getpok->pokemon);
 					crearArchivoPokemon(getpok->pokemon);
 					enviarLocalizeVacio();
 				}
 
 
 
-				printf("get pokemon: %s\n", getpok->pokemon);
 
 
 				break;
@@ -348,7 +338,12 @@ void crearArchivoPokemon(char* pokemon){
 
 bool existePokemon(char* pokemon){
 
-	return true;
+	for(int i = 0; i < list_size(listaFiles);i++){
+		if(string_equals_ignore_case(list_get(listaFiles,i),pokemon) == 1)
+			return true;
+	}
+
+	return false;
 }
 
 

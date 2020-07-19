@@ -13,8 +13,11 @@ t_config* CONFIG;
 #define BLOCKSIZE "BLOCK_SIZE"
 #define BLOCKS "BLOCKS"
 
-#define FILES "files"
+#define FILES "Files"
 
+int TIEMPO_DE_REINTENTO_OPERACION;
+int TIEMPO_RETARDO_OPERACION;
+char* PUNTO_MONTAJE_TALLGRASS;
 
 	typedef struct {
 		char *path;
