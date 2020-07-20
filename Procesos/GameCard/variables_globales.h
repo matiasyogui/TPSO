@@ -13,6 +13,11 @@ t_config* CONFIG;
 #define BLOCKSIZE "BLOCK_SIZE"
 #define BLOCKS "BLOCKS"
 
+#define DIRECTORY "DIRECTORY"
+#define FILESIZE "SIZE"
+#define BLOCKS "BLOCKS"
+#define OPEN "OPEN"
+
 #define FILES "Files"
 
 int TIEMPO_DE_REINTENTO_OPERACION;
@@ -26,10 +31,18 @@ char* PUNTO_MONTAJE_TALLGRASS;
 
 	typedef struct {
 		char *nombre;
+		char directory;
 		int size;
-		t_queue  * blocks;
+		t_list  * blocks;
+		char open;
+		t_list * posiciones;
 	} t_File;
 
+	typedef struct {
+		int posx;
+		int posy;
+		int cantidad;
+	} t_posiciones;
 
 
 typedef struct {

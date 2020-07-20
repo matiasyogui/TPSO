@@ -339,7 +339,12 @@ void crearArchivoPokemon(char* pokemon){
 bool existePokemon(char* pokemon){
 
 	for(int i = 0; i < list_size(listaFiles);i++){
-		if(string_equals_ignore_case(list_get(listaFiles,i),pokemon) == 1)
+
+		char* poke = ((t_File*)list_get(listaFiles,i))->nombre;
+
+		int equals = string_equals_ignore_case( ((t_File*)list_get(listaFiles,i))->nombre,pokemon);
+
+		if(equals)
 			return true;
 	}
 
