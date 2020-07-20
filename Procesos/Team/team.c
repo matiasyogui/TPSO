@@ -191,7 +191,10 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 		return buscarPokemon(elemento, pokemon);
 	}
 
-	printf("cod_op = %s\n", cod_opToString(msg->cod_op));
+	printf("idsaasdasdas = %d\n",msg-> id);
+
+	printf("cod_op adasdsa= %s\n", cod_opToString(msg->cod_op));
+	fflush(stdout);
 	bool valor;
 	switch(msg -> cod_op){
 
@@ -306,6 +309,9 @@ int main(){
 	pthread_mutex_init(&mPokemonesAPedirSinRepetidos, NULL);
 	pthread_mutex_init(&mIdsCorrelativos, NULL);
 	pthread_mutex_init(&mHayDesalojo, NULL);
+	pthread_mutex_init(&mNewCaught, NULL);
+
+	pthread_mutex_lock(&mNewCaught);
 
 	pthread_mutex_lock(&mEjecutarMensaje);
 
@@ -351,16 +357,14 @@ int main(){
 		pthread_detach(hiloSuscriptor[i]);
 	}
 
-	pthread_detach(server);
-
 	pthread_detach(blockAReady);
 	pthread_detach(planificarEntrenadorAEjecutar);
-
-	printf("TERM_INARASFOJDSaaaaa\n");
 
 	for(i=0;i<cantEntrenadores;i++){
 		pthread_join(hilos[i],NULL);
 	}
+
+	pthread_join(server,NULL);
 
 	printf("termino el main\n");
 
