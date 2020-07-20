@@ -156,7 +156,7 @@ void compactar(){
 
 int numero_particion(void* particion_buscada) {
 
-	for (int i = 0; i < (list_size(particiones)-1); i++) {
+	for (int i = 0; i < (list_size(particiones) - 1); i++) {
 
 		t_particion* particion = list_get(particiones, i);
 
