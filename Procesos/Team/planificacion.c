@@ -8,9 +8,7 @@ void* pasajeBlockAReady(){
 		sem_wait(&sem_cant_mensajes);
 
 		pthread_mutex_lock(&mListaGlobal);
-
 		t_mensajeTeam* mensaje = list_remove(lista_mensajes, 0);
-
 		pthread_mutex_unlock(&mListaGlobal);
 
 		t_entrenador* ent;
@@ -28,6 +26,7 @@ void* pasajeBlockAReady(){
 		case APPEARED_POKEMON:
 
 			if(!hayEntrenadoresDisponiblesBlocked()){
+				pthread_mutex_lock(&mNewCaught);
 				pthread_mutex_lock(&mListaGlobal);
 				list_add(lista_mensajes, mensaje);
 				pthread_mutex_unlock(&mListaGlobal);
@@ -206,6 +205,7 @@ void* pasajeBlockAReady(){
 
 	ALGORITMO_PLANIFICACION = "FIFO";
 	list_add_all(listaReady, listaBlocked);
+
 	for(int i = 0; i < list_size(listaBlocked); i++){
 		sem_post(&sem_entrenadores_ready);
 	}
@@ -458,7 +458,7 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 	}
 	}
 	else{ //FUNCION DEFAULT
-		int size, idAux;
+		int size;
 
 		log_info(logger, "Fallo conexión con el BROKER se procedera a realizar la funcion DEFAULT del Catch, pokemon %s en la posicion X = %d | Y = %d.", pokemon, posx, posy);
 
@@ -471,7 +471,7 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 		nuevoMensaje->buffer->stream = stream_caught_pokemon(datos,&size);
 		nuevoMensaje->buffer->size=size;
 		pthread_mutex_lock(&mListaGlobal);
-		list_add(lista_mensajes,nuevoMensaje);
+		list_add_in_index(lista_mensajes, 0, nuevoMensaje);
 		pthread_mutex_unlock(&mListaGlobal);
 
 		ent ->idCorrelativo = idFuncionesDefault;
@@ -484,6 +484,7 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 		list_add(listaBlocked, ent);
 		pthread_mutex_unlock(&mListaBlocked);
 
+		pthread_mutex_unlock(&mNewCaught);
 		sem_post(&sem_cant_mensajes);
 	}
 }
@@ -894,12 +895,13 @@ void agregarMensajeLista(int socket, int cod_op){
 	mensaje = malloc(size);
 	recv(socket, mensaje, size, 0);
 
+	char* localized = string_new();
+
 	t_mensajeTeam* mensajeAGuardar = malloc(sizeof(t_mensajeTeam));
 	mensajeAGuardar -> buffer = malloc(sizeof(t_buffer));
 	mensajeAGuardar -> buffer -> size = size;
 	mensajeAGuardar -> buffer -> stream = mensaje;
 
-	log_info(logger, "Llego el mensaje %s con los datos %s", cod_opToString(cod_op), (char*) mensaje);
 
 	mensajeAGuardar -> id = id_correlativo;
 	mensajeAGuardar -> cod_op = cod_op;
@@ -939,6 +941,12 @@ void agregarMensajeLista(int socket, int cod_op){
 				memcpy(&posy, stream + offset, sizeof(int));
 				offset += sizeof(int);
 
+				string_append(&localized, string_itoa(posx));
+				string_append(&localized, " ");
+
+				string_append(&localized, string_itoa(posy));
+				string_append(&localized, " ");
+
 				nuevoMensajeAGuardar -> cod_op = APPEARED_POKEMON;
 
 				char* stream[3] = {pokemon, posx, posy};
@@ -956,14 +964,20 @@ void agregarMensajeLista(int socket, int cod_op){
 
 				pthread_mutex_unlock(&mListaGlobal);
 			}
+
+			log_info(logger, "Llego el mensaje %s del pokemon &s con la cantidad de %d y los datos de %s", cod_opToString(cod_op), pokemon, cantidad, localized);
 		}
 	}else{
 
 		if(nosInteresaMensaje(mensajeAGuardar)){
 
 			pthread_mutex_lock(&mListaGlobal);
+				if(cod_op == CAUGHT_POKEMON){
+					list_add_in_index(lista_mensajes, 0, mensajeAGuardar);
+				}else{
+					list_add(lista_mensajes, mensajeAGuardar);
+				}
 
-			list_add(lista_mensajes, mensajeAGuardar);
 			printf("CANTIDAD DE MENSAJES EN LISTA = %d", list_size(lista_mensajes));
 
 			sem_post(&sem_cant_mensajes);

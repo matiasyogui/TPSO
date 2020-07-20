@@ -3,8 +3,10 @@
 
 #include <commons/collections/list.h>
 #include <pthread.h>
+#include <stdbool.h>
 #include <signal.h>
-#include "variables_globales.h"
+
+#include "tallgrass.h"
 
 
 typedef struct{

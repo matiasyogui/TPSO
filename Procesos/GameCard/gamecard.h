@@ -8,7 +8,6 @@
 
 #include "variables_globales.h"
 #include "suscripcion.h"
-#include "bitmap.h"
 #include "utils_gamecard.h"
 #include "servidor.h"
 
