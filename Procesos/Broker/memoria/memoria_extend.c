@@ -1,6 +1,8 @@
 #include "memoria_extend.h"
-#include "particiones.h"
+
 #include "buddy_system.h"
+#include "particiones.h"
+
 
 void obtener_datos()
 {
@@ -11,10 +13,11 @@ void obtener_datos()
 	ALGORITMO_MEMORIA = config_get_string_value(CONFIG, "ALGORITMO_MEMORIA");
 	ALGORITMO_REEMPLAZO = config_get_string_value(CONFIG, "ALGORITMO_REEMPLAZO");
 	ALGORITMO_PARTICION_LIBRE = config_get_string_value(CONFIG, "ALGORITMO_PARTICION_LIBRE");
-
 }
 
+
 //=============================================================================
+
 
 void* buscar_espacio_libre_en_memoria(int size)
 {
@@ -24,11 +27,13 @@ void* buscar_espacio_libre_en_memoria(int size)
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "BS"))
 		return 	pedir_memoria_buddy(size);
 
-	printf("no se reconocio el algoritmo memoria \nfijarse pedir_memroria() linea 40  \n");
+	printf("No se reconocio el algoritmo memoria \nfijarse pedir_memoria() linea 40  \n");
 	return NULL;
 }
 
+
 //=============================================================================
+
 
 void consolidar()
 {
@@ -39,10 +44,12 @@ void consolidar()
 		consolidar_buddy();
 
 	if((!string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES")) && (!string_equals_ignore_case(ALGORITMO_MEMORIA, "BS")))
-		printf("no se reconocio el algoritmo_memoria fijarse consolidar()  \n");
+		printf("No se reconocio el algoritmo_memoria fijarse consolidar()  \n");
 }
 
+
 //=============================================================================
+
 
 void liberar(t_particion* particion, int posicion)
 {
@@ -57,7 +64,9 @@ void liberar(t_particion* particion, int posicion)
 }
 
 
-/*
+
+
+    /*
  	char* cadena1 = " ok ";//#4
 	char* cadena2 = "fail";//#4
 	char* cadena3 = "xxxxpicachuposXposY";//#19

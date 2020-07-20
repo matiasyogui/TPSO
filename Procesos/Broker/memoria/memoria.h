@@ -1,17 +1,24 @@
-#ifndef MEMORIA_H_
-#define MEMORIA_H_
+#ifndef MEMORIA_MEMORIA_H_
+#define MEMORIA_MEMORIA_H_
 
-#include "variables_globales.h"
+#include "../variables_globales.h"
+
+
 //-------------  ESTRUCTURAS  ----------------------------
 
 
-typedef struct
-{
+typedef struct{
+
 	void* inicio_particion;
 	void* fin_particion;
 	bool libre;
 	char* flag;
 	int fifo;
+
+	int id_mensaje;
+	int cola_pertenece;
+	time_t ultimo_acceso;
+
 } t_particion;
 
 
@@ -59,5 +66,5 @@ desc: comprime la memoria
 void compactar();
 
 
-#endif /* MEMORIA_H_ */
+#endif /* MEMORIA_MEMORIA_H_ */
 

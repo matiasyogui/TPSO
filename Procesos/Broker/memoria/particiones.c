@@ -1,8 +1,10 @@
 #include "particiones.h"
+
 #include "particiones_funciones.h"
 
-
 //==================================================================================
+
+
 void iniciar_memoria_particiones()
 {
 	t_particion* inicio = primer_nodo_particion();
@@ -11,7 +13,11 @@ void iniciar_memoria_particiones()
 	t_particion* fin = ultimo_nodo_particion();
 	list_add(particiones, fin);
 }
+
+
 //===============================================================
+
+
 void* pedir_memoria_particiones(int size)
 {
 	int numero_particion;
@@ -20,27 +26,37 @@ void* pedir_memoria_particiones(int size)
 	void* inicio_particion = busqueda_particion_libre(longitud, &numero_particion);
 
 	if(inicio_particion == NULL) {
-		printf("no se encontro un espacio libre");
+
+		printf("No se encontro un espacio libre\n");
 		return NULL;
-	}
-	else {
+
+	} else {
+
 		creamos_nueva_particion(inicio_particion, longitud, numero_particion);
 		fifo++;
 		return inicio_particion;
 	}
 }
+
+
 //============================================================================
+
+
 void consolidar_particiones()
 {
 	//no es necesario por la implementacion que tiene.
 }
+
+
 //=============================================================================
+
+
 void compactar_particiones()
 {
 	int hay_espacio_libre;
 	int tamanio_particion2;
 
-	for(int i = 0;  i < (list_size(particiones)-2); i++) {
+	for (int i = 0;  i < (list_size(particiones)-2); i++) {
 
 		t_particion* particion1 = list_get(particiones, i);
 		t_particion* particion2 = list_get(particiones, i+1);
@@ -48,27 +64,32 @@ void compactar_particiones()
 		hay_espacio_libre = particion1->fin_particion - particion2->inicio_particion;
 		tamanio_particion2 = particion2->fin_particion - particion2->inicio_particion;
 
-		if(hay_espacio_libre) {
-			memcpy(particion1->fin_particion, particion2->inicio_particion, tamanio_particion2);/*  verificar si esto no pisa memoria*/
+		if (hay_espacio_libre) {
+			memcpy(particion1->fin_particion, particion2->inicio_particion, tamanio_particion2);/* verificar si esto no pisa memoria*/
 			particion2->inicio_particion = particion1->fin_particion;
 			particion2->fin_particion = particion1->fin_particion + tamanio_particion2;
 		}
 	}
 }
+
+
 //==============================================================================
+
+
 void dump_memoria_particiones(){
 
 	void* AUXILIAR;
 	int numero = 0;
 	int tamanio_particion_libre;
 
-	printf("//////////////////////////INFORME DE MEMORIA///////////////////////////////////\n");
-	for(int i=0; i<(list_size(particiones)-1); i++, numero++) {
+	printf("\n//////////////////////////INFORME DE MEMORIA///////////////////////////////////\n\n");
+
+	for (int i = 0; i < (list_size(particiones)-1); i++, numero++) {
 
 		t_particion* particion1 = list_get(particiones, i);
 		t_particion* particion2 = list_get(particiones, i+1);
 
-		if(i==0) {
+		if (i == 0) {
 			AUXILIAR = particion1->inicio_particion;
 			continue;
 		}
@@ -82,8 +103,8 @@ void dump_memoria_particiones(){
 		//imprimir_string(particion1);
 		printf("Libre NO   \n");
 
-		if(tamanio_particion_libre)
-		{
+		if (tamanio_particion_libre) {
+
 			numero++;
 			printf("[N%d] ", numero);
 			printf("Inicio Particion = %d ", (int)(particion1->fin_particion - AUXILIAR));
@@ -91,8 +112,10 @@ void dump_memoria_particiones(){
 			printf("Libre SI  \n");
 		}
 	}
-	printf("\n////////////////////////////////////////////////////////////////////////////////////\n");
+	printf("\n////////////////////////////////////////////////////////////////////////////////////\n\n");
 }
+
+
 //=====================================================================================================
 
 

@@ -13,7 +13,7 @@ int main(void){
 
 	iniciar_listas();
 
-	//iniciar_memoria();
+	iniciar_memoria();
 
 	comenzar_servidor();
 

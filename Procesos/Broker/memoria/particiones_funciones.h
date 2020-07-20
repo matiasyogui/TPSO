@@ -1,5 +1,5 @@
-#ifndef PARTICIONES_FUNCIONES_H_
-#define PARTICIONES_FUNCIONES_H_
+#ifndef MEMORIA_PARTICIONES_FUNCIONES_H_
+#define MEMORIA_PARTICIONES_FUNCIONES_H_
 
 #include "particiones.h"
 
@@ -16,4 +16,4 @@ t_particion* crear_nodo_particion(void* inicio, int longitud, int valor_fifo);
 
 void imprimir_string(t_particion* particion);//es solo para pruebas
 
-#endif /* PARTICIONES_FUNCIONES_H_ */
+#endif /* MEMORIA_PARTICIONES_FUNCIONES_H_ */

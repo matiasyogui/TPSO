@@ -182,7 +182,7 @@ void* mensaje_suscripcion(int cod_op, char* datos[], int *size){
 void* stream_new_pokemon(char* datos[], int* size){
 
 	char* nombre_pokemon = datos[0];
-	uint32_t size_nombre = strlen(nombre_pokemon) + 1,
+	uint32_t size_nombre = strlen(nombre_pokemon),
 			posX = atoi(datos[1]),
 			posY = atoi(datos[2]),
 			cantidad = atoi(datos[3]);
@@ -217,7 +217,7 @@ void* stream_new_pokemon(char* datos[], int* size){
 void* stream_appeared_pokemon(char* datos[], int* size){
 
 	char* nombre_pokemon = datos[0];
-	uint32_t size_nombre = strlen(nombre_pokemon) + 1,
+	uint32_t size_nombre = strlen(nombre_pokemon),
 			 posX = atoi(datos[1]),
 			 posY = atoi(datos[2]);
 
@@ -247,7 +247,7 @@ void* stream_appeared_pokemon(char* datos[], int* size){
 void* stream_get_pokemon(char* datos[], int* size){
 
 	char* nombre_pokemon = datos[0];
-	uint32_t size_nombre = strlen(nombre_pokemon) + 1;
+	uint32_t size_nombre = strlen(nombre_pokemon);
 
 	*size = sizeof(uint32_t) + size_nombre;
 
@@ -269,7 +269,7 @@ void* stream_get_pokemon(char* datos[], int* size){
 void* stream_catch_pokemon(char* datos[], int *size){
 
 	char* nombre_pokemon = datos[0];
-	uint32_t size_nombre = strlen(nombre_pokemon) + 1,
+	uint32_t size_nombre = strlen(nombre_pokemon),
 			 posX = atoi(datos[1]),
 			 posY = atoi(datos[2]);
 

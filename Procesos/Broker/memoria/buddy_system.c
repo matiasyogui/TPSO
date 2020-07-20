@@ -1,22 +1,25 @@
 #include "buddy_system.h"
+
 #include "memoria.h"
 
-
 //=========================================================
-int cantidad_separador(char* palabra, char separador)
-{
+
+
+int cantidad_separador(char* palabra, char separador){
+
 	int cantidad = 0;
 
-	for(int i=0; i<string_length(palabra); i++)
-	{
-		if(palabra[i] == separador)
+	for (int i = 0; i < string_length(palabra); i++) {
+
+		if (palabra[i] == separador)
 			cantidad++;
 	}
 	return cantidad;
 }
 
-void agregar_caracter(char** palabra, char caracter)
-{
+
+void agregar_caracter(char** palabra, char caracter){
+
 	int tamanio = string_length(*palabra);
 	char* string = malloc(tamanio +1 +1);
 
@@ -28,18 +31,19 @@ void agregar_caracter(char** palabra, char caracter)
 	*palabra = string;
 }
 
-void quita_ultima_palabra(char** palabra, char separador)
-{
+
+void quita_ultima_palabra(char** palabra, char separador){
+
 	char* string = string_new();
 	char* cadena = *palabra;
 	int cantidad = cantidad_separador(cadena, separador);
 
-	for(int i=0; i<string_length(cadena); i++)
-	{
-		if(cadena[i] == separador)
+	for(int i=0; i<string_length(cadena); i++){
+
+		if (cadena[i] == separador)
 			cantidad--;
 
-		if(cantidad==0)
+		if (cantidad == 0)
 			break;
 
 		agregar_caracter(&string, cadena[i]);
@@ -48,7 +52,11 @@ void quita_ultima_palabra(char** palabra, char separador)
 	free(*palabra);
 	*palabra = string;
 }
+
+
 //=========================================================
+
+
 
 void iniciar_memoria_buddy()
 {
@@ -86,7 +94,11 @@ void iniciar_memoria_buddy()
 	list_add(particiones, fin);
 
 }
+
+
 //==========================================================================
+
+
 void* creo_particiones_internas(t_particion* particion, int posicion, int size)
 {
 	if((particion->fin_particion - particion->inicio_particion)/2 < size) {
@@ -125,8 +137,8 @@ void* creo_particiones_internas(t_particion* particion, int posicion, int size)
 	creo_particiones_internas(particionA, posicion, size);
 
 	return NULL;
-
 }
+
 
 void* buscar_particion_libre(int size)
 {
@@ -151,6 +163,8 @@ void* buscar_particion_libre(int size)
 	return NULL;
 }
 
+
+
 void* pedir_memoria_buddy(int size)
 {
 
@@ -164,7 +178,11 @@ void* pedir_memoria_buddy(int size)
 		return inicio_particion;
 
 }
+
+
 //==========================================================================
+
+
 void imprimirparticion(t_particion* particion)
 {
 	int tamanio = particion->fin_particion - particion->inicio_particion;
@@ -176,6 +194,8 @@ void imprimirparticion(t_particion* particion)
 	printf(" %s   \n", palabra);
 
 }
+
+
 void esta_libre(bool flag)
 {
 	if(flag)
@@ -183,11 +203,14 @@ void esta_libre(bool flag)
 	else
 		printf(" NO \n");
 }
+
+
 void dump_memoria_buddy()
 {
 	void* comienzo;
-	printf("////////////////////////////////////////////////////////////////// \n");
-	for(int i=0; i<(list_size(particiones) -1); i++)
+	printf("\n////////////////////////////////////////////////////////////////// \n\n");
+
+	for(int i = 0; i < (list_size(particiones) -1); i++)
 	{
 		t_particion* particion = list_get(particiones, i);
 		if(i == 0){
@@ -201,14 +224,22 @@ void dump_memoria_buddy()
 		printf("libre: "); esta_libre(particion->libre);
 		printf("\n");
 	}
-	printf("////////////////////////////////////////////////////////////////// \n");
+	printf("////////////////////////////////////////////////////////////////// \n\n");
 }
+
+
 //===========================================================================
+
+
 void compactar_buddy()
 {
 	//en la ultima version se descarto esta yuppy.
 }
+
+
 //===========================================================================
+
+
 void unificar(int posicion)
 {
 	t_particion* particion1 = list_get(particiones, posicion);
@@ -243,6 +274,7 @@ void unificar(int posicion)
 	//if(hay_mas)
 		//unificar(nueva_pos);
 }
+
 
 void consolidar_buddy()
 {

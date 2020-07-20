@@ -1,18 +1,23 @@
 #include "particiones_funciones.h"
 
-
 //=====================================================================================
-t_particion* primer_nodo_particion()
-{
+
+
+t_particion* primer_nodo_particion(){
+
 	return crear_nodo_particular(0);
 }
 
-t_particion* ultimo_nodo_particion()
-{
+
+t_particion* ultimo_nodo_particion(){
+
 	return crear_nodo_particular(TAMANO_MEMORIA);
 }
 
+
 //=====================================================================================
+
+
 void* busqueda_particion_libre(int size, int* numero_particion)
 {
 	if(string_equals_ignore_case(ALGORITMO_PARTICION_LIBRE, "FF"))
@@ -24,6 +29,7 @@ void* busqueda_particion_libre(int size, int* numero_particion)
 	printf("\nNo se reconocio el ALGORITMO DE PARTICION LIBRE %s  busqueda_particion_libre() \n", ALGORITMO_PARTICION_LIBRE);
 	return NULL;
 }
+
 
 void* algoritmo_primer_ajuste(int size, int* numero_particion)
 {
@@ -45,6 +51,7 @@ void* algoritmo_primer_ajuste(int size, int* numero_particion)
 	return particion_libre;
 }
 
+
 void* algoritmo_mejor_ajuste(int size, int* numero_particion)
 {
 	bool flag1 = true;
@@ -59,7 +66,7 @@ void* algoritmo_mejor_ajuste(int size, int* numero_particion)
 
 		memoria_disponible = segunda_particion->inicio_particion - primera_particion->fin_particion;
 
-		if((memoria_disponible >= size) && (flag1 || menor_memoria > memoria_disponible))
+		if ((memoria_disponible >= size) && (flag1 || menor_memoria > memoria_disponible))
 		{
 			flag1 = false;
 			menor_memoria = memoria_disponible;
@@ -67,23 +74,26 @@ void* algoritmo_mejor_ajuste(int size, int* numero_particion)
 			*numero_particion = i+1;
 		}
 	}
-
 	return particion_libre;
 }
+
+
 //=======================================================================================
+
+
 void creamos_nueva_particion(void* inicio_particion, int longitud, int numero_particion)
 {
 	t_particion* particion = crear_nodo_particion(inicio_particion, longitud, fifo);
 
 	list_add_in_index(particiones, numero_particion, particion);
 }
-//=======================================================================================
-
 
 
 //================= FUNCIONES AUXILIARES =============================
-t_particion* crear_nodo_particular(int longitud)
-{
+
+
+t_particion* crear_nodo_particular(int longitud){
+
 	t_particion* particion = malloc(sizeof(t_particion));
 	particion->inicio_particion = inicio_memoria + longitud;
 	particion->fin_particion = inicio_memoria + longitud;
@@ -94,8 +104,9 @@ t_particion* crear_nodo_particular(int longitud)
 	return particion;
 }
 
-t_particion* crear_nodo_particion(void* inicio, int longitud, int valor_fifo)
-{
+
+t_particion* crear_nodo_particion(void* inicio, int longitud, int valor_fifo){
+
 	t_particion* particion = malloc(sizeof(t_particion));
 	particion->inicio_particion = inicio;
 	particion->fin_particion = inicio + longitud;
@@ -106,6 +117,7 @@ t_particion* crear_nodo_particion(void* inicio, int longitud, int valor_fifo)
 	return particion;
 }
 
+
 void imprimir_string(t_particion* particion)
 {
 	int tamanio = particion->fin_particion - particion->inicio_particion;
@@ -115,5 +127,6 @@ void imprimir_string(t_particion* particion)
 	palabra[tamanio] = '\0';
 
 	printf(" %s   ", palabra);
-
 }
+
+
