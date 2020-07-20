@@ -76,10 +76,8 @@ typedef struct{
 
 //METRICAS
 int rafagasCPUTotales;
-int deadlocks;
-int deadlocksResueltos;
 int cambiosDeContexto;
-
+int cantDL;
 
 bool falloConexionBroker;
 

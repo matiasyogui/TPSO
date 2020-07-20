@@ -1,4 +1,5 @@
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #include "planificacion.h"
 
 void* pasajeBlockAReady(){
@@ -203,6 +204,8 @@ void* pasajeBlockAReady(){
 		list_add(listaBlocked, entAux);
 	}
 
+	calcularCantidadDeadlocks();
+
 	ALGORITMO_PLANIFICACION = "FIFO";
 	list_add_all(listaReady, listaBlocked);
 
@@ -226,6 +229,66 @@ bool hayEntrenadoresDisponiblesBlocked(){
 	pthread_mutex_unlock(&mListaBlocked);
 
 	return hayAlguno;
+}
+
+void calcularCantidadDeadlocks(){
+	cantDL = 0;
+	t_list* listaEntDLxId = list_create();
+
+	void* transformarListaIdsDL (void* elemento){
+		t_entrenador* ent = (t_entrenador*) elemento;
+		entBusquedaCircular* entAux = malloc(sizeof(entBusquedaCircular));
+		entAux->id = ent->idEntrenador;
+		entAux->listaIdsDL = list_duplicate(ent->entrenadoresEstoyDeadlock);
+		return (void*) entAux;
+	}
+
+	listaEntDLxId = list_map(listaBlocked,transformarListaIdsDL);
+
+	for(int i=0;i<list_size(listaEntDLxId);i++){
+		((entBusquedaCircular*) list_get(listaEntDLxId,i))->cantQueAparece = 0;
+	}
+
+	entBusquedaCircular* ent;
+
+	int j ;
+
+	bool _tieneId(void* elemento){
+		return ((entBusquedaCircular*) elemento)->id == j;
+	}
+	int max;
+
+	while(!list_is_empty(listaEntDLxId)){
+		max = 0;
+		ent = (entBusquedaCircular*) list_get(listaEntDLxId,0);
+		bool terminoCiclo = false;
+		j = ent->id;
+		entBusquedaCircular* entAux;
+		if(list_is_empty(ent->listaIdsDL)){
+			list_remove_by_condition(listaEntDLxId,_tieneId);
+		}else
+		{
+		while(!terminoCiclo){
+			entAux = list_remove_by_condition(listaEntDLxId,_tieneId);
+			if(list_is_empty(entAux->listaIdsDL)){
+				terminoCiclo = true;
+			}
+			else{
+				j = (int) list_remove(entAux->listaIdsDL,0);
+				entAux->cantQueAparece++;
+				list_add(listaEntDLxId,entAux);
+			}
+		}
+		max = entAux->cantQueAparece;
+		for(int i=0;i<list_size(listaEntDLxId);i++){
+			max = MAX(max,((entBusquedaCircular*) list_get(listaEntDLxId,i))->cantQueAparece);
+		}
+		cantDL += max;
+		for(int i=0;i<list_size(listaEntDLxId);i++){
+			((entBusquedaCircular*) list_get(listaEntDLxId,i))->cantQueAparece = 0;
+		}
+	}
+	}
 }
 
 void buscarEntrenadoresDL(t_entrenador* ent){
@@ -270,7 +333,6 @@ void buscarEntrenadoresDL(t_entrenador* ent){
 	j++;
 	}
 
-	deadlocks++;
 }
 
 void* stream_deadlock(int* datos[], int *size){
@@ -589,7 +651,6 @@ void ejecutarMensaje(void* entAux){
 					log_info(logger, "Entrenador %d entra a lista Exit porque logro su objetivo personal.", ent -> idEntrenador);
 
 					//metricas
-					deadlocksResueltos++;
 					cambiosDeContexto += 2;
 				}
 
@@ -600,7 +661,6 @@ void ejecutarMensaje(void* entAux){
 					log_info(logger, "Entrenador %d entra a lista Exit porque logro su objetivo personal.", entAux1 -> idEntrenador);
 
 					//metricas
-					deadlocksResueltos++;
 					cambiosDeContexto += 2;
 				}
 
