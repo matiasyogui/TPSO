@@ -376,7 +376,7 @@ int main(){
 
 void leer_archivo_configuracion(){
 
-	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team1.config");
+	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team2.config");
 
 
 	LOG_FILE= config_get_string_value(config,"LOG_FILE");
