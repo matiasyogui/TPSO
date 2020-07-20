@@ -29,8 +29,7 @@ t_buffer* recibir_mensaje_id(int socket_cliente, int*);
 void leer_mensaje(t_buffer* buffer);
 void enviarLocalizeVacio();
 void crearArchivoPokemon(char*);
-bool existePokemon(char*);
-
+t_File * existePokemon(char*);
 
 
 void iniciar_servidor(void){
@@ -285,6 +284,7 @@ static void esperando_mensajes(int socket){
 	int s, cod_op, size, id_correlativo;
 	void* mensaje;
 	t_getPokemon * getpok;
+	t_File * pokemon;
 
 	while(true){
 
@@ -308,7 +308,9 @@ static void esperando_mensajes(int socket){
 
 				getpok = recibirGetPokemon(socket);
 
-				if (existePokemon(getpok->pokemon)){
+				pokemon = existePokemon(getpok->pokemon);
+
+				if (pokemon != NULL){
 					printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
 
 				}else
@@ -336,7 +338,7 @@ void crearArchivoPokemon(char* pokemon){
 
 }
 
-bool existePokemon(char* pokemon){
+t_File * existePokemon(char* pokemon){
 
 	for(int i = 0; i < list_size(listaFiles);i++){
 
@@ -345,10 +347,10 @@ bool existePokemon(char* pokemon){
 		int equals = string_equals_ignore_case( ((t_File*)list_get(listaFiles,i))->nombre,pokemon);
 
 		if(equals)
-			return true;
+			return (t_File*)list_get(listaFiles,i);
 	}
 
-	return false;
+	return NULL;
 }
 
 
