@@ -33,7 +33,6 @@ void iniciar_servidor(void)
     if(listen(socket_servidor, SOMAXCONN) < 0)
     		perror("LISTEN ERROR");
 
-
     freeaddrinfo(servinfo);
     server_team = socket_servidor;
     while(list_size(listaExit) != cant_elementos(POSICIONES_ENTRENADORES))
@@ -62,8 +61,9 @@ void serve_client(int* p_socket){
 	int cod_op, socket = *p_socket;
 	free(p_socket);
 
-	if(recv(socket, &cod_op, sizeof(int), MSG_WAITALL) == -1)
+	if(recv(socket, &cod_op, sizeof(int), MSG_WAITALL) == -1){
 		cod_op = -1;
+	}
 
 	process_request(cod_op, socket);
 
@@ -72,9 +72,6 @@ void serve_client(int* p_socket){
 void process_request(int cod_op, int cliente_fd) {
 
     t_buffer* msg = recibir_mensaje(cliente_fd);
-    printf("\ncod_op = %d\n",cod_op);
-
-    fflush(stdout);
 
     mensajeActual = cod_op;
 

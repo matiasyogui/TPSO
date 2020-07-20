@@ -108,6 +108,8 @@ pthread_mutex_t semPlanificador;
 
 pthread_mutex_t mHayDesalojo;
 
+pthread_mutex_t mNewCaught;
+
 pthread_t hiloMain;
 
 
