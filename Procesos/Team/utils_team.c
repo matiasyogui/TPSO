@@ -194,9 +194,7 @@ void terminarEjecucionTeam(){
 		log_info(logger, "CANTIDAD DE CICLOS DE CPU DEL ENTRENADOR %d = %d", i, ((t_entrenador*) list_get(listaExit, i)) -> rafagasCPUDelEntrenador);
 	}
 
-	log_info(logger, "CANTIDAD DE DEADLOCKS = %d", deadlocks);
-
-	log_info(logger, "CANTIDAD DE DEADLOCKS RESUELTOS = %d", deadlocksResueltos);
+	log_info(logger, "CANTIDAD DE DEADLOCKS RESUELTOS = %d", cantDL);
 
 	log_info(logger, "CANTIDAD DE CAMBIOS DE CONTEXTO = %d", cambiosDeContexto);
 

@@ -15,6 +15,7 @@ t_config* CONFIG;
 
 #define DIRECTORY "DIRECTORY"
 #define FILESIZE "SIZE"
+#define BLOCKSDIR "Blocks"
 #define BLOCKS "BLOCKS"
 #define OPEN "OPEN"
 

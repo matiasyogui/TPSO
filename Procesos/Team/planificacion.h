@@ -11,6 +11,12 @@ typedef enum{
 	DEADLOCK = 99
 };
 
+typedef struct{
+	int id;
+	t_list* listaIdsDL;
+	int cantQueAparece;
+}entBusquedaCircular;
+
 void* pasajeBlockAReady();
 void* planificarEntrenadoresAExec();
 void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent);
@@ -28,5 +34,6 @@ bool hayEntrenadoresDisponiblesBlocked();
 
 void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux);
 void buscarEntrenadoresDL(t_entrenador* entAux);
+void calcularCantidadDeadlocks();
 
 #endif /* PLANIFICACION_H_ */
