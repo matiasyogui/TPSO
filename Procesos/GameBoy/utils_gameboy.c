@@ -5,6 +5,8 @@ static int modo_emisor(int socket);
 static char* comprobar_proceso(char *proceso);
 void enviar_confirmacion(int socket);
 
+void leer_mensaje(int cod_op, void* mensaje, int size);
+
 
 void inicializar_archivos(){
 
@@ -61,36 +63,38 @@ static int modo_suscriptor(int socket){
 
 	void _manejo_error(void){
 		int error = 0;
-		send(socket, &error, sizeof(uint32_t), 0);
+		//s = send(socket, &error, sizeof(uint32_t), MSG_NOSIGNAL);
+		//if (s < 0) exit(1);
+		exit(1);
 	}
 
 	s = recv(socket, &estado, sizeof(uint32_t), 0);
-	if (s < 0) perror("[UTILS_GAMEBOY.C] RECV ERROR");
+	if (s <= 0) perror("[UTILS_GAMEBOY.C] RECV ERROR");
 
 	printf("[CONFIRMACION DE SUSCRIPCION] id_suscripcion = %d \n", estado);
 
 	while(true){
 
 		s = recv(socket, &cod_op, sizeof(uint32_t), 0);
-		if (s < 0) { perror("[gameboy.c : 28]FALLO RECV"); continue; }
+		if (s <= 0) { perror("[gameboy.c : 28]FALLO RECV"); _manejo_error(); continue; }
 
 		switch(cod_op){
 
 			case NEW_POKEMON...CAUGHT_POKEMON:
 
 				s = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
-				if (s < 0) { perror("[UTILS_GAMEBOY.C] RECV ERROR"); _manejo_error(); continue; }
+				if (s <= 0) { perror("[UTILS_GAMEBOY.C] RECV ERROR"); _manejo_error(); continue; }
 
 				s = recv(socket, &size, sizeof(uint32_t), 0);
-				if (s < 0) { perror("[UTILS_GAMEBOY.C] RECV ERROR"); _manejo_error(); continue; }
+				if (s <= 0) { perror("[UTILS_GAMEBOY.C] RECV ERROR"); _manejo_error(); continue; }
 
 				datos = malloc(size);
 
 				s = recv(socket, datos, size, 0);
-				if (s < 0) { perror("[UTILS_GAMEBOY.C] RECV ERROR"); _manejo_error(); continue; }
+				if (s <= 0) { perror("[UTILS_GAMEBOY.C] RECV ERROR"); _manejo_error(); continue; }
 
-
-				printf("[MENSAJE DEL BROKER]cod_op_mensaje = %d, id_mensaje = %d, size mensaje = %d \n", cod_op, id_mensaje, size);
+				printf("[MENSAJE DEL BROKER]cod_op_mensaje = %s, id_mensaje = %d, size mensaje = %d \n", cod_opToString(cod_op), id_mensaje, size);
+				leer_mensaje(cod_op, datos, size);
 
 				log_info(LOGGER, "Se recibio un mensaje de la cola %s", cod_opToString(cod_op));
 
@@ -135,4 +139,107 @@ void enviar_confirmacion(int socket){
 
 	s = send(socket, (void*)&confirmacion, sizeof(uint32_t), 0);
 	if (s < 0) printf("ERROR SEND");
+}
+
+
+void leer_mensaje(int cod_op, void* mensaje, int size){
+
+	char* pokemon;
+	int posx, posy, cantidad, len, flag;
+	int offset = 0;
+
+	switch(cod_op){
+
+	case NEW_POKEMON:
+
+		memcpy(&len, mensaje + offset, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		pokemon = malloc(len);
+		memcpy(pokemon, mensaje + offset, len);
+		offset += len;
+
+		memcpy(&posx, mensaje + offset, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		memcpy(&posy, mensaje + offset, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		memcpy(&cantidad, mensaje + offset, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		printf("len = %d, pokemon = %s, posx = %d, posy = %d, cantidad = %d\n", len, pokemon, posx ,posy, cantidad);
+
+		free(pokemon);
+
+		break;
+
+	case APPEARED_POKEMON:
+
+		memcpy(&len, mensaje + offset, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		pokemon = malloc(len);
+		memcpy(pokemon, mensaje + offset, len);
+		offset += len;
+
+		memcpy(&posx, mensaje + offset, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		memcpy(&posy, mensaje + offset, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		printf("pokemon = %s, posx = %d, posy = %d\n", pokemon, posx ,posy);
+
+		free(pokemon);
+
+		break;
+
+	case CATCH_POKEMON:
+
+		memcpy(&len, mensaje + offset, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		pokemon = malloc(len);
+		memcpy(pokemon, mensaje + offset, len);
+		offset += len;
+
+		memcpy(&posx, mensaje + offset, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		memcpy(&posy, mensaje + offset, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		printf("pokemon = %s, posx = %d, posy = %d\n", pokemon, posx ,posy);
+
+		free(pokemon);
+
+		break;
+
+	case CAUGHT_POKEMON:
+
+		memcpy(&flag, mensaje + offset, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		printf("flag = %d\n", flag);
+
+		break;
+
+	case GET_POKEMON:
+
+		memcpy(&len, mensaje + offset, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		pokemon = malloc(len);
+		memcpy(pokemon, mensaje + offset, len);
+		offset += len;
+
+		printf("pokemon = %s\n", pokemon);
+
+		free(pokemon);
+
+		break;
+	}
+
+
 }

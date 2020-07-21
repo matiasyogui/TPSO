@@ -7,7 +7,7 @@
 
 #include "envio_recepcion.h"
 #include "listas.h"
-#include "memoria.h"
+#include "memoria/memoria.h"
 #include "planificador.h"
 
 

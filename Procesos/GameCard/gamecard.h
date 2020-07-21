@@ -10,4 +10,5 @@
 #include "suscripcion.h"
 #include "utils_gamecard.h"
 
+
 #endif /* GAMECARD_H_ */

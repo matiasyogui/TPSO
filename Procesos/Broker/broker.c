@@ -13,7 +13,7 @@ int main(void){
 
 	iniciar_listas();
 
-	//iniciar_memoria();
+	iniciar_memoria();
 
 	comenzar_servidor();
 
@@ -35,7 +35,7 @@ static void finalizar_programa(void){
 
 	finalizar_listas();
 
-	//finalizar_memoria();
+	finalizar_memoria();
 
 	finalizar_variables_globales();
 

@@ -1,6 +1,7 @@
 #include "memoria_extend.h"
-#include "particiones.h"
+
 #include "buddy_system.h"
+#include "particiones.h"
 
 void obtener_datos()
 {
@@ -11,27 +12,35 @@ void obtener_datos()
 	ALGORITMO_MEMORIA = config_get_string_value(CONFIG, "ALGORITMO_MEMORIA");
 	ALGORITMO_REEMPLAZO = config_get_string_value(CONFIG, "ALGORITMO_REEMPLAZO");
 	ALGORITMO_PARTICION_LIBRE = config_get_string_value(CONFIG, "ALGORITMO_PARTICION_LIBRE");
-
 }
+
 
 //=============================================================================
 
-void* buscar_espacio_libre_en_memoria(int size)
+//void* buscar_espacio_libre_en_memoria(int size)
+void* buscar_espacio_libre_en_memoria(int size, int id_mensaje, int cod_op)
 {
+
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
-		return pedir_memoria_particiones(size);
+		return pedir_memoria_particiones(size, id_mensaje, cod_op);
 
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "BS"))
-		return 	pedir_memoria_buddy(size);
+		//return 	pedir_memoria_buddy(size);
+		return 	pedir_memoria_buddy(size, id_mensaje, cod_op);
 
-	printf("no se reconocio el algoritmo memoria \nfijarse pedir_memroria() linea 40  \n");
+	printf("No se reconocio el algoritmo memoria \nfijarse pedir_memoria() linea 40  \n");
 	return NULL;
 }
 
+
 //=============================================================================
+
 
 void consolidar()
 {
+
+	pthread_mutex_lock(&MUTEX_PARTICIONES);
+
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
 		consolidar_particiones();
 
@@ -39,13 +48,26 @@ void consolidar()
 		consolidar_buddy();
 
 	if((!string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES")) && (!string_equals_ignore_case(ALGORITMO_MEMORIA, "BS")))
-		printf("no se reconocio el algoritmo_memoria fijarse consolidar()  \n");
+		printf("No se reconocio el algoritmo_memoria fijarse consolidar()  \n");
+
+	pthread_mutex_unlock(&MUTEX_PARTICIONES);
 }
+
 
 //=============================================================================
 
+
 void liberar(t_particion* particion, int posicion)
 {
+
+	estado_mensaje_eliminado(particion->id_mensaje, particion->cola_pertenece);
+
+	pthread_mutex_lock(&MUTEX_LOG);
+
+	log_info(LOGGER, "Se elimino una particion, inicio = %p", particion->inicio_particion);
+
+	pthread_mutex_unlock(&MUTEX_LOG);
+
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
 		list_remove_and_destroy_element(particiones, posicion, free);
 
@@ -57,7 +79,9 @@ void liberar(t_particion* particion, int posicion)
 }
 
 
-/*
+
+
+    /*
  	char* cadena1 = " ok ";//#4
 	char* cadena2 = "fail";//#4
 	char* cadena3 = "xxxxpicachuposXposY";//#19

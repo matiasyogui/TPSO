@@ -118,6 +118,15 @@ char* cod_opToString(int cod_op){
 	return "COD_OP_NO_VALIDO";
 }
 
+int flag_to_int(char* flag){
+
+	if(string_equals_ignore_case(flag, "OK") == 1)
+		return 0;
+
+	if(string_equals_ignore_case(flag, "FAIL") == 1)
+		return 1;
+}
+
 
 char* obtener_key(char* dato, char* proceso){
 

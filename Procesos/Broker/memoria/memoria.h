@@ -1,18 +1,28 @@
-#ifndef MEMORIA_H_
-#define MEMORIA_H_
+#ifndef MEMORIA_MEMORIA_H_
+#define MEMORIA_MEMORIA_H_
 
-#include "variables_globales.h"
+#include "../variables_globales.h"
+
+
 //-------------  ESTRUCTURAS  ----------------------------
 
 
-typedef struct
-{
+typedef struct{
+
 	void* inicio_particion;
 	void* fin_particion;
 	bool libre;
 	char* flag;
 	int fifo;
+
+	int id_mensaje;
+	int cola_pertenece;
+	int size_mensaje;
+	clock_t ultimo_acceso;
+
 } t_particion;
+
+pthread_mutex_t MUTEX_PARTICIONES;
 
 
 //------------  VARIABLES  --------------------------------
@@ -41,7 +51,8 @@ void iniciar_memoria();
 name: pedir_memoria
 desc: dado un tamnio te devuelve una particion de memoria en donde puedes guardar ese datos. semejante al malloc
 */
-void* pedir_memoria(int size);
+//void* pedir_memoria(int size);
+void* pedir_memoria(int size, int id_mensaje, int cod_op);
 /*
 name: eliminar_particion
 desc: elimina una particion por fifo o lru
@@ -58,6 +69,11 @@ desc: comprime la memoria
 */
 void compactar();
 
+//buscar una particion
+void* buscar_particion(int id_mensaje);
 
-#endif /* MEMORIA_H_ */
+void finalizar_memoria();
+
+
+#endif /* MEMORIA_MEMORIA_H_ */
 

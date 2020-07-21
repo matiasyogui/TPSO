@@ -11,7 +11,7 @@
 
 #include "variables_globales.h"
 #include "listas.h"
-#include "memoria.h"
+#include "memoria/memoria.h"
 
 
 void iniciar_datos_servidor(void);
