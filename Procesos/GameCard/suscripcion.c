@@ -11,10 +11,10 @@ char* PUERTO_BROKER;
 static void cargar_datos_suscripcion(void);
 static void enviar_mensaje_suscripcion(void* _cola);
 static void esperando_mensajes(int socket);
-static void* recibir_mensaje(int socket, int* size);
-static int enviar_confirmacion(int socket, bool estado);
-static void* mensaje_suscripcion(int cod_op, int cola_mensajes, int tiempo, int *size);
-static void* stream_suscripcion(int cola_mensajes, int tiempo, int* size);
+void* recibir_mensaje(int socket, int* size);
+ int enviar_confirmacion(int socket, bool estado);
+ void* mensaje_suscripcion(int cod_op, int cola_mensajes, int tiempo, int *size);
+ void* stream_suscripcion(int cola_mensajes, int tiempo, int* size);
 t_getPokemon * recibirGetPokemon(int socket);
 
 #define IP_SERVIDOR "127.0.0.3"
@@ -29,7 +29,8 @@ t_buffer* recibir_mensaje_id(int socket_cliente, int*);
 void leer_mensaje(t_buffer* buffer);
 void enviarLocalizeVacio();
 void crearArchivoPokemon(char*);
-t_File * existePokemon(char*);
+void enviarAppeared(t_File* , int );
+//t_File * existePokemon(char*);
 
 
 void iniciar_servidor(void){
@@ -305,7 +306,7 @@ static void esperando_mensajes(int socket){
 			case NEW_POKEMON:
 				//----cambiar esto----
 				getpok = recibirGetPokemon(socket);
-				archivo = existePokemon(getpok->pokemon);
+				archivo = open_file(getpok->pokemon);
 
 				//------------------
 
@@ -322,7 +323,7 @@ static void esperando_mensajes(int socket){
 			case CATCH_POKEMON:
 				//----cambiar esto----
 				getpok = recibirGetPokemon(socket);
-				archivo = existePokemon(getpok->pokemon);
+				archivo = open_file(getpok->pokemon);
 
 				//------------------
 
@@ -343,7 +344,7 @@ static void esperando_mensajes(int socket){
 
 				getpok = recibirGetPokemon(socket);
 
-				archivo = existePokemon(getpok->pokemon);
+				archivo = open_file(getpok->pokemon);
 
 				if (archivo != NULL){
 					enviarLocalized(archivo,id_correlativo);
@@ -407,6 +408,8 @@ void enviarAppeared(t_File* archivo, int id_correlativo){
 	}
 }
 
+}
+
 void enviarCaught(int id_correlativo, bool loAtrapo){
 	int cod_op = CAUGHT_POKEMON;
 
@@ -438,6 +441,7 @@ void enviarCaught(int id_correlativo, bool loAtrapo){
 		//log_info(logger,"Fallo el envio del localized al Broker");
 	}
 
+	}
 }
 
 void enviarLocalizeVacio(t_File* archivo, int id_correlativo){
@@ -478,50 +482,53 @@ void enviarLocalizeVacio(t_File* archivo, int id_correlativo){
 		//log_info(logger,"Fallo el envio del localized al Broker");
 	}
 }
+}
 
 void enviarLocalized(t_File* archivo, int id_correlativo){
-	int cod_op = LOCALIZED_POKEMON;
-	int len = strlen(archivo->nombre) + 1;
+		int cod_op = LOCALIZED_POKEMON;
+		int len = strlen(archivo->nombre) + 1;
 
-	int offset = 0;
+		int offset = 0;
 
-	void* stream = malloc( sizeof(uint32_t) + len + 2*archivo->posiciones->elements_count*sizeof(uint32_t));
+		void* stream = malloc( sizeof(uint32_t) + len + 2*archivo->posiciones->elements_count*sizeof(uint32_t));
 
-	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(stream + offset, &id_correlativo, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(stream + offset, &len, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(stream + offset, archivo->nombre, len);
-	offset += len;
-
-	memcpy(stream + offset, &(archivo->posiciones->elements_count), sizeof(uint32_t) );
-	offset += sizeof(uint32_t);
-
-	for(int i=0;i<archivo->posiciones->elements_count;i++){
-		memcpy(stream + offset, &(((t_posiciones*)list_get(archivo->posiciones,i))->posx), sizeof(uint32_t) );
+		memcpy(stream + offset, &cod_op, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
-		memcpy(stream + offset, &(((t_posiciones*)list_get(archivo->posiciones,i))->posy), sizeof(uint32_t) );
+
+		memcpy(stream + offset, &id_correlativo, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
-	}
 
-	//enviamos el mensaje
-	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
-	if(socket>0){
-	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
-	{
-		perror(" FALLO EL SEND DEL LOCALIZED \n");
-	}
+		memcpy(stream + offset, &len, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
 
-	//esperamos respuesta del broker
-	int id_mensaje,s;
-	s = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
-	if(s<0){
-		//log_info(logger,"Fallo el envio del localized al Broker");
+		memcpy(stream + offset, archivo->nombre, len);
+		offset += len;
+
+		memcpy(stream + offset, &(archivo->posiciones->elements_count), sizeof(uint32_t) );
+		offset += sizeof(uint32_t);
+
+		for(int i=0;i<archivo->posiciones->elements_count;i++){
+			memcpy(stream + offset, &(((t_posiciones*)list_get(archivo->posiciones,i))->posx), sizeof(uint32_t) );
+			offset += sizeof(uint32_t);
+			memcpy(stream + offset, &(((t_posiciones*)list_get(archivo->posiciones,i))->posy), sizeof(uint32_t) );
+			offset += sizeof(uint32_t);
+		}
+
+		//enviamos el mensaje
+		int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
+		if(socket>0){
+		if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
+		{
+			perror(" FALLO EL SEND DEL LOCALIZED \n");
+		}
+
+		//esperamos respuesta del broker
+		int id_mensaje,s;
+		s = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
+		if(s<0){
+			//log_info(logger,"Fallo el envio del localized al Broker");
+		}
+
 	}
 
 }
@@ -530,6 +537,7 @@ void crearArchivoPokemon(char* pokemon){
 
 }
 
+/*
 t_File * existePokemon(char* pokemon){
 
 	for(int i = 0; i < list_size(listaFiles);i++){
@@ -543,7 +551,7 @@ t_File * existePokemon(char* pokemon){
 	}
 
 	return NULL;
-}
+}*/
 
 
 t_getPokemon * recibirGetPokemon(int socket){
@@ -570,7 +578,7 @@ t_getPokemon * recibirGetPokemon(int socket){
 	return ret;
 }
 
-static void* recibir_mensaje(int socket, int* size){
+void* recibir_mensaje(int socket, int* size){
 
 	int s;
 
@@ -585,7 +593,7 @@ static void* recibir_mensaje(int socket, int* size){
 }
 
 
-static int enviar_confirmacion(int socket, bool estado){
+int enviar_confirmacion(int socket, bool estado){
 
 	int s;
 
@@ -596,7 +604,7 @@ static int enviar_confirmacion(int socket, bool estado){
 }
 
 
-static void* mensaje_suscripcion(int cod_op, int cola_mensajes, int tiempo, int *size){
+void* mensaje_suscripcion(int cod_op, int cola_mensajes, int tiempo, int *size){
 
 	void* mensaje = stream_suscripcion(cola_mensajes, tiempo, size);
 
@@ -619,7 +627,8 @@ static void* mensaje_suscripcion(int cod_op, int cola_mensajes, int tiempo, int 
 }
 
 
-static void* stream_suscripcion(int cola_mensajes, int tiempo, int* size){
+void* stream_suscripcion(int cola_mensajes, int tiempo, int* size)
+{
 
 	*size = 2 * sizeof(uint32_t);
 	void* stream = malloc(*size);

@@ -31,7 +31,7 @@ void crearMetadataDePuntoDeMontaje(char* directorioMetadata){
 	fclose(metadataBin);
 }
 
-t_list * listarTallGrassFiles(char * path) {
+/*t_list * listarTallGrassFiles(char * path) {
 
 	  struct dirent *dir;
 	  char * nombreDir = malloc(strlen(path) + strlen(FILES)+1);
@@ -62,7 +62,7 @@ t_list * listarTallGrassFiles(char * path) {
 	  }
 
 	  return lista;
-}
+}*/
 
 void crearTallGrassFiles(char*pathMontaje){
 
@@ -82,7 +82,7 @@ void montar_TallGrass(){
 
 	bitBloques = leerArchivoBitmap(PUNTO_MONTAJE_TALLGRASS, metadata );
 
-	listaFiles = listarTallGrassFiles(PUNTO_MONTAJE_TALLGRASS);
+//	listaFiles = listarTallGrassFiles(PUNTO_MONTAJE_TALLGRASS);
 
 }
 
@@ -98,20 +98,24 @@ void marcarBloqueUsado(int index){
 }
 
 
-t_File * leer_file(char * dir, char * file){
+t_File * open_file(char * nombre){
 
-	char* auxFile = malloc(strlen(file)+3);
+	char* auxFile = malloc(strlen(FILES)+strlen(nombre)+3);
 
-	strcpy(auxFile, "/");
-	strcat(auxFile,file);
+	strcpy(auxFile,FILES);
+	strcat(auxFile,"/");
+	strcat(auxFile,nombre);
 	strcat(auxFile,"/");
 
-	t_archivo * arch = leer_archivo(dir,auxFile, METADATAFILE);
+	t_archivo * arch = leer_archivo(PUNTO_MONTAJE_TALLGRASS,auxFile, METADATAFILE);
+
+	if (arch == NULL)
+		return NULL;
 
 	t_File * retFile = malloc(sizeof(t_File));
 	char** split;
 
-	retFile->nombre = strdup(file);
+	retFile->nombre = strdup(nombre);
 	retFile->directory = arch_get_string_value(arch,DIRECTORY);
 	retFile->size = atoi(arch_get_string_value(arch,FILESIZE));
 	retFile->open = arch_get_string_value(arch,OPEN);
@@ -135,7 +139,7 @@ t_File * leer_file(char * dir, char * file){
 
 	list_add_in_index(retFile->blocks,index, atoi(split[index]));
 
-	 auxFile = malloc(strlen(dir)+3+strlen(BLOCKSDIR));
+	 auxFile = malloc(strlen(PUNTO_MONTAJE_TALLGRASS)+3+strlen(BLOCKSDIR));
 
 	strcpy(auxFile, PUNTO_MONTAJE_TALLGRASS);
 

@@ -20,6 +20,8 @@
 t_bitarray * bitBloques ;
 t_metadata* metadata;
 
+
+t_File * open_file(char*);
 t_list * leer_archivo_bloque(char*, char*);
 t_File * leer_file(char*, char*);
 void montar_TallGrass(void);
