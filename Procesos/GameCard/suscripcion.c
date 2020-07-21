@@ -284,7 +284,7 @@ static void esperando_mensajes(int socket){
 	int s, cod_op, size, id_correlativo;
 	void* mensaje;
 	t_getPokemon * getpok;
-	t_File * pokemon;
+	t_File * archivo;
 
 	while(true){
 
@@ -303,21 +303,57 @@ static void esperando_mensajes(int socket){
 		switch(cod_op){
 			// definir las acciones que debe realizar
 			case NEW_POKEMON:
+				//----cambiar esto----
+				getpok = recibirGetPokemon(socket);
+				archivo = existePokemon(getpok->pokemon);
+
+				//------------------
+
+				if (archivo != NULL){
+					enviarAppeared(archivo,id_correlativo);
+					printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
+
+				}else
+				{
+					printf("el pokemon: %s NO EXISTE en TALLGRASS\n", getpok->pokemon);
+				}
+				break;
+
 			case CATCH_POKEMON:
+				//----cambiar esto----
+				getpok = recibirGetPokemon(socket);
+				archivo = existePokemon(getpok->pokemon);
+
+				//------------------
+
+				if (archivo != NULL){
+					bool loAtrapo;
+					enviarCaught(id_correlativo,loAtrapo);
+					printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
+
+				}else
+				{
+					printf("el pokemon: %s NO EXISTE en TALLGRASS\n", getpok->pokemon);
+					//TODO: informar error
+
+				}
+
+				break;
 			case GET_POKEMON:
 
 				getpok = recibirGetPokemon(socket);
 
-				pokemon = existePokemon(getpok->pokemon);
+				archivo = existePokemon(getpok->pokemon);
 
-				if (pokemon != NULL){
+				if (archivo != NULL){
+					enviarLocalized(archivo,id_correlativo);
 					printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
 
 				}else
 				{
 					printf("el pokemon: %s NO EXISTE en TALLGRASS\n", getpok->pokemon);
 					crearArchivoPokemon(getpok->pokemon);
-					enviarLocalizeVacio();
+					enviarLocalizeVacio(archivo);
 				}
 
 
@@ -329,8 +365,164 @@ static void esperando_mensajes(int socket){
 	}
 }
 
+void enviarAppeared(t_File* archivo, int id_correlativo){
+	int cod_op = APPEARED_POKEMON;
+	int len = strlen(archivo->nombre) + 1;
 
-void enviarLocalizeVacio(){
+	int offset = 0;
+
+	void* stream = malloc( sizeof(uint32_t)*3 + len + 2*sizeof(uint32_t));
+
+	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &id_correlativo, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &len, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, archivo->nombre, len);
+	offset += len;
+
+	memcpy(stream + offset, &(((t_posiciones*)list_get(archivo->posiciones,0))->posx), sizeof(uint32_t) );
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &(((t_posiciones*)list_get(archivo->posiciones,0))->posy), sizeof(uint32_t) );
+	offset += sizeof(uint32_t);
+
+	//enviamos el mensaje
+	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
+	if(socket>0){
+	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
+	{
+		perror(" FALLO EL SEND DEL APPEARED \n");
+	}
+
+	//esperamos respuesta del broker
+	int id_mensaje,s;
+	s = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
+	if(s<0){
+		//log_info(logger,"Fallo el envio del localized al Broker");
+	}
+}
+
+void enviarCaught(int id_correlativo, bool loAtrapo){
+	int cod_op = CAUGHT_POKEMON;
+
+	int offset = 0;
+
+	void* stream = malloc( sizeof(uint32_t)*3);
+
+	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &id_correlativo, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &loAtrapo, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	//enviamos el mensaje
+	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
+	if(socket>0){
+	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
+	{
+		perror(" FALLO EL SEND DEL CAUGHT \n");
+	}
+
+	//esperamos respuesta del broker
+	int id_mensaje,s;
+	s = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
+	if(s<0){
+		//log_info(logger,"Fallo el envio del localized al Broker");
+	}
+
+}
+
+void enviarLocalizeVacio(t_File* archivo, int id_correlativo){
+	int cod_op = LOCALIZED_POKEMON;
+	int len = strlen(archivo->nombre) + 1;
+
+	int offset = 0;
+
+	void* stream = malloc( sizeof(uint32_t)*3 + len + 2*archivo->posiciones->elements_count*sizeof(uint32_t));
+
+	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &id_correlativo, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &len, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, archivo->nombre, len);
+	offset += len;
+
+	memcpy(stream + offset, 0, sizeof(uint32_t) );
+	offset += sizeof(uint32_t);
+
+	//enviamos el mensaje
+	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
+	if(socket>0){
+	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
+	{
+		perror(" FALLO EL SEND DEL LOCALIZED \n");
+	}
+
+	//esperamos respuesta del broker
+	int id_mensaje,s;
+	s = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
+	if(s<0){
+		//log_info(logger,"Fallo el envio del localized al Broker");
+	}
+}
+
+void enviarLocalized(t_File* archivo, int id_correlativo){
+	int cod_op = LOCALIZED_POKEMON;
+	int len = strlen(archivo->nombre) + 1;
+
+	int offset = 0;
+
+	void* stream = malloc( sizeof(uint32_t) + len + 2*archivo->posiciones->elements_count*sizeof(uint32_t));
+
+	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &id_correlativo, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &len, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, archivo->nombre, len);
+	offset += len;
+
+	memcpy(stream + offset, &(archivo->posiciones->elements_count), sizeof(uint32_t) );
+	offset += sizeof(uint32_t);
+
+	for(int i=0;i<archivo->posiciones->elements_count;i++){
+		memcpy(stream + offset, &(((t_posiciones*)list_get(archivo->posiciones,i))->posx), sizeof(uint32_t) );
+		offset += sizeof(uint32_t);
+		memcpy(stream + offset, &(((t_posiciones*)list_get(archivo->posiciones,i))->posy), sizeof(uint32_t) );
+		offset += sizeof(uint32_t);
+	}
+
+	//enviamos el mensaje
+	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
+	if(socket>0){
+	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
+	{
+		perror(" FALLO EL SEND DEL LOCALIZED \n");
+	}
+
+	//esperamos respuesta del broker
+	int id_mensaje,s;
+	s = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
+	if(s<0){
+		//log_info(logger,"Fallo el envio del localized al Broker");
+	}
 
 }
 
