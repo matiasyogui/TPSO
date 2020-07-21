@@ -135,19 +135,27 @@ t_File * leer_file(char * dir, char * file){
 
 	list_add_in_index(retFile->blocks,index, atoi(split[index]));
 
-	t_list * list_pos;
+	 auxFile = malloc(strlen(dir)+3+strlen(BLOCKSDIR));
 
-	 auxFile = malloc(strlen(dir)+3+strlen(BLOCKS));
-
-	strcpy(auxFile, dir);
+	strcpy(auxFile, PUNTO_MONTAJE_TALLGRASS);
 
 	strcat(auxFile, "/");
-	strcat(auxFile,BLOCKS);
+	strcat(auxFile,BLOCKSDIR);
 	strcat(auxFile,"/");
 
+	char*auxNameBlockFile = malloc(100);
+
+	retFile->posiciones = list_create();
+	t_list * list_pos_aux;
+
 	for(int i = 0; i < list_size(retFile->blocks); i++){
-		list_pos = leer_archivo_bloque(auxFile, char*nombreArchivo);
+
+		sprintf(auxNameBlockFile,"%d.bin", list_get(retFile->blocks, i));
+		list_pos_aux = leer_archivo_bloque(auxFile, auxNameBlockFile);
+	    list_add_all(retFile->posiciones, list_pos_aux);
+
 	}
+
 	return retFile;
 }
 
