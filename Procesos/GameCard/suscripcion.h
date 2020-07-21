@@ -20,7 +20,7 @@ typedef struct{
 	char* pokemon;
 }t_getPokemon;
 
-
+void iniciar_servidor(void);
 
 void iniciar_suscripciones(int cola0, int cola1, int cola2);
 void finalizar_suscripciones(void);
