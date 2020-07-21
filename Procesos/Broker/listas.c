@@ -310,6 +310,7 @@ static void _eliminar_nodo_por_id(t_list* lista, int id, int(*funcion_obtener_id
 	bool _busqueda_por_id(void*elemento){
 		return funcion_obtener_id(elemento) == id;
 	}
+
 	list_remove_and_destroy_by_condition(lista, _busqueda_por_id, element_destroy);
 }
 
@@ -435,7 +436,7 @@ static void imprimir_mensaje(t_mensaje* mensaje){
 
 	printf("    | Id mensaje = %d, size_mensaje = %d, estado_mensaje = %s, Subs que envie mensaje = %d \n",
 			mensaje->id,
-			mensaje->mensaje->size,
+			mensaje->size_mensaje,
 			estado_mensaje_toString(mensaje->estado),
 			mensaje->notificiones_envio->elements_count);
 }

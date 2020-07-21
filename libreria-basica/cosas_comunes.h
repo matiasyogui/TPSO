@@ -68,6 +68,9 @@ int codigo_operacion(char* tipo_mensaje);
 //APARTIR DE UN COD_OP TE DEVUELVE EL STRING DEL TIPO DE MENSAJE
 char* cod_opToString(int cod_op);
 
+//APARTIR DE UN FLAG DEVULVE EL VALOR EN INT OK = 0, FAIL = 1
+int flag_to_int(char* flag);
+
 //ME DEVUELVE UN STRING PARA USARLO EN UN CONFIG
 char* obtener_key(char* dato, char* proceso);
 

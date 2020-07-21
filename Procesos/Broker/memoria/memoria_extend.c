@@ -3,7 +3,6 @@
 #include "buddy_system.h"
 #include "particiones.h"
 
-
 void obtener_datos()
 {
 	TAMANO_MEMORIA = config_get_int_value(CONFIG, "TAMANO_MEMORIA");
@@ -18,14 +17,16 @@ void obtener_datos()
 
 //=============================================================================
 
-
-void* buscar_espacio_libre_en_memoria(int size)
+//void* buscar_espacio_libre_en_memoria(int size)
+void* buscar_espacio_libre_en_memoria(int size, int id_mensaje, int cod_op)
 {
+
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
-		return pedir_memoria_particiones(size);
+		return pedir_memoria_particiones(size, id_mensaje, cod_op);
 
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "BS"))
-		return 	pedir_memoria_buddy(size);
+		//return 	pedir_memoria_buddy(size);
+		return 	pedir_memoria_buddy(size, id_mensaje, cod_op);
 
 	printf("No se reconocio el algoritmo memoria \nfijarse pedir_memoria() linea 40  \n");
 	return NULL;
@@ -37,6 +38,9 @@ void* buscar_espacio_libre_en_memoria(int size)
 
 void consolidar()
 {
+
+	pthread_mutex_lock(&MUTEX_PARTICIONES);
+
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
 		consolidar_particiones();
 
@@ -45,6 +49,8 @@ void consolidar()
 
 	if((!string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES")) && (!string_equals_ignore_case(ALGORITMO_MEMORIA, "BS")))
 		printf("No se reconocio el algoritmo_memoria fijarse consolidar()  \n");
+
+	pthread_mutex_unlock(&MUTEX_PARTICIONES);
 }
 
 
@@ -53,6 +59,15 @@ void consolidar()
 
 void liberar(t_particion* particion, int posicion)
 {
+
+	estado_mensaje_eliminado(particion->id_mensaje, particion->cola_pertenece);
+
+	pthread_mutex_lock(&MUTEX_LOG);
+
+	log_info(LOGGER, "Se elimino una particion, inicio = %p", particion->inicio_particion);
+
+	pthread_mutex_unlock(&MUTEX_LOG);
+
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
 		list_remove_and_destroy_element(particiones, posicion, free);
 

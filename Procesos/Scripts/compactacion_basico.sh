@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd ../Gameboy/Debug
+cd ../GameBoy/Debug
 
 
 ./gameboy BROKER CAUGHT_POKEMON 1 1

@@ -1,6 +1,6 @@
 #include "envio_recepcion.h"
 
-static void* recibir_mensaje(int socket_cliente);
+//static void* recibir_mensaje(int socket_cliente);
 static void* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo);
 
 static int enviar_confirmacion(int socket, int mensaje);
@@ -94,7 +94,7 @@ int tratar_reconexion(int socket){
 	return EXIT_SUCCESS;
 }
 
-
+/*
 static void* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
 
 	int s, id_correlativo;
@@ -116,6 +116,72 @@ static void* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
 	return n_mensaje;
 }
 
+static void* recibir_mensaje(int cliente_fd){
+
+	int s;
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+
+	s = recv(cliente_fd, &(buffer->size), sizeof(uint32_t), 0);
+	if (s <= 0) { free(buffer); perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
+
+	//aqui debemos pedir la memoria para guardar el mensaje;
+	buffer->stream = pedir_memoria(buffer->size);
+	//buffer->stream = malloc(buffer->size); // puntero -> posicion_tu_bloque_memoria;
+
+	s = recv(cliente_fd, buffer->stream, buffer->size, 0);
+	if (s <= 0) { free(buffer); free(buffer->stream); perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
+
+	return buffer;
+}
+*/
+
+
+//=========================
+//PRUEBAS
+
+
+static void* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
+
+	int s, id_correlativo, size_mensaje;
+
+	if (EsCorrelativo) {
+
+		s = recv(socket, &id_correlativo, sizeof(uint32_t), 0);
+		if (s < 0) { perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
+
+	} else id_correlativo = -1;
+
+	t_mensaje* n_mensaje = crear_nodo_mensaje(cod_op, id_correlativo, NULL);
+
+	s = recv(socket, &size_mensaje, sizeof(uint32_t), 0);
+	if (s < 0) { perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
+
+	//
+	n_mensaje-> size_mensaje = size_mensaje;
+
+	t_particion* particion = pedir_memoria(size_mensaje, n_mensaje->id, n_mensaje->cod_op);//pedir_memoria(size_mensaje);
+
+	pthread_mutex_lock(&MUTEX_PARTICIONES);
+
+	s = recv(socket, particion->inicio_particion, size_mensaje, 0);
+	if (s < 0) { perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
+
+	pthread_mutex_unlock(&MUTEX_PARTICIONES);
+
+	pthread_mutex_lock(&MUTEX_LOG);
+
+	log_info(LOGGER, "Se guardo un mensaje del tipo %s en la posicion de memoria %p", cod_opToString(cod_op), particion->inicio_particion);
+
+	pthread_mutex_unlock(&MUTEX_LOG);
+	//
+
+	//printf("Cod_op = %d, Id_correlativo = %d, Mensaje_size = %d\n", n_mensaje->cod_op, n_mensaje->id_correlativo, n_mensaje->mensaje->size);
+
+	return n_mensaje;
+}
+
+///====================================================
+
 
 static int enviar_confirmacion(int socket, int mensaje){
 
@@ -130,26 +196,6 @@ static int enviar_confirmacion(int socket, int mensaje){
 	free(mensaje_enviar);
 
 	return EXIT_SUCCESS;
-}
-
-
-
-static void* recibir_mensaje(int cliente_fd){
-
-	int s;
-	t_buffer* buffer = malloc(sizeof(t_buffer));
-
-	s = recv(cliente_fd, &(buffer->size), sizeof(uint32_t), 0);
-	if (s <= 0) { free(buffer); perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
-
-	//aqui debemos pedir la memoria para guardar el mensaje;
-	buffer->stream = pedir_memoria(buffer->size);
-	//buffer->stream = malloc(buffer->size); //*puntero -> posicion_tu_bloque_memoria;
-
-	s = recv(cliente_fd, buffer->stream, buffer->size, 0);
-	if (s <= 0) { free(buffer); free(buffer->stream); perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
-
-	return buffer;
 }
 
 
@@ -235,7 +281,7 @@ static void eliminar_sub_tiempo(void* _datos){
 
 	sleep(datos->tiempo);
 
-	eliminar_suscriptor_id(datos->cod_op, datos->id_suscriptor);
+	eliminar_suscriptor_id(datos->id_suscriptor, datos->cod_op);
 
 	free(datos);
 }

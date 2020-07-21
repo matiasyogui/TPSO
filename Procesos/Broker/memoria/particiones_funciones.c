@@ -21,10 +21,10 @@ t_particion* ultimo_nodo_particion(){
 void* busqueda_particion_libre(int size, int* numero_particion)
 {
 	if(string_equals_ignore_case(ALGORITMO_PARTICION_LIBRE, "FF"))
-		return (algoritmo_primer_ajuste(size, numero_particion));
+		return algoritmo_primer_ajuste(size, numero_particion);
 
 	if(string_equals_ignore_case(ALGORITMO_PARTICION_LIBRE, "BF"))
-		return (algoritmo_mejor_ajuste(size, numero_particion));
+		return algoritmo_mejor_ajuste(size, numero_particion);
 
 	printf("\nNo se reconocio el ALGORITMO DE PARTICION LIBRE %s  busqueda_particion_libre() \n", ALGORITMO_PARTICION_LIBRE);
 	return NULL;
@@ -80,12 +80,15 @@ void* algoritmo_mejor_ajuste(int size, int* numero_particion)
 
 //=======================================================================================
 
-
-void creamos_nueva_particion(void* inicio_particion, int longitud, int numero_particion)
+//void* creamos_nueva_particion(void* inicio_particion, int longitud, int numero_particion)
+void* creamos_nueva_particion(void* inicio_particion, int longitud, int numero_particion, int size, int id_mensaje, int cod_op)
 {
-	t_particion* particion = crear_nodo_particion(inicio_particion, longitud, fifo);
+	//t_particion* particion = crear_nodo_particion(inicio_particion, longitud, fifo);
+	t_particion* particion = crear_nodo_particion(inicio_particion, longitud, fifo, size, id_mensaje, cod_op);
 
 	list_add_in_index(particiones, numero_particion, particion);
+
+	return particion;
 }
 
 
@@ -101,11 +104,15 @@ t_particion* crear_nodo_particular(int longitud){
 	particion->libre = false;
 	particion->fifo = -1;
 
+	//cosas que agrege
+	particion->id_mensaje = -1;
+	particion->cola_pertenece = -1;
+
 	return particion;
 }
 
-
-t_particion* crear_nodo_particion(void* inicio, int longitud, int valor_fifo){
+//t_particion* crear_nodo_particion(void* inicio, int longitud, int valor_fifo)
+t_particion* crear_nodo_particion(void* inicio, int longitud, int valor_fifo, int size, int id_mensaje, int cod_op){
 
 	t_particion* particion = malloc(sizeof(t_particion));
 	particion->inicio_particion = inicio;
@@ -113,6 +120,11 @@ t_particion* crear_nodo_particion(void* inicio, int longitud, int valor_fifo){
 
 	particion->libre = false;
 	particion->fifo = valor_fifo;
+
+	particion->id_mensaje = id_mensaje;
+	particion->cola_pertenece = cod_op;
+	particion->size_mensaje = size;
+	particion->ultimo_acceso = clock();
 
 	return particion;
 }
