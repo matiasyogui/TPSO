@@ -17,9 +17,12 @@ typedef struct{
 
 	int id_mensaje;
 	int cola_pertenece;
-	time_t ultimo_acceso;
+	int size_mensaje;
+	clock_t ultimo_acceso;
 
 } t_particion;
+
+pthread_mutex_t MUTEX_PARTICIONES;
 
 
 //------------  VARIABLES  --------------------------------
@@ -48,7 +51,8 @@ void iniciar_memoria();
 name: pedir_memoria
 desc: dado un tamnio te devuelve una particion de memoria en donde puedes guardar ese datos. semejante al malloc
 */
-void* pedir_memoria(int size);
+//void* pedir_memoria(int size);
+void* pedir_memoria(int size, int id_mensaje, int cod_op);
 /*
 name: eliminar_particion
 desc: elimina una particion por fifo o lru
@@ -64,6 +68,11 @@ name: compactar
 desc: comprime la memoria
 */
 void compactar();
+
+//buscar una particion
+void* buscar_particion(int id_mensaje);
+
+void finalizar_memoria();
 
 
 #endif /* MEMORIA_MEMORIA_H_ */

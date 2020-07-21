@@ -103,8 +103,8 @@ t_datos* crear_nodo_datos(int cod_op, int id_suscriptor, int tiempo_suscripcion)
 void borrar_nodo_mensaje(void* nodo_mensaje){
 
 	t_mensaje* aux = nodo_mensaje;
-	free(aux->mensaje->stream);
-	free(aux->mensaje);
+	//free(aux->mensaje->stream);
+	//free(aux->mensaje);
 	list_destroy_and_destroy_elements(aux->notificiones_envio, free);
 	free(aux);
 }
@@ -113,7 +113,7 @@ void borrar_nodo_mensaje(void* nodo_mensaje){
 void borrar_nodo_suscriptor(void* suscriptor){
 
 	t_suscriptor* aux = suscriptor;
-	//close(aux->socket);
+	close(aux->socket);
 	free(aux);
 }
 
@@ -182,6 +182,7 @@ void logear_mensaje(char* mensaje){
 }
 
 
+/*
 void* serializar_nodo_mensaje(t_mensaje* mensaje_enviar, int* size){
 
 	void* stream = malloc(3 * sizeof(uint32_t) + mensaje_enviar->mensaje->size);
@@ -201,6 +202,45 @@ void* serializar_nodo_mensaje(t_mensaje* mensaje_enviar, int* size){
 
 	memcpy(stream + offset, mensaje_enviar->mensaje->stream, mensaje_enviar->mensaje->size);
 	offset += mensaje_enviar->mensaje->size;
+
+	*size = offset;
+	return stream;
+}*/
+
+void* serializar_nodo_mensaje(t_mensaje* mensaje_enviar, int* size){
+
+	void* stream = malloc(3 * sizeof(uint32_t) + mensaje_enviar->size_mensaje);
+	int offset = 0;
+
+	memcpy(stream + offset, &(mensaje_enviar->cod_op), sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	if (mensaje_enviar -> id_correlativo != -1)
+		memcpy(stream + offset, &(mensaje_enviar->id_correlativo), sizeof(uint32_t));
+	else
+		memcpy(stream + offset, &(mensaje_enviar->id), sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+
+	pthread_mutex_lock(&MUTEX_PARTICIONES);
+
+	t_particion* particion = buscar_particion(mensaje_enviar->id);
+
+	if (particion != NULL) {
+
+		memcpy(stream + offset, &(particion->size_mensaje), sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		memcpy(stream + offset, particion->inicio_particion, particion->size_mensaje);
+		offset += particion->size_mensaje;
+
+	} else {
+
+		free(stream);
+		stream = NULL;
+	}
+
+	pthread_mutex_unlock(&MUTEX_PARTICIONES);
 
 	*size = offset;
 	return stream;

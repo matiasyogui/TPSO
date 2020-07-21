@@ -35,7 +35,7 @@ static void finalizar_programa(void){
 
 	finalizar_listas();
 
-	//finalizar_memoria();
+	finalizar_memoria();
 
 	finalizar_variables_globales();
 

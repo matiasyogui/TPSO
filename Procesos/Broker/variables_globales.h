@@ -8,6 +8,8 @@
 #include <commons/collections/list.h>
 #include <commons/collections/queue.h>
 
+#include "memoria/memoria.h"
+
 
 typedef enum{
 
@@ -40,9 +42,10 @@ typedef struct{
 	uint32_t cod_op;
 	uint32_t id;
 	int id_correlativo;
-	t_buffer* mensaje;
+	t_buffer* mensaje; // esto deberia quitarlo
 	t_list* notificiones_envio;
 	estado_mensaje estado;
+	int size_mensaje;
 
 }t_mensaje;
 
