@@ -10,7 +10,7 @@ int main(){
 
 	leer_archivo_configuracion();
 
-	//montar_TallGrass();
+	montar_TallGrass();
 
 	iniciar_suscripciones(NEW_POKEMON, CATCH_POKEMON, GET_POKEMON);
 

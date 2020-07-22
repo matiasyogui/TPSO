@@ -17,6 +17,7 @@ void* pasajeBlockAReady(){
 		void* stream;
 		void* streamUltimoMensaje;
 		void* pokemon;
+		char* pokemonAux;
 
 		switch(mensaje->cod_op){
 
@@ -44,6 +45,11 @@ void* pasajeBlockAReady(){
 			pokemon = malloc(size);
 			memcpy(pokemon, stream + offset, size);
 			offset += size;
+
+			pokemonAux = (char*) pokemon;
+			realloc(pokemonAux,size+1);
+			pokemonAux[size] = '\0';
+			pokemon = (void*) pokemonAux;
 
 			int posx;
 			memcpy(&posx, stream + offset, sizeof(int));
@@ -131,6 +137,10 @@ void* pasajeBlockAReady(){
 			memcpy(pokemon, streamUltimoMensaje + offset, size);
 			offset += size;
 
+			pokemonAux = (char*) pokemon;
+			realloc(pokemonAux,size+1);
+			pokemonAux[size] = '\0';
+			pokemon = (void*) pokemonAux;
 
 			if(loAtrapo){
 				list_add(ent->pokemones,(char*) pokemon);
@@ -459,8 +469,8 @@ return NULL;
 void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 
 	int cod_op = CATCH_POKEMON;
-	char* pokemon = (char*) elemento;
-	int len = strlen(pokemon) + 1;
+	char* pokemon = string_substring_until((char*) elemento,strlen((char*) elemento));
+	int len = strlen(pokemon);
 	int tamBloque = len + (3*sizeof(int));
 
 	int offset = 0;
@@ -564,6 +574,7 @@ return false;
 void ejecutarMensaje(void* entAux){
 	t_entrenador* ent = (t_entrenador*) entAux;
 	t_entrenador* entAux1;
+	char* pokemonAux;
 
 	while(list_size(listaExit) != cant_elementos(POSICIONES_ENTRENADORES)){
 		pthread_mutex_lock(&(ent->semaforo));
@@ -582,6 +593,11 @@ void ejecutarMensaje(void* entAux){
 			void* pokemon = malloc(size);
 			memcpy(pokemon, stream + offset, size);
 			offset += size;
+
+			pokemonAux = (char*) pokemon;
+			realloc(pokemonAux,size+1);
+			pokemonAux[size] = '\0';
+			pokemon = (void*) pokemonAux;
 
 			int posx;
 			memcpy(&posx, stream + offset, sizeof(int));
@@ -949,6 +965,7 @@ void agregarMensajeLista(int socket, int cod_op){
 
 	int id_correlativo, size;
 	void* mensaje;
+	char* pokemonAux;
 
 	recv(socket, &id_correlativo, sizeof(uint32_t), 0);
 	recv(socket, &size, sizeof(uint32_t), 0);
@@ -986,6 +1003,11 @@ void agregarMensajeLista(int socket, int cod_op){
 			void* pokemon = malloc(size);
 			memcpy(pokemon, stream + offset, size);
 			offset += size;
+
+			pokemonAux = (char*) pokemon;
+			realloc(pokemonAux,size+1);
+			pokemonAux[size] = '\0';
+			pokemon = (void*) pokemonAux;
 
 			int cantidad;
 			memcpy(&cantidad, stream + offset, sizeof(int));
@@ -1070,7 +1092,7 @@ void enviarGet(void* elemento){
 
 	int cod_op = GET_POKEMON;
 	char* pokemon = (char*) elemento;
-	int len = strlen(pokemon) + 1;
+	int len = strlen(pokemon);
 
 	int offset = 0;
 
