@@ -37,4 +37,8 @@ void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux);
 void buscarEntrenadoresDL(t_entrenador* entAux);
 void calcularCantidadDeadlocks();
 
+int enviar_confirmacion(int socket, bool estado);
+void* stream_reconexion(int cola_suscrito, int id_suscriptor, uint32_t* size);
+t_paquete* mensaje_reconexion(int cod_op, int cola_suscrito, int id_suscriptor);
+
 #endif /* PLANIFICACION_H_ */

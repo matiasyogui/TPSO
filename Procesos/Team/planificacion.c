@@ -251,6 +251,7 @@ bool hayEntrenadoresDisponiblesBlocked(){
 	return hayAlguno;
 }
 
+
 void destruirEntrenador(void* elemento){
 	entBusquedaCircular* ent= (entBusquedaCircular*) elemento;
 	free(ent);
@@ -262,7 +263,7 @@ void calcularCantidadDeadlocks(){
 	void* transformarListaIdsDL (void* elemento){
 		t_entrenador* ent = (t_entrenador*) elemento;
 		entBusquedaCircular* entAux = malloc(sizeof(entBusquedaCircular));
-		list_destroy(entAux-> listaIdsDL);
+		//list_destroy(entAux-> listaIdsDL);
 		entAux->id = ent->idEntrenador;
 		entAux->listaIdsDL = list_duplicate(ent->entrenadoresEstoyDeadlock);
 		return (void*) entAux;
@@ -291,6 +292,7 @@ void calcularCantidadDeadlocks(){
 		entBusquedaCircular* entAux;
 		if(list_is_empty(ent->listaIdsDL)){
 			list_remove_and_destroy_by_condition(listaEntDLxId,_tieneId, destruirEntrenador);
+			//list_remove_by_condition(listaEntDLxId,_tieneId);
 		}else
 		{
 		while(!terminoCiclo){
@@ -983,6 +985,42 @@ void moverEntrenador(t_entrenador* ent, int posx, int posy){
 }
 }
 
+t_paquete* mensaje_reconexion(int cod_op, int cola_suscrito, int id_suscriptor){
+
+	t_paquete* paquete = malloc(sizeof(t_paquete));
+	paquete -> buffer = malloc(sizeof(t_buffer));
+	paquete -> codigo_operacion = cod_op;
+	paquete -> buffer -> stream = stream_reconexion(cola_suscrito, id_suscriptor, &(paquete -> buffer -> size));
+
+	return paquete;
+}
+
+void* stream_reconexion(int cola_suscrito, int id_suscriptor, uint32_t* size){
+
+	void* stream = malloc(2 * sizeof(uint32_t));
+
+	int offset = 0;
+
+	memcpy(stream, &id_suscriptor, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream, &cola_suscrito, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	*size = offset;
+
+	return stream;
+}
+
+int enviar_confirmacion(int socket, bool estado){
+
+	int s;
+
+	s = send(socket, &estado, sizeof(bool), 0);
+	if(s < 0) return EXIT_FAILURE;
+
+	return EXIT_SUCCESS;
+}
 
 void agregarMensajeLista(int socket, int cod_op){
 
@@ -995,6 +1033,8 @@ void agregarMensajeLista(int socket, int cod_op){
 	recv(socket, &size, sizeof(uint32_t), 0);
 	mensaje = malloc(size);
 	recv(socket, mensaje, size, 0);
+
+	enviar_confirmacion(socket, true);
 
 	char* localized = string_new();
 

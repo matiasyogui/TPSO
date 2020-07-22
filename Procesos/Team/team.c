@@ -15,7 +15,7 @@ void pedir_pokemones(){
 	pokemonAPedirSinRepetidos = listaSinRepetidos(pokemonesAPedir);
 
 	for(int i = 0; i< list_size(pokemonAPedirSinRepetidos); i++){
-		printf("pokemon = %s\n", (char*)list_get(pokemonAPedirSinRepetidos, i));
+		printf("pokemon = %s\n", (char*) list_get(pokemonAPedirSinRepetidos, i));
 	}
 
 	list_iterate(pokemonAPedirSinRepetidos, enviarGet);
@@ -114,9 +114,9 @@ int suscribirse(char* cola){
 	enviar_mensaje(paquete_enviar, socket);
 
 	int cod_op, s;
-	bool confirmacion_suscripcion;
+	int id_suscripcion;
 
-	s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
+	s = recv(socket, &id_suscripcion, sizeof(uint32_t), 0);
 	while ( s <= 0) {
 		perror("RECV ERROR \n");
 		socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
@@ -131,9 +131,10 @@ int suscribirse(char* cola){
 			}
 		}
 		enviar_mensaje(paquete_enviar, socket);
-		s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
+		s = recv(socket, &id_suscripcion, sizeof(uint32_t), 0);
 	}
-	printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", confirmacion_suscripcion);
+
+	printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", id_suscripcion);
 
 	while(list_size(listaExit) != cant_elementos(POSICIONES_ENTRENADORES)){
 		printf("espero recibir algo \n");
@@ -153,10 +154,11 @@ int suscribirse(char* cola){
 					log_info(logger, "No se pudo reconectar con el BROKER");
 				}
 			}
-			enviar_mensaje(paquete_enviar, socket);
-			s = recv(socket, &confirmacion_suscripcion, sizeof(uint32_t), 0);
+			t_paquete* paquete_reconexion = mensaje_reconexion(cod_op, codigo_operacion(cola), id_suscripcion);
+			enviar_mensaje(paquete_reconexion, socket);
+			s = recv(socket, &id_suscripcion, sizeof(uint32_t), 0);
 			}
-		printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", confirmacion_suscripcion);
+		printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", id_suscripcion);
 		s = recv(socket, &cod_op, sizeof(uint32_t), 0 );
 		}
 
@@ -197,9 +199,9 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 		return buscarPokemon(elemento, pokemon);
 	}
 
-	printf("idsaasdasdas = %d\n",msg-> id);
+	printf("id del mensaje = %d\n",msg-> id);
 
-	printf("cod_op adasdsa= %s\n", cod_opToString(msg->cod_op));
+	printf("cod_op = %s\n", cod_opToString(msg->cod_op));
 	fflush(stdout);
 	bool valor;
 	switch(msg -> cod_op){
@@ -387,7 +389,7 @@ int main(){
 
 	printf("termino el main\n");
 
-	free(hiloSuscriptor);
+	//free(hiloSuscriptor);
 
 	terminarEjecucionTeam();
 
@@ -397,7 +399,7 @@ int main(){
 
 void leer_archivo_configuracion(){
 
-	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team2.config");
+	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team1.config");
 
 
 	LOG_FILE= config_get_string_value(config,"LOG_FILE");

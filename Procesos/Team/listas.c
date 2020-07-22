@@ -57,7 +57,7 @@ t_list* listaSinRepetidos(t_list* lista){
 
 	t_list* listaSinRepetidos = list_filter(lista, _buscarElemento);
 
-	list_destroy_and_destroy_elements(list_aux,free);
+	list_destroy(list_aux);
 	return listaSinRepetidos;
 }
 
