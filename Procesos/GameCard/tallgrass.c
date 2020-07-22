@@ -143,7 +143,6 @@ t_File * open_file(char * nombre){
 
 	strcpy(auxFile, PUNTO_MONTAJE_TALLGRASS);
 
-	strcat(auxFile, "/");
 	strcat(auxFile,BLOCKSDIR);
 	strcat(auxFile,"/");
 
