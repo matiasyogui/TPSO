@@ -19,6 +19,8 @@ void* pasajeBlockAReady(){
 		void* pokemon;
 		char* pokemonAux;
 
+		char* ptr;
+
 		switch(mensaje->cod_op){
 
 		bool _buscarPokemon(void* elemento){
@@ -47,7 +49,11 @@ void* pasajeBlockAReady(){
 			offset += size;
 
 			pokemonAux = (char*) pokemon;
-			realloc(pokemonAux,size+1);
+			ptr = realloc(pokemonAux,size+1);
+			if(ptr == NULL){
+				printf("mal realloc.");
+			}
+			pokemonAux = ptr;
 			pokemonAux[size] = '\0';
 			pokemon = (void*) pokemonAux;
 
@@ -138,7 +144,11 @@ void* pasajeBlockAReady(){
 			offset += size;
 
 			pokemonAux = (char*) pokemon;
-			realloc(pokemonAux,size+1);
+			ptr = realloc(pokemonAux,size+1);
+			if(ptr == NULL){
+				printf("mal realloc.");
+			}
+			pokemonAux = ptr;
 			pokemonAux[size] = '\0';
 			pokemon = (void*) pokemonAux;
 
@@ -323,7 +333,6 @@ void buscarEntrenadoresDL(t_entrenador* ent){
 					ent = algortimoCercano((void*) ent, entAux -> posicion -> posx, entAux -> posicion -> posy);
 					printf("nueva cercania %d\n", ent-> cercania);
 
-					int size;
 					t_mensajeTeam* nuevoMensaje = malloc(sizeof(t_mensajeTeam));
 					nuevoMensaje->cod_op = DEADLOCK;
 
@@ -332,7 +341,7 @@ void buscarEntrenadoresDL(t_entrenador* ent){
 					printf("cod_op %d\n", ent -> mensaje -> cod_op);
 					fflush(stdout);
 
-					list_add(ent-> entrenadoresEstoyDeadlock, entAux->idEntrenador);
+					list_add(ent-> entrenadoresEstoyDeadlock, (void*) entAux->idEntrenador);
 					encontro = true;
 				}else{
 					k++;
@@ -347,8 +356,8 @@ void buscarEntrenadoresDL(t_entrenador* ent){
 
 void* stream_deadlock(int* datos[], int *size){
 
-	uint32_t posx = datos[0];
-	uint32_t posy = datos[1];
+	uint32_t posx = (int) datos[0];
+	uint32_t posy = (int) datos[1];
 
 	*size = sizeof(2 * sizeof(int));
 	void* stream = malloc(*size);
@@ -418,6 +427,8 @@ bool tienenLosMismosElementos(t_list* lista1, t_list* lista2){
 		}
 		i++;
 	}
+
+	list_destroy(listaAux);
 	return encontro;
 }
 
@@ -512,7 +523,7 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 	log_info(logger, "Enviamos Catch y recibimos confirmación por parte del BROKER del pokemon %s en la posicion X = %d | Y = %d.", pokemon, posx, posy);
 
 	pthread_mutex_lock(&mIdsCorrelativos);
-	list_add(lista_id_correlativos, id_mensaje);
+	list_add(lista_id_correlativos, (void*) id_mensaje);
 	pthread_mutex_unlock(&mIdsCorrelativos);
 
 	ent ->idCorrelativo = id_mensaje;
@@ -575,6 +586,7 @@ void ejecutarMensaje(void* entAux){
 	t_entrenador* ent = (t_entrenador*) entAux;
 	t_entrenador* entAux1;
 	char* pokemonAux;
+	char* ptr;
 
 	while(list_size(listaExit) != cant_elementos(POSICIONES_ENTRENADORES)){
 		pthread_mutex_lock(&(ent->semaforo));
@@ -595,7 +607,11 @@ void ejecutarMensaje(void* entAux){
 			offset += size;
 
 			pokemonAux = (char*) pokemon;
-			realloc(pokemonAux,size+1);
+			ptr = realloc(pokemonAux,size+1);
+			if(ptr == NULL){
+				printf("mal realloc.");
+			}
+			pokemonAux = ptr;
 			pokemonAux[size] = '\0';
 			pokemon = (void*) pokemonAux;
 
@@ -727,9 +743,9 @@ void realizarIntercambio(t_entrenador* ent, t_entrenador* entAux){
 			k=0;
 
 				while(k<(list_size(entAux -> pokemonesAtrapadosDeadlock)) && !encontro){
-					printf("comparando pokemon que me falta %s con %s\n", list_get(ent -> pokemonesFaltantesDeadlock, i), list_get(entAux -> pokemonesAtrapadosDeadlock, k));
+					printf("comparando pokemon que me falta %s con %s\n", (char*) list_get(ent -> pokemonesFaltantesDeadlock, i), (char*) list_get(entAux -> pokemonesAtrapadosDeadlock, k));
 					if(string_equals_ignore_case(list_get(ent -> pokemonesFaltantesDeadlock, i), list_get(entAux -> pokemonesAtrapadosDeadlock, k))){
-						printf("Intercambio pokemon %s del entrenador %d con el pokemon %s del entrenador %d \n\n",list_get(ent -> pokemonesAtrapadosDeadlock,0 ),ent->idEntrenador,list_get(entAux -> pokemonesAtrapadosDeadlock, k),entAux->idEntrenador);
+						printf("Intercambio pokemon %s del entrenador %d con el pokemon %s del entrenador %d \n\n", (char*) list_get(ent -> pokemonesAtrapadosDeadlock,0 ),ent->idEntrenador, (char*) list_get(entAux -> pokemonesAtrapadosDeadlock, k),entAux->idEntrenador);
 						//agregamos a nuestra lista de pokemones, el sobrante de aux que nos interesa
 						list_add(ent->pokemones,list_get(entAux->pokemonesAtrapadosDeadlock,k));
 						//removiendo de nuestra lista de faltantes el pokemon que acabamos de intercambiar
@@ -966,6 +982,7 @@ void agregarMensajeLista(int socket, int cod_op){
 	int id_correlativo, size;
 	void* mensaje;
 	char* pokemonAux;
+	char* ptr;
 
 	recv(socket, &id_correlativo, sizeof(uint32_t), 0);
 	recv(socket, &size, sizeof(uint32_t), 0);
@@ -1005,7 +1022,11 @@ void agregarMensajeLista(int socket, int cod_op){
 			offset += size;
 
 			pokemonAux = (char*) pokemon;
-			realloc(pokemonAux,size+1);
+			ptr = realloc(pokemonAux,size+1);
+			if(ptr == NULL){
+				printf("mal realloc.");
+			}
+			pokemonAux = ptr;
 			pokemonAux[size] = '\0';
 			pokemon = (void*) pokemonAux;
 
@@ -1031,7 +1052,7 @@ void agregarMensajeLista(int socket, int cod_op){
 
 				nuevoMensajeAGuardar -> cod_op = APPEARED_POKEMON;
 
-				char* stream[3] = {pokemon, posx, posy};
+				char* stream[3] = {pokemon, (void*) posx, (void*) posy};
 
 				nuevoMensajeAGuardar -> buffer -> stream = stream_appeared_pokemon(stream, &size);
 
@@ -1109,7 +1130,7 @@ void enviarGet(void* elemento){
 
 
 	//enviamos el mensaje
-	int socket = crear_conexion(IP_BROKER, (int) PUERTO_BROKER);
+	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
 		perror(" FALLO EL SEND DEL GET \n");
 
@@ -1119,7 +1140,7 @@ void enviarGet(void* elemento){
 	s = recv(socket, &id_mensaje, sizeof(uint32_t), 0);
 	if(s>=0){
 		printf("[CONFIRMACION DE RECEPCION DE MENSAJE] mi id del mensaje = %d \n", id_mensaje);
-		list_add(lista_id_correlativos, id_mensaje);
+		list_add(lista_id_correlativos, (void*) id_mensaje);
 	}else{
 		log_info(logger, "Fallo conexión con el BROKER se procedera a realizar la funcion DEFAULT del Get.");
 	}

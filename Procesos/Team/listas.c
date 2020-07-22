@@ -61,6 +61,17 @@ t_list* listaSinRepetidos(t_list* lista){
 void liberarEntrenadores(void* elemento){
 	t_entrenador* entrenadorALiberar = (t_entrenador*) elemento;
 
+	list_destroy_and_destroy_elements(entrenadorALiberar -> pokemonesAtrapadosDeadlock, free);
+	list_destroy_and_destroy_elements(entrenadorALiberar -> pokemonesFaltantesDeadlock, free);
+	list_destroy_and_destroy_elements(entrenadorALiberar -> objetivo, free);
+	list_destroy_and_destroy_elements(entrenadorALiberar -> pokemones, free);
+
+	free(entrenadorALiberar -> ultimoMensajeEnviado -> buffer -> stream);
+	free(entrenadorALiberar -> ultimoMensajeEnviado -> buffer);
+	free(entrenadorALiberar -> ultimoMensajeEnviado);
+
+	free(entrenadorALiberar -> mensaje);
+
 	free(entrenadorALiberar -> posicion);
 	free(entrenadorALiberar);
 }
@@ -73,10 +84,14 @@ void liberarMensajes(void* elemento){
 	free(mensajeALiberar);
 }
 
-void eliminar_listas(){ //HAY QUE VERLO
+void eliminar_listas(){
 	list_destroy(listaReady);
 	list_destroy(listaBlocked);
 	list_destroy(listaExecute);
+
+	list_destroy_and_destroy_elements(pokemonesAPedir, free);
+	list_destroy_and_destroy_elements(pokemonAPedirSinRepetidos, free);
+
 	list_destroy_and_destroy_elements(listaExit, liberarEntrenadores);
 
 	list_destroy_and_destroy_elements(lista_mensajes, liberarMensajes);

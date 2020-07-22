@@ -2,6 +2,7 @@
 #include "utils_team.h"
 #include "team.h"
 #include "listas.h"
+#include "serializar_mensajes.h"
 #include <math.h>
 #ifndef PLANIFICACION_H_
 #define PLANIFICACION_H_
@@ -9,7 +10,7 @@
 
 typedef enum{
 	DEADLOCK = 99
-};
+}DL;
 
 typedef struct{
 	int id;

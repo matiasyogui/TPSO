@@ -184,6 +184,7 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 	void* pokemon;
 	char* pokemonAux;
+	char* ptr;
 
 	int* posx, posy;
 	int* valorCaught;
@@ -210,7 +211,11 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			offset += size;
 
 			pokemonAux = (char*) pokemon;
-			realloc(pokemonAux,size+1);
+			ptr = realloc(pokemonAux,size+1);
+			if(ptr == NULL){
+				printf("mal realloc.");
+			}
+			pokemonAux = ptr;
 			pokemonAux[size] = '\0';
 			pokemon = (void*) pokemonAux;
 

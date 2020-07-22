@@ -19,6 +19,7 @@ t_list* pokemonesAPedir;
 t_list* pokemonAPedirSinRepetidos;
 t_list* lista_id_correlativos;
 
+bool buscarPokemon(void* elemento, void* pokemon);
 void inicializar_listas();
 void eliminar_listas();
 void element_destroyer(void* elemento);
@@ -26,6 +27,7 @@ bool buscarElemento(t_list* lista, void* elemento);
 bool buscarElemento2(t_list* lista, void* elemento);
 t_list* listaSinRepetidos(t_list* lista);
 bool igualdadListas(void* elemento);
+void eliminar_pokemon_que_coincida(void* pokemon, t_list* lista);
 
 
 
