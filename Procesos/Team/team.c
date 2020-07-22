@@ -21,6 +21,8 @@ void pedir_pokemones(){
 	for(int i = 0; i< list_size(pokemonAPedirSinRepetidos); i++){
 		printf("id = %d\n", (int)list_get(lista_id_correlativos, i));
 	}
+
+
 }
 
 t_entrenador* elegirEntrenadorXCercania(int posx, int posy){
@@ -391,7 +393,7 @@ int main(){
 
 void leer_archivo_configuracion(){
 
-	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team1.config");
+	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team2.config");
 
 
 	LOG_FILE= config_get_string_value(config,"LOG_FILE");
@@ -455,6 +457,8 @@ t_entrenador* setteoEntrenador(int i){
    	list_add(listaBlocked, entrenador);
    	log_info(logger, "Entrenador %d entra a la lista Bloqueado, por inicio del proceso", i);
 
+   	free(objetivo);
+   	free(pokemones);
 
    	return entrenador;
 }
