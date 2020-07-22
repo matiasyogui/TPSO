@@ -21,7 +21,7 @@ static void* stream_suscripcion(int cola_mensajes, int tiempo, int* size);
 static void* mensaje_reconexion(int cod_op, int cola_suscrito, int id_suscriptor, int* size);
 static void* stream_reconexion(int cola_suscrito, int id_suscriptor, int* size);
 
-t_getPokemon * recibirGetPokemon(int socket);
+t_getPokemon * recibirGetPokemon(void*);
 
 #define IP_SERVIDOR "127.0.0.3"
 #define PUERTO_SERVIDOR "5001"
@@ -341,23 +341,16 @@ static int enviar_confirmacion(int socket, bool estado){
 }
 
 
-static void procesar_mensaje(int cod_op, int id_correlatvio, void* mensaje, int size){
+static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int size){
 
-	printf("Se recibio un %s del broker, id_correlativo = %d\n", cod_opToString(cod_op), id_correlatvio);
-	/*
-	int s, cod_op, size, id_correlativo;
-	void* mensaje;
+	printf("Se recibio un %s del broker, id_correlativo = %d\n", cod_opToString(cod_op), id_correlativo);
+
 	t_getPokemon * getpok;
 	t_File * archivo;
 
 	switch(cod_op){
 		// definir las acciones que debe realizar
 		case NEW_POKEMON:
-			//----cambiar esto----
-			getpok = recibirGetPokemon(socket);
-			archivo = open_file(getpok->pokemon);
-
-			//------------------
 
 			if (archivo != NULL){
 				enviarAppeared(archivo, id_correlativo);
@@ -369,11 +362,6 @@ static void procesar_mensaje(int cod_op, int id_correlatvio, void* mensaje, int 
 			break;
 
 		case CATCH_POKEMON:
-			//----cambiar esto----
-			getpok = recibirGetPokemon(socket);
-			archivo = open_file(getpok->pokemon);
-
-			//------------------
 
 			if (archivo != NULL){
 				bool loAtrapo;
@@ -391,7 +379,7 @@ static void procesar_mensaje(int cod_op, int id_correlatvio, void* mensaje, int 
 
 		case GET_POKEMON:
 
-			getpok = recibirGetPokemon(socket);
+			getpok = recibirGetPokemon(mensaje);
 
 			archivo = open_file(getpok->pokemon);
 
@@ -408,7 +396,7 @@ static void procesar_mensaje(int cod_op, int id_correlatvio, void* mensaje, int 
 
 			break;
 
-	}*/
+	}
 }
 //=============================================================================
 
@@ -537,8 +525,9 @@ void enviarLocalized(t_File* archivo, int id_correlativo){
 		int len = strlen(archivo->nombre) + 1;
 
 		int offset = 0;
+		int sizeMalloc = sizeof(uint32_t) + len + (2*(archivo->posiciones->elements_count)*sizeof(uint32_t));
 
-		void* stream = malloc( sizeof(uint32_t) + len + 2*archivo->posiciones->elements_count*sizeof(uint32_t));
+		void* stream = malloc( sizeMalloc );
 
 		memcpy(stream + offset, &cod_op, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
@@ -602,26 +591,17 @@ t_File * existePokemon(char* pokemon){
 }*/
 
 
-t_getPokemon * recibirGetPokemon(int socket){
+t_getPokemon * recibirGetPokemon(void * mensaje){
 
 	t_getPokemon * ret = malloc(sizeof(t_getPokemon));
 
-	int size;
-	int s;
+	int size,offset,s;
 
-	s = recv(socket, &size, sizeof(uint32_t), 0);
-	if (s < 0) { perror("FALLO RECV recibirGetPokemon"); return NULL; }
-
-	s = recv(socket, &(ret->id_msg), sizeof(uint32_t), 0);
-	if (s < 0) { perror("FALLO RECV recibirGetPokemon");  return NULL; }
-
-	size -= sizeof(uint32_t);
+	memcpy(&size, mensaje, sizeof(uint32_t));
+	offset = sizeof(uint32_t);
 
 	ret->pokemon = malloc(size);
-	s = recv(socket, ret->pokemon, size, 0);
-	if (s < 0) { perror("FALLO RECV recibirGetPokemon");  return NULL; }
-
-	enviar_confirmacion(socket, true);
+	memcpy(ret->pokemon, mensaje+offset, size);
 
 	return ret;
 }
