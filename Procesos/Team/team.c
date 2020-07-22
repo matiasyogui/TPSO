@@ -183,6 +183,7 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 	}
 
 	void* pokemon;
+	char* pokemonAux;
 
 	int* posx, posy;
 	int* valorCaught;
@@ -207,6 +208,11 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			pokemon = malloc(size);
 			memcpy(pokemon, stream + offset, size);
 			offset += size;
+
+			pokemonAux = (char*) pokemon;
+			realloc(pokemonAux,size+1);
+			pokemonAux[size] = '\0';
+			pokemon = (void*) pokemonAux;
 
 			memcpy(&posx, stream + offset, sizeof(int));
 			offset += sizeof(int);
@@ -249,6 +255,10 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			memcpy(pokemon, stream + offset, size);
 			offset += size;
 
+		/*	pokemonAux = (char*) pokemon;
+			string_append(&pokemonAux,'\0');
+			pokemon = (void*) pokemonAux;
+		*/
 			memcpy(&cantidad, stream + offset, sizeof(int));
 
 			pthread_mutex_lock(&mPokemonesAPedirSinRepetidos);
@@ -376,7 +386,7 @@ int main(){
 
 void leer_archivo_configuracion(){
 
-	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team2.config");
+	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team1.config");
 
 
 	LOG_FILE= config_get_string_value(config,"LOG_FILE");
