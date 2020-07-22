@@ -387,6 +387,8 @@ int main(){
 
 	printf("termino el main\n");
 
+	free(hiloSuscriptor);
+
 	terminarEjecucionTeam();
 
 	return 0;
