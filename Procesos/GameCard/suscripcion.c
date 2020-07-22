@@ -525,7 +525,7 @@ void enviarLocalized(t_File* archivo, int id_correlativo){
 		int len = strlen(archivo->nombre) + 1;
 
 		int offset = 0;
-		int sizeMalloc = sizeof(uint32_t) + len + (2*(archivo->posiciones->elements_count)*sizeof(uint32_t));
+		int sizeMalloc = (2*sizeof(uint32_t)) + len + (2*(archivo->posiciones->elements_count)*sizeof(uint32_t));
 
 		void* stream = malloc( sizeMalloc );
 
@@ -550,6 +550,8 @@ void enviarLocalized(t_File* archivo, int id_correlativo){
 			memcpy(stream + offset, &(((t_posiciones*)list_get(archivo->posiciones,i))->posy), sizeof(uint32_t) );
 			offset += sizeof(uint32_t);
 		}
+
+
 
 		//enviamos el mensaje
 		int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
