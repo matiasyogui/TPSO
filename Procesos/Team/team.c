@@ -7,6 +7,8 @@
 pthread_mutex_t mBlockAReady;
 
 void pedir_pokemones(){
+	list_destroy(pokemonesAPedir);
+	list_destroy(pokemonAPedirSinRepetidos);
 
 	pokemonesAPedir = list_filter(objetivoGlobal, igualdadListas);
 

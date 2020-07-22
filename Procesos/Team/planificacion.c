@@ -251,19 +251,24 @@ bool hayEntrenadoresDisponiblesBlocked(){
 	return hayAlguno;
 }
 
+void destruirEntrenador(void* elemento){
+	entBusquedaCircular* ent= (entBusquedaCircular*) elemento;
+	free(ent);
+}
+
 void calcularCantidadDeadlocks(){
 	cantDL = 0;
-	t_list* listaEntDLxId = list_create();
 
 	void* transformarListaIdsDL (void* elemento){
 		t_entrenador* ent = (t_entrenador*) elemento;
 		entBusquedaCircular* entAux = malloc(sizeof(entBusquedaCircular));
+		list_destroy(entAux-> listaIdsDL);
 		entAux->id = ent->idEntrenador;
 		entAux->listaIdsDL = list_duplicate(ent->entrenadoresEstoyDeadlock);
 		return (void*) entAux;
 	}
 
-	listaEntDLxId = list_map(listaBlocked,transformarListaIdsDL);
+	t_list* listaEntDLxId = list_map(listaBlocked,transformarListaIdsDL);
 
 	for(int i=0;i<list_size(listaEntDLxId);i++){
 		((entBusquedaCircular*) list_get(listaEntDLxId,i))->cantQueAparece = 0;
@@ -285,7 +290,7 @@ void calcularCantidadDeadlocks(){
 		j = ent->id;
 		entBusquedaCircular* entAux;
 		if(list_is_empty(ent->listaIdsDL)){
-			list_remove_by_condition(listaEntDLxId,_tieneId);
+			list_remove_and_destroy_by_condition(listaEntDLxId,_tieneId, destruirEntrenador);
 		}else
 		{
 		while(!terminoCiclo){
@@ -309,6 +314,8 @@ void calcularCantidadDeadlocks(){
 		}
 	}
 	}
+
+list_destroy(listaEntDLxId);
 }
 
 void buscarEntrenadoresDL(t_entrenador* ent){
@@ -378,8 +385,7 @@ void separarPokemonesDeadlock(t_entrenador* ent ){
 	int i=0;
 	int j=0;
 	bool encontro = true;
-	t_list* listaAux = list_create();
-	listaAux = list_duplicate(ent->pokemones);
+	t_list* listaAux = list_duplicate(ent->pokemones);
 
 	while(i<(list_size(ent->objetivo))){
 		encontro = false;
@@ -402,13 +408,14 @@ void separarPokemonesDeadlock(t_entrenador* ent ){
 		i++;
 	}
 	list_add_all(ent->pokemonesAtrapadosDeadlock,listaAux);
+
+	list_destroy(listaAux);
 }
 
 bool tienenLosMismosElementos(t_list* lista1, t_list* lista2){
 	int i=0;
 	int j=0;
-	t_list* listaAux = list_create();
-	listaAux = list_duplicate(lista2);
+	t_list* listaAux = list_duplicate(lista2);
 	bool encontro = true;
 
 	while(i<(list_size(lista1)) && encontro){
