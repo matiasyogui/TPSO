@@ -297,7 +297,7 @@ void* stream_catch_pokemon(char* datos[], int *size){
 //CAUGHT_POKEMON
 void* stream_caught_pokemon(char* datos[], int *size){
 
-	uint32_t flag = atoi(datos[0]);
+	uint32_t flag = flag_to_int(datos[0]);
 
 	*size = sizeof(uint32_t);
 	void* stream = malloc(*size);

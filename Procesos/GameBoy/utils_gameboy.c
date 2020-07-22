@@ -62,7 +62,7 @@ static int modo_suscriptor(int socket){
 	void* datos;
 
 	void _manejo_error(void){
-		int error = 0;
+		//int error = 0;
 		//s = send(socket, &error, sizeof(uint32_t), MSG_NOSIGNAL);
 		//if (s < 0) exit(1);
 		exit(1);
@@ -155,9 +155,11 @@ void leer_mensaje(int cod_op, void* mensaje, int size){
 		memcpy(&len, mensaje + offset, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
 
-		pokemon = malloc(len);
+		pokemon = malloc(len + 1);
 		memcpy(pokemon, mensaje + offset, len);
 		offset += len;
+
+		pokemon[len] = '\0';
 
 		memcpy(&posx, mensaje + offset, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
@@ -179,9 +181,13 @@ void leer_mensaje(int cod_op, void* mensaje, int size){
 		memcpy(&len, mensaje + offset, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
 
-		pokemon = malloc(len);
+		pokemon = malloc(len + 1);
 		memcpy(pokemon, mensaje + offset, len);
 		offset += len;
+
+		pokemon[len] = '\0';
+
+		string_append(&pokemon, "");
 
 		memcpy(&posx, mensaje + offset, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
@@ -200,9 +206,11 @@ void leer_mensaje(int cod_op, void* mensaje, int size){
 		memcpy(&len, mensaje + offset, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
 
-		pokemon = malloc(len);
+		pokemon = malloc(len + 1);
 		memcpy(pokemon, mensaje + offset, len);
 		offset += len;
+
+		pokemon[len] = '\0';
 
 		memcpy(&posx, mensaje + offset, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
@@ -230,9 +238,11 @@ void leer_mensaje(int cod_op, void* mensaje, int size){
 		memcpy(&len, mensaje + offset, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
 
-		pokemon = malloc(len);
+		pokemon = malloc(len + 1);
 		memcpy(pokemon, mensaje + offset, len);
 		offset += len;
+
+		pokemon[len] = '\0';
 
 		printf("pokemon = %s\n", pokemon);
 
