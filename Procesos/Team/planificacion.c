@@ -23,9 +23,9 @@ void* pasajeBlockAReady(){
 
 		switch(mensaje->cod_op){
 
-		bool _buscarPokemon(void* elemento){
+		/*bool _buscarPokemon(void* elemento){
 			return buscarPokemon(elemento, pokemon);
-		}
+		}*/
 
 		case APPEARED_POKEMON:
 
