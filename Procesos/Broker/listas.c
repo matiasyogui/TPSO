@@ -32,6 +32,8 @@ static void informe_lista_subs(void);
 static void mostrar_listas(void);
 
 t_list* filtar_mensajes_restantes_suscriptor(t_list* lista_mensajes, int id_suscriptor);
+
+
 //====================================================================================================
 
 
@@ -293,10 +295,8 @@ int obtener_socket(int cod_op, int id_suscriptor){
 static void* buscar_por_id(t_list* sublista, int id, int(funcion_obtener_id)(void*)){
 
 	bool _busqueda_por_id(void* elemento){
-		printf(" %d == %d\n", funcion_obtener_id(elemento), id);
 		return funcion_obtener_id(elemento) == id;
 	}
-	printf("tamaño = %d\n", list_size(sublista));
 
 	return list_find(sublista, _busqueda_por_id);
 }
@@ -390,14 +390,11 @@ static int _cambiar_estado_mensaje(estado_mensaje nuevo_estado, int id_mensaje, 
 
 	t_list* sublista = list_get(LISTA_MENSAJES, cola_mensaje);
 
-	printf("cod_op = %s, id = %d", cod_opToString(cola_mensaje), id_mensaje);
-
 	pthread_rwlock_wrlock(&RWLOCK_SUBLISTA_MENSAJES[cola_mensaje]);
 
 	t_mensaje* mensaje = buscar_por_id(sublista, id_mensaje, _obtener_id_suscriptor);
-	printf("%p\n", mensaje);
+
 	if (mensaje != NULL) {
-		printf("cambiando estado \n");
 		mensaje->estado = nuevo_estado;
 	}
 
