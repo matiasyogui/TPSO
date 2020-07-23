@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <signal.h>
-#include "utils_gamecard.h";
+#include "utils_gamecard.h"
 
 #include "tallgrass.h"
 

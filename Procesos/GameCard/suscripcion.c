@@ -38,6 +38,9 @@ void crearArchivoPokemon(char*);
 void enviarAppeared(t_File* , int );
 void enviarCaught(int , bool);
 void enviarLocalized(t_File*, int);
+
+t_newPokemon * recibirNewPokemon(void*);
+t_catchPokemon * recibirCatchPokemon(void *);
 //t_File * existePokemon(char*);
 
 
@@ -409,7 +412,6 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 //=============================================================================
 
 
-
 void enviarAppeared(t_File* archivo, int id_correlativo){
 	int cod_op = APPEARED_POKEMON;
 	int len = strlen(archivo->nombre) + 1;
@@ -646,10 +648,10 @@ t_catchPokemon * recibirCatchPokemon(void * mensaje){
 	memcpy(ret->pokemon, mensaje+offset, size);
 	offset += size;
 
-	mempcy(ret -> posx, mensaje + offset, sizeof(uint32_t));
+	memcpy(ret -> posx, mensaje + offset, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	mempcy(ret -> posy, mensaje + offset, sizeof(uint32_t));
+	memcpy(ret -> posy, mensaje + offset, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
 
@@ -684,13 +686,13 @@ t_newPokemon * recibirNewPokemon(void * mensaje){
 	memcpy(ret->pokemon, mensaje+offset, size);
 	offset += size;
 
-	mempcy(ret -> posx, mensaje + offset, sizeof(uint32_t));
+	memcpy(ret -> posx, mensaje + offset, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	mempcy(ret -> posy, mensaje + offset, sizeof(uint32_t));
+	memcpy(ret -> posy, mensaje + offset, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	mempcy(ret -> cantidad, mensaje + offset, sizeof(uint32_t));
+	memcpy(ret -> cantidad, mensaje + offset, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
 
