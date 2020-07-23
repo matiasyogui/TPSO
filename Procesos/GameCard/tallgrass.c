@@ -6,6 +6,8 @@
  */
 
 #include "tallgrass.h"
+#include "lock.h"
+
 
 char* ultimoDirectorio(char*pathDirectorio){
 
@@ -96,6 +98,8 @@ void marcarBloqueUsado(int index){
 
 	ActualizarBitmap(PUNTO_MONTAJE_TALLGRASS,metadata, bitBloques);
 }
+
+
 
 
 t_File * open_file(char * nombre){
@@ -235,6 +239,8 @@ t_list * leer_archivo_bloque(char*directorio, char*nombreArchivo){
 
 }
 
+
+
 t_archivo * leer_archivo(char *pathTallGrass, char*directorio, char*nombreArchivo) {
 
 	  char * pathfile = malloc(strlen(pathTallGrass) + strlen(nombreArchivo)+ strlen(directorio) +1);
@@ -244,6 +250,7 @@ t_archivo * leer_archivo(char *pathTallGrass, char*directorio, char*nombreArchiv
 	  strcat(pathfile,directorio);
 	  strcat(pathfile,nombreArchivo);
 
+	  abrirArchivoSinoEspero(pathfile);
 
 	FILE* file = fopen(pathfile, "r");
 
