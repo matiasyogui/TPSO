@@ -525,8 +525,8 @@ void enviarLocalized(t_File* archivo, int id_correlativo){
 		int len = strlen(archivo->nombre) + 1;
 
 		int offset = 0;
-		int sizeMalloc = (2*sizeof(uint32_t)) + len + (2*(archivo->posiciones->elements_count)*sizeof(uint32_t));
-
+		int sizeMalloc = (4*sizeof(uint32_t)) + len + (2*(archivo->posiciones->elements_count)*sizeof(uint32_t));
+//cod_op + id + longitud del pokemon + pokemon + 2 * cantidad de pos
 		void* stream = malloc( sizeMalloc );
 
 		memcpy(stream + offset, &cod_op, sizeof(uint32_t));
@@ -596,6 +596,8 @@ t_File * existePokemon(char* pokemon){
 t_getPokemon * recibirGetPokemon(void * mensaje){
 
 	t_getPokemon * ret = malloc(sizeof(t_getPokemon));
+	char* pokemonAux;
+	char* ptr;
 
 	int size,offset,s;
 
@@ -604,6 +606,20 @@ t_getPokemon * recibirGetPokemon(void * mensaje){
 
 	ret->pokemon = malloc(size);
 	memcpy(ret->pokemon, mensaje+offset, size);
+
+
+	pokemonAux = (char*) ret->pokemon;
+	ptr = realloc(pokemonAux,size+1);
+	if(ptr == NULL){
+		printf("mal realloc.");
+	}
+	pokemonAux = ptr;
+	pokemonAux[size] = '\0';
+	ret->pokemon = (void*) pokemonAux;
+
+	string_to_upper(ret-> pokemon);
+
+
 
 	return ret;
 }
