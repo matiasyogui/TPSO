@@ -37,14 +37,13 @@ void finalizar_variables_globales(void){
 }
 
 
-t_mensaje* crear_nodo_mensaje(int cod_op, int id_correlativo, t_buffer* mensaje){
+t_mensaje* crear_nodo_mensaje(int cod_op, int id_correlativo){
 
 	t_mensaje* nodo_mensaje = malloc(sizeof( t_mensaje ));
 
 	nodo_mensaje -> cod_op = cod_op;
 	nodo_mensaje -> id = obtener_id();
 	nodo_mensaje -> id_correlativo = id_correlativo;
-	nodo_mensaje -> mensaje = mensaje;
 	nodo_mensaje -> notificiones_envio = list_create();
 	nodo_mensaje -> estado = EN_MEMORIA;
 
@@ -103,8 +102,6 @@ t_datos* crear_nodo_datos(int cod_op, int id_suscriptor, int tiempo_suscripcion)
 void borrar_nodo_mensaje(void* nodo_mensaje){
 
 	t_mensaje* aux = nodo_mensaje;
-	//free(aux->mensaje->stream);
-	//free(aux->mensaje);
 	list_destroy_and_destroy_elements(aux->notificiones_envio, free);
 	free(aux);
 }

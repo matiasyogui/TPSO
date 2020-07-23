@@ -42,7 +42,6 @@ typedef struct{
 	uint32_t cod_op;
 	uint32_t id;
 	int id_correlativo;
-	t_buffer* mensaje; // esto deberia quitarlo
 	t_list* notificiones_envio;
 	estado_mensaje estado;
 	int size_mensaje;
@@ -92,7 +91,7 @@ void iniciar_variables_globales(void);
 void finalizar_variables_globales(void);
 
 
-t_mensaje* crear_nodo_mensaje(int cod_op, int id_correlativo, t_buffer* mensaje);
+t_mensaje* crear_nodo_mensaje(int cod_op, int id_correlativo);
 
 t_suscriptor* crear_nodo_suscriptor(int cod_op, int socket);
 
