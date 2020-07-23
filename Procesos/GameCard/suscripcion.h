@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <signal.h>
+#include "utils_gamecard.h"
 
 #include "tallgrass.h"
 
@@ -19,6 +20,21 @@ typedef struct{
 	int id_msg;
 	char* pokemon;
 }t_getPokemon;
+
+typedef struct{
+	int id_msg;
+	char* pokemon;
+	int posx;
+	int posy;
+}t_catchPokemon;
+
+typedef struct{
+	int id_msg;
+	char* pokemon;
+	int posx;
+	int posy;
+	int cantidad;
+}t_newPokemon;
 
 void iniciar_servidor(void);
 

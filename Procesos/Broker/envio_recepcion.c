@@ -184,6 +184,8 @@ static int process_request(int cliente_fd, int cod_op){
 
 			tratar_mensaje(cliente_fd, cod_op, false);
 
+			printf("Llego un mensaje %s\n", cod_opToString(cod_op));
+
 			break;
 
 		case APPEARED_POKEMON:
@@ -192,11 +194,15 @@ static int process_request(int cliente_fd, int cod_op){
 
 			tratar_mensaje(cliente_fd, cod_op, true);
 
+			printf("Llego un mensaje %s\n", cod_opToString(cod_op));
+
 			break;
 
         case SUSCRIPTOR:
 
         	tratar_suscriptor(cliente_fd);
+
+        	printf("Llego un suscriptor\n");
 
         	break;
 

@@ -53,7 +53,6 @@ int tratar_suscriptor(int socket){
 	t_suscriptor* suscriptor = crear_nodo_suscriptor(cola_suscribirse, socket);
 
 	//printf("cod_op = %d, socket = %d, suscriptor = %p\n", suscriptor->cod_op, suscriptor->socket, suscriptor);
-	printf("tiempo de suscripcion = %d\n\n", tiempo_suscripcion);
 
 	guardar_suscriptor(suscriptor, cola_suscribirse);
 	if(tiempo_suscripcion != -1){ eliminar_suscriptor_tiempo(tiempo_suscripcion, suscriptor->id, cola_suscribirse); }
@@ -151,7 +150,7 @@ static void* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
 
 	} else id_correlativo = -1;
 
-	t_mensaje* n_mensaje = crear_nodo_mensaje(cod_op, id_correlativo, NULL);
+	t_mensaje* n_mensaje = crear_nodo_mensaje(cod_op, id_correlativo);
 
 	s = recv(socket, &size_mensaje, sizeof(uint32_t), 0);
 	if (s < 0) { perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }

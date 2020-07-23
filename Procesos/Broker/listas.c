@@ -32,6 +32,8 @@ static void informe_lista_subs(void);
 static void mostrar_listas(void);
 
 t_list* filtar_mensajes_restantes_suscriptor(t_list* lista_mensajes, int id_suscriptor);
+
+
 //====================================================================================================
 
 
@@ -386,13 +388,15 @@ int estado_mensaje_eliminado(int id_mensaje, int cola_mensaje){
 
 static int _cambiar_estado_mensaje(estado_mensaje nuevo_estado, int id_mensaje, int cola_mensaje){
 
-	t_list* sublista = list_get(LISTA_SUBS, cola_mensaje);
+	t_list* sublista = list_get(LISTA_MENSAJES, cola_mensaje);
 
 	pthread_rwlock_wrlock(&RWLOCK_SUBLISTA_MENSAJES[cola_mensaje]);
 
 	t_mensaje* mensaje = buscar_por_id(sublista, id_mensaje, _obtener_id_suscriptor);
 
-	if (mensaje != NULL) mensaje->estado = nuevo_estado;
+	if (mensaje != NULL) {
+		mensaje->estado = nuevo_estado;
+	}
 
 	pthread_rwlock_unlock(&RWLOCK_SUBLISTA_MENSAJES[cola_mensaje]);
 
