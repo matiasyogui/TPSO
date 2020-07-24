@@ -40,6 +40,8 @@ char* PUNTO_MONTAJE_TALLGRASS;
 	} t_File;
 
 	typedef struct {
+		char* lineaRaw;
+		char* file;
 		int posx;
 		int posy;
 		int cantidad;
