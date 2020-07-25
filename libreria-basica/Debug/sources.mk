@@ -16,4 +16,7 @@ SUBDIRS := \
 commons \
 commons/collections \
 . \
+prueba_make/commons \
+prueba_make/commons/collections \
+prueba_make \
 
