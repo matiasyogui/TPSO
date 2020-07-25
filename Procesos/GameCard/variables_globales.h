@@ -37,6 +37,7 @@ char* PUNTO_MONTAJE_TALLGRASS;
 		t_list  * blocks;
 		char open;
 		t_list * posiciones;
+		char * path;
 	} t_File;
 
 	typedef struct {
