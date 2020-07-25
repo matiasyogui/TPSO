@@ -1,7 +1,8 @@
 #ifndef SERIALIZAR_MENSAJES_H_
 #define SERIALIZAR_MENSAJES_H_
 
-#include <cosas_comunes.h>
+//#include <cosas_comunes.h>
+#include "../../libreria-basica/cosas_comunes.h"
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>

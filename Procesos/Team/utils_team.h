@@ -6,11 +6,14 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <netdb.h>
-#include <commons/log.h>
-#include <commons/collections/list.h>
+//#include <commons/log.h>
+#include "../../libreria-basica/commons/log.h"
+//#include <commons/collections/list.h>
+#include "../../libreria-basica/commons/collections/list.h"
 #include <string.h>
 #include <pthread.h>
-#include <cosas_comunes.h>
+#include "../../libreria-basica/cosas_comunes.h"
+//#include <cosas_comunes.h>
 #include "listas.h"
 #include <stdbool.h>
 #include <semaphore.h>
