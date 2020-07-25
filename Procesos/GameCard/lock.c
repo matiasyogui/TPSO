@@ -12,3 +12,13 @@ void abrirArchivoSinoEspero(char* ruta){
 
 	config_set_value(metadata, "OPEN", "Y");
 }
+
+
+void cerrarArchivo(char* ruta){
+
+	t_config* metadata = config_create(ruta);
+
+	char* abierto = config_get_string_value(metadata, "OPEN");
+
+	config_set_value(metadata, "OPEN", "N");
+}

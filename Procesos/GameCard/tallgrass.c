@@ -6,6 +6,8 @@
  */
 
 #include "tallgrass.h"
+#include "lock.h"
+
 
 char* ultimoDirectorio(char*pathDirectorio){
 
@@ -98,6 +100,8 @@ void marcarBloqueUsado(int index){
 }
 
 
+
+
 t_File * open_file(char * nombre){
 
 	char* auxFile = malloc(strlen(FILES)+strlen(nombre)+3);
@@ -116,9 +120,9 @@ t_File * open_file(char * nombre){
 	char** split;
 
 	retFile->nombre = strdup(nombre);
-	retFile->directory = arch_get_string_value(arch,DIRECTORY);
+	retFile->directory = (char*)arch_get_string_value(arch,DIRECTORY);
 	retFile->size = atoi(arch_get_string_value(arch,FILESIZE));
-	retFile->open = arch_get_string_value(arch,OPEN);
+	retFile->open = (char*)arch_get_string_value(arch,OPEN);
 
 	retFile->blocks = list_create();
 
@@ -159,7 +163,112 @@ t_File * open_file(char * nombre){
 
 	}
 
+	cerrarArchivo(retFile->nombre);
+
 	return retFile;
+}
+
+static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
+{
+  // file format assumed to be as specified in the question i.e. name{space}somevalue{space}someothervalue\n
+  // find playerName
+  char* p = buffer;
+  bool done = false;
+  size_t len = sizeof(strlen(pos->lineaRaw));
+  size_t newSize = 0;
+  do
+  {
+    char* q = strchr( p, *pos->lineaRaw ); // look for first letter in playerName
+    if ( q != NULL )
+    {
+      if ( strncmp( q, pos->lineaRaw, len ) == 0 ) // found name?
+      {
+        size_t lineSize = 1; // include \n already in line size
+
+        // count number of characters the line has.
+        for ( char* line = q; *line != '\n'; ++line)
+        {
+          ++lineSize;
+        }
+
+        // calculate length left after line by subtracting offsets
+        size_t restSize = (size_t)((buffer + size) - (q + lineSize));
+
+        char * posChar = malloc(lineSize + 1);
+
+        if (pos->cantidad = 1){
+			// move block with next line forward
+			memmove( q, q + lineSize, restSize );
+        }else{
+        	pos->cantidad = pos->cantidad - 1;
+        	sprintf(posChar, "%d-%d=%d",pos->posx,pos->posy,pos->cantidad);
+        	memcpy(q, posChar,lineSize );
+        }
+
+        // calculate new size
+        newSize = size - lineSize;
+        done = true;
+      }
+      else
+      {
+        p = q + 1; // continue search
+      }
+    }
+    else
+    {
+      done = true;
+    }
+  }
+  while (!done);
+
+  return newSize;
+}
+
+
+int sacar_linea( t_posiciones *pos){
+
+	    struct stat st;
+	    if ( stat( pos->file, &st ) != -1 )
+	    {
+	      // open the file in binary format
+	      FILE* fp = fopen( pos->file, "rb" );
+	      if ( fp != NULL )
+	      {
+	        // allocate memory to hold file
+	        char* buffer = malloc( st.st_size );
+
+	        // read the file into a buffer
+	        if ( fread(buffer, 1, st.st_size, fp) == st.st_size)
+	        {
+	          fclose(fp);
+
+	          size_t newSize = deleteLine( buffer, st.st_size, pos );
+
+	          fp = fopen( pos->file, "wb" );
+	          if ( fp != NULL )
+	          {
+	            fwrite(buffer, 1, newSize, fp);
+	            fclose(fp);
+	          }
+	          else
+	          {
+	            perror(pos->file);
+	          }
+	        }
+	        free(buffer);
+	      }
+	      else
+	      {
+	        perror(pos->file);
+	      }
+	    }
+	    else
+	    {
+	      printf( "did not find %s", pos->file );
+	    }
+
+	  return 0;
+
 }
 
 t_metadata * leer_metadata(char *pathTallGrass){
@@ -187,7 +296,7 @@ t_list * leer_archivo_bloque(char*directorio, char*nombreArchivo){
 	  strcat(pathfile,nombreArchivo);
 
 
-	FILE* file = fopen(pathfile, "r");
+	FILE* file = fopen(pathfile, "r+");
 
 	if (file == NULL) {
 		printf("Error en archivo %s\n",pathfile);
@@ -196,15 +305,6 @@ t_list * leer_archivo_bloque(char*directorio, char*nombreArchivo){
 
 	struct stat stat_file;
 	stat(pathfile, &stat_file);
-
-
-	/*
-		typedef struct {
-			int posx;
-			int posy;
-			int cantidad;
-		} t_posiciones;
-	*/
 
 	t_posiciones *posiciones = malloc(sizeof(t_archivo));
 
@@ -215,6 +315,12 @@ t_list * leer_archivo_bloque(char*directorio, char*nombreArchivo){
 
 	void add_pos(char *line) {
 			char** keyAndValue = string_n_split(line, 2, "=");
+
+			posiciones->file = malloc(strlen(pathfile)+1);
+			strcpy(posiciones->file,pathfile);
+
+			posiciones->lineaRaw = malloc(strlen(line)+1);
+			strcpy(posiciones->lineaRaw,line);
 
 			posiciones->posx = atoi(strtok(keyAndValue[0],"-"));
 			posiciones->posy = atoi(strtok(NULL,"-"));
@@ -235,6 +341,8 @@ t_list * leer_archivo_bloque(char*directorio, char*nombreArchivo){
 
 }
 
+
+
 t_archivo * leer_archivo(char *pathTallGrass, char*directorio, char*nombreArchivo) {
 
 	  char * pathfile = malloc(strlen(pathTallGrass) + strlen(nombreArchivo)+ strlen(directorio) +1);
@@ -244,6 +352,7 @@ t_archivo * leer_archivo(char *pathTallGrass, char*directorio, char*nombreArchiv
 	  strcat(pathfile,directorio);
 	  strcat(pathfile,nombreArchivo);
 
+	  abrirArchivoSinoEspero(pathfile);
 
 	FILE* file = fopen(pathfile, "r");
 

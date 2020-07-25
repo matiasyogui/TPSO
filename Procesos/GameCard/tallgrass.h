@@ -17,10 +17,15 @@
 #include "variables_globales.h"
 #include "bitmap.h"
 
+#define OPEN_NEW_POKEMON 0;
+#define OPEN_CATCH_POKEMON 1;
+#define OPEN_GET_POKEMON 2;
+
 t_bitarray * bitBloques ;
 t_metadata* metadata;
 
 
+static size_t deleteLine( char* , size_t , t_posiciones* );
 t_File * open_file(char*);
 t_list * leer_archivo_bloque(char*, char*);
 t_File * leer_file(char*, char*);

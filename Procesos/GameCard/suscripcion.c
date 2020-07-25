@@ -374,7 +374,13 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 			catchpok = recibirCatchPokemon(mensaje);
 
+			archivo = open_file(catchpok->pokemon);
+
 			if (archivo != NULL){
+
+				if (existePosiciones(catchpok,archivo) != 0)
+					printf("No se encontro la posicion\n");
+
 				bool loAtrapo;
 				enviarCaught(id_correlativo,loAtrapo);
 				printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
@@ -409,6 +415,28 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 	}
 }
+
+
+int existePosiciones(t_catchPokemon *catchpok,t_File *archivo){
+
+	t_posiciones * pos;
+
+	bool _estaPosicion(void* elemento){
+		t_posiciones * posAux = (t_posiciones*)elemento;
+		return (catchpok->posx == posAux->posx && catchpok->posy == posAux->posy );
+	}
+
+	pos = list_find(archivo->posiciones,_estaPosicion);
+
+	if (pos == NULL )
+		return -1;
+
+	if( sacar_linea( pos ) != 0)
+		return -1;
+
+	return 0;
+}
+
 //=============================================================================
 
 
