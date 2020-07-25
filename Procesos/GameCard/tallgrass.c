@@ -119,6 +119,7 @@ t_File * open_file(char * nombre){
 	t_File * retFile = malloc(sizeof(t_File));
 	char** split;
 
+	retFile->path = arch->path;
 	retFile->nombre = strdup(nombre);
 	retFile->directory = (char*)arch_get_string_value(arch,DIRECTORY);
 	retFile->size = atoi(arch_get_string_value(arch,FILESIZE));
@@ -163,8 +164,6 @@ t_File * open_file(char * nombre){
 
 	}
 
-	cerrarArchivo(retFile->nombre);
-
 	return retFile;
 }
 
@@ -183,31 +182,44 @@ static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
     {
       if ( strncmp( q, pos->lineaRaw, len ) == 0 ) // found name?
       {
-        size_t lineSize = 1; // include \n already in line size
 
-        // count number of characters the line has.
-        for ( char* line = q; *line != '\n'; ++line)
-        {
-          ++lineSize;
-        }
+    	  //        size_t lineSize = 1; // include \n already in line size
+//        for ( char* line = q; *line != '\n'; ++line)
+//        {
+//          ++lineSize;
+//        }
+
+    	  size_t lineSize = strcspn(q,"\n") + 1 ;
 
         // calculate length left after line by subtracting offsets
         size_t restSize = (size_t)((buffer + size) - (q + lineSize));
 
         char * posChar = malloc(lineSize + 1);
 
-        if (pos->cantidad = 1){
+        if (pos->cantidad == 1){
 			// move block with next line forward
 			memmove( q, q + lineSize, restSize );
+	        newSize = size - lineSize;
+	        done = true;
         }else{
         	pos->cantidad = pos->cantidad - 1;
         	sprintf(posChar, "%d-%d=%d",pos->posx,pos->posy,pos->cantidad);
-        	memcpy(q, posChar,lineSize );
+
+        	lineSize = strlen(posChar)+1;
+        	posChar[strlen(posChar)] = '\n';
+
+        	char* restChar = malloc(restSize);
+        	memcpy(restChar, q + lineSize +1,restSize );
+
+        	memcpy(q, posChar,lineSize);
+        	memcpy(q + lineSize , restChar ,restSize );
+
+        	newSize = lineSize + restSize;
+	        done = true;
+
         }
 
         // calculate new size
-        newSize = size - lineSize;
-        done = true;
       }
       else
       {
@@ -306,7 +318,7 @@ t_list * leer_archivo_bloque(char*directorio, char*nombreArchivo){
 	struct stat stat_file;
 	stat(pathfile, &stat_file);
 
-	t_posiciones *posiciones = malloc(sizeof(t_archivo));
+	t_posiciones *posiciones ;
 
 	char* buffer = calloc(1, stat_file.st_size + 1);
 	fread(buffer, stat_file.st_size, 1, file);
@@ -315,6 +327,7 @@ t_list * leer_archivo_bloque(char*directorio, char*nombreArchivo){
 
 	void add_pos(char *line) {
 			char** keyAndValue = string_n_split(line, 2, "=");
+			posiciones = malloc(sizeof(t_posiciones));
 
 			posiciones->file = malloc(strlen(pathfile)+1);
 			strcpy(posiciones->file,pathfile);
@@ -366,7 +379,7 @@ t_archivo * leer_archivo(char *pathTallGrass, char*directorio, char*nombreArchiv
 
 	t_archivo *archivo = malloc(sizeof(t_archivo));
 
-	archivo->path = strdup(file);
+	archivo->path = strdup(pathfile);
 	archivo->datos = dictionary_create();
 	char* buffer = calloc(1, stat_file.st_size + 1);
 	fread(buffer, stat_file.st_size, 1, file);

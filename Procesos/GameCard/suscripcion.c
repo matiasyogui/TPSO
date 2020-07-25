@@ -361,7 +361,11 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 			newpok = recibirNewPokemon(mensaje);
 
+			archivo = open_file(newpok->pokemon);
+
 			if (archivo != NULL){
+
+				cerrarArchivo(archivo->nombre);
 				enviarAppeared(archivo, id_correlativo);
 				printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
 
@@ -381,7 +385,9 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 				if (existePosiciones(catchpok,archivo) != 0)
 					printf("No se encontro la posicion\n");
 
-				bool loAtrapo;
+				cerrarArchivo(archivo);
+
+				bool loAtrapo = true;
 				enviarCaught(id_correlativo,loAtrapo);
 				printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
 
@@ -401,6 +407,8 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 			archivo = open_file(getpok->pokemon);
 
 			if (archivo != NULL){
+
+				cerrarArchivo(archivo->nombre);
 				enviarLocalized(archivo,id_correlativo);
 				printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
 
@@ -422,8 +430,7 @@ int existePosiciones(t_catchPokemon *catchpok,t_File *archivo){
 	t_posiciones * pos;
 
 	bool _estaPosicion(void* elemento){
-		t_posiciones * posAux = (t_posiciones*)elemento;
-		return (catchpok->posx == posAux->posx && catchpok->posy == posAux->posy );
+		return (catchpok->posx == ((t_posiciones*)elemento)->posx && catchpok->posy == ((t_posiciones*)elemento)->posy );
 	}
 
 	pos = list_find(archivo->posiciones,_estaPosicion);
@@ -489,6 +496,13 @@ void enviarCaught(int id_correlativo, bool loAtrapo){
 
 	int offset = 0;
 
+	uint32_t loAtrapoInt;
+
+	if (loAtrapo == true)
+		loAtrapoInt = 0;
+	else
+		loAtrapoInt = 1;
+
 	void* stream = malloc( sizeof(uint32_t)*3);
 
 	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
@@ -497,7 +511,7 @@ void enviarCaught(int id_correlativo, bool loAtrapo){
 	memcpy(stream + offset, &id_correlativo, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	memcpy(stream + offset, &loAtrapo, sizeof(uint32_t));
+	memcpy(stream + offset, &loAtrapoInt, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
 	//enviamos el mensaje
@@ -676,10 +690,10 @@ t_catchPokemon * recibirCatchPokemon(void * mensaje){
 	memcpy(ret->pokemon, mensaje+offset, size);
 	offset += size;
 
-	memcpy(ret -> posx, mensaje + offset, sizeof(uint32_t));
+	memcpy(&(ret -> posx), mensaje + offset, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	memcpy(ret -> posy, mensaje + offset, sizeof(uint32_t));
+	memcpy(&(ret -> posy), mensaje + offset, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
 
@@ -714,13 +728,13 @@ t_newPokemon * recibirNewPokemon(void * mensaje){
 	memcpy(ret->pokemon, mensaje+offset, size);
 	offset += size;
 
-	memcpy(ret -> posx, mensaje + offset, sizeof(uint32_t));
+	memcpy(&(ret -> posx), mensaje + offset, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	memcpy(ret -> posy, mensaje + offset, sizeof(uint32_t));
+	memcpy(&(ret -> posy), mensaje + offset, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	memcpy(ret -> cantidad, mensaje + offset, sizeof(uint32_t));
+	memcpy(&(ret -> cantidad), mensaje + offset, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
 

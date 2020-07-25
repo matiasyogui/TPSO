@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <commons/config.h>
 #include "utils_gamecard.h"
+#include "variables_globales.h"
 
 
 #endif /* LOCK_H_ */
