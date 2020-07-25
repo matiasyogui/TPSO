@@ -1,5 +1,6 @@
 #include <stdbool.h>
-#include <commons/collections/list.h>
+//#include <commons/collections/list.h>
+#include "../../libreria-basica/commons/collections/list.h"
 #include "utils_team.h"
 
 #ifndef LISTAS_H_
