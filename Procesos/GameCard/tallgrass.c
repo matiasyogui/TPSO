@@ -209,7 +209,7 @@ static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
         	posChar[strlen(posChar)] = '\n';
 
         	char* restChar = malloc(restSize);
-        	memcpy(restChar, q + lineSize +1,restSize );
+        	memcpy(restChar, q + lineSize +1,restSize - 1);
 
         	memcpy(q, posChar,lineSize);
         	memcpy(q + lineSize , restChar ,restSize );
