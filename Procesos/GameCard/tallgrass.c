@@ -183,13 +183,7 @@ static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
       if ( strncmp( q, pos->lineaRaw, len ) == 0 ) // found name?
       {
 
-    	  //        size_t lineSize = 1; // include \n already in line size
-//        for ( char* line = q; *line != '\n'; ++line)
-//        {
-//          ++lineSize;
-//        }
-
-    	  size_t lineSize = strcspn(q,"\n") + 1 ;
+    	size_t lineSize = strcspn(q,"\n") + 1 ;
 
         // calculate length left after line by subtracting offsets
         size_t restSize = (size_t)((buffer + size) - (q + lineSize));
@@ -209,7 +203,7 @@ static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
         	posChar[strlen(posChar)] = '\n';
 
         	char* restChar = malloc(restSize);
-        	memcpy(restChar, q + lineSize +1,restSize - 1);
+        	memcpy(restChar, q + lineSize,restSize);
 
         	memcpy(q, posChar,lineSize);
         	memcpy(q + lineSize , restChar ,restSize );
