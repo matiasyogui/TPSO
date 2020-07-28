@@ -167,6 +167,71 @@ t_File * open_file(char * nombre){
 	return retFile;
 }
 
+
+static size_t addLine( char* buffer, size_t size, t_posiciones* pos )
+{
+  // file format assumed to be as specified in the question i.e. name{space}somevalue{space}someothervalue\n
+  // find playerName
+  char* p = buffer;
+  bool done = false;
+  int sizeAnterior = 0;
+  size_t len = sizeof(strlen(pos->lineaRaw));
+  size_t newSize = 0;
+  do
+  {
+    char* q = strchr( p, *pos->lineaRaw );
+    if ( q != NULL )
+    {
+      if ( strncmp( q, pos->lineaRaw, len ) == 0 )
+      {
+
+    	size_t lineSize = strcspn(q,"\n") + 1 ;
+        size_t restSize = (size_t)((buffer + size) - (q + lineSize));
+
+        char * posChar = malloc(lineSize + 1);
+
+        if (pos->cantidad == 1){
+			// move block with next line forward
+			memmove( q, q + lineSize, restSize );
+	        newSize = size - lineSize;
+	        done = true;
+        }else{
+        	pos->cantidad = pos->cantidad - 1;
+        	sprintf(posChar, "%d-%d=%d",pos->posx,pos->posy,pos->cantidad);
+
+        	lineSize = strlen(posChar)+1;
+        	posChar[strlen(posChar)] = '\n';
+
+        	char* restChar = malloc(restSize);
+        	memcpy(restChar, q + lineSize,restSize);
+
+        	memcpy(q, posChar,lineSize);
+        	memcpy(q + lineSize , restChar ,restSize );
+
+//        	newSize = lineSize + restSize;
+        	newSize = size;
+        	done = true;
+
+        }
+
+        // calculate new size
+      }
+      else
+      {
+        p = q + 1;
+      }
+    }
+    else
+    {
+      done = true;
+    }
+  }
+  while (!done);
+
+  return newSize;
+}
+
+
 static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
 {
   // file format assumed to be as specified in the question i.e. name{space}somevalue{space}someothervalue\n
@@ -231,6 +296,7 @@ static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
 }
 
 
+
 int sacar_linea( t_posiciones *pos){
 
 	    struct stat st;
@@ -282,6 +348,59 @@ int sacar_linea( t_posiciones *pos){
 	  return 0;
 
 }
+
+int sumar_linea( t_posiciones *pos){
+
+	    struct stat st;
+	    if ( stat( pos->file, &st ) != -1 )
+	    {
+	      // open the file in binary format
+	      FILE* fp = fopen( pos->file, "rb" );
+	      if ( fp != NULL )
+	      {
+	        // allocate memory to hold file
+	        char* buffer = malloc( st.st_size );
+
+	        // read the file into a buffer
+	        if ( fread(buffer, 1, st.st_size, fp) == st.st_size)
+	        {
+	          fclose(fp);
+
+	          size_t newSize = addLine( buffer, st.st_size, pos );
+
+	          fp = fopen( pos->file, "wb" );
+	          if ( fp != NULL )
+	          {
+	            fwrite(buffer, 1, newSize, fp);
+	            fclose(fp);
+	          }
+	          else
+	          {
+	            perror(pos->file);
+	          }
+	        }
+	        free(buffer);
+	      }
+	      else
+	      {
+	        perror(pos->file);
+	      }
+	    }
+	    else
+	    {
+	      printf( "did not find %s", pos->file );
+	    }
+
+	    if ( stat( pos->file, &st ) != -1 )
+	   	{
+	    	printf( "archivo: %s tamaño: %d\n",pos->file, st.st_size);
+	   	}
+
+
+	  return 0;
+
+}
+
 
 t_metadata * leer_metadata(char *pathTallGrass){
 

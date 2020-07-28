@@ -365,6 +365,13 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 			if (archivo != NULL){
 
+				if (existePosicionesNew(newpok,archivo) != 0){
+							log_info(logger, "Se agrego la posicion\n");
+							printf("Se agrego posicion\n");
+						}
+
+						sleep(TIEMPO_RETARDO_OPERACION);
+
 				cerrarArchivo(archivo->nombre);
 				enviarAppeared(archivo, id_correlativo);
 				printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
@@ -382,7 +389,7 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 			if (archivo != NULL){
 
-				if (existePosiciones(catchpok,archivo) != 0){
+				if (existePosicionesCatch(catchpok,archivo) != 0){
 					log_info(logger, "No se encontro la posicion\n");
 					printf("No se encontro la posicion\n");
 				}
@@ -430,7 +437,27 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 }
 
 
-int existePosiciones(t_catchPokemon *catchpok,t_File *archivo){
+existePosicionesNew(t_newPokemon *newpok,t_File *archivo){
+
+	t_posiciones * pos;
+
+	bool _estaPosicion(void* elemento){
+		return (newpok->posx == ((t_posiciones*)elemento)->posx && newpok->posy == ((t_posiciones*)elemento)->posy );
+	}
+
+	pos = list_find(archivo->posiciones,_estaPosicion);
+
+	if (pos == NULL )
+		return -1;
+
+	if( sumar_linea( pos ) != 0)
+		return -1;
+
+	return 0;
+}
+
+
+int existePosicionesCatch(t_catchPokemon *catchpok,t_File *archivo){
 
 	t_posiciones * pos;
 
