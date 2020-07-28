@@ -57,5 +57,7 @@ typedef struct {
 } t_metadata;
 
 t_list * listaFiles;
+t_log* logger;
+char* LOG_FILE;
 
 #endif /* VARIABLES_GLOBALES_H_ */

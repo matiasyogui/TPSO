@@ -40,5 +40,5 @@ void iniciar_servidor(void);
 
 void iniciar_suscripciones(int cola0, int cola1, int cola2);
 void finalizar_suscripciones(void);
-
+int existePosiciones(t_catchPokemon*,t_File*);
 #endif /* SUSCRIPCION_H_ */

@@ -382,17 +382,22 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 			if (archivo != NULL){
 
-				if (existePosiciones(catchpok,archivo) != 0)
+				if (existePosiciones(catchpok,archivo) != 0){
+					log_info(logger, "No se encontro la posicion\n");
 					printf("No se encontro la posicion\n");
+				}
+
+				sleep(TIEMPO_RETARDO_OPERACION);
 
 				cerrarArchivo(archivo);
 
 				bool loAtrapo = true;
 				enviarCaught(id_correlativo,loAtrapo);
-				printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
+				printf("el pokemon: %s existe en TALLGRASS\n", catchpok->pokemon);
 
 			}else
 			{
+				log_info(logger, "el pokemon: %s NO EXISTE en TALLGRASS\n", getpok->pokemon);
 				printf("el pokemon: %s NO EXISTE en TALLGRASS\n", getpok->pokemon);
 				//TODO: informar error
 

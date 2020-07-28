@@ -53,6 +53,11 @@ void leer_archivo_configuracion(void){
 
 	strcpy(PUNTO_MONTAJE_TALLGRASS, auxPuntoMontaje);
 
+
+	LOG_FILE= config_get_string_value(CONFIG,"LOG_FILE");
+	logger = iniciar_logger(LOG_FILE, "GAMECARD", 0, LOG_LEVEL_INFO);
+	log_info(logger, "Inicio del proceso \n");
+
 }
 
 

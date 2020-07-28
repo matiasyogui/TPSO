@@ -173,19 +173,18 @@ static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
   // find playerName
   char* p = buffer;
   bool done = false;
+  int sizeAnterior = 0;
   size_t len = sizeof(strlen(pos->lineaRaw));
   size_t newSize = 0;
   do
   {
-    char* q = strchr( p, *pos->lineaRaw ); // look for first letter in playerName
+    char* q = strchr( p, *pos->lineaRaw );
     if ( q != NULL )
     {
-      if ( strncmp( q, pos->lineaRaw, len ) == 0 ) // found name?
+      if ( strncmp( q, pos->lineaRaw, len ) == 0 )
       {
 
     	size_t lineSize = strcspn(q,"\n") + 1 ;
-
-        // calculate length left after line by subtracting offsets
         size_t restSize = (size_t)((buffer + size) - (q + lineSize));
 
         char * posChar = malloc(lineSize + 1);
@@ -208,8 +207,9 @@ static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
         	memcpy(q, posChar,lineSize);
         	memcpy(q + lineSize , restChar ,restSize );
 
-        	newSize = lineSize + restSize;
-	        done = true;
+//        	newSize = lineSize + restSize;
+        	newSize = size;
+        	done = true;
 
         }
 
@@ -217,7 +217,7 @@ static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
       }
       else
       {
-        p = q + 1; // continue search
+        p = q + 1;
       }
     }
     else
@@ -272,6 +272,12 @@ int sacar_linea( t_posiciones *pos){
 	    {
 	      printf( "did not find %s", pos->file );
 	    }
+
+	    if ( stat( pos->file, &st ) != -1 )
+	   	{
+	    	printf( "archivo: %s tamaño: %d\n",pos->file, st.st_size);
+	   	}
+
 
 	  return 0;
 
