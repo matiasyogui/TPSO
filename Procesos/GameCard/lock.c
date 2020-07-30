@@ -4,6 +4,9 @@ void abrirArchivoSinoEspero(char* ruta){
 
 	t_config* metadata = config_create(ruta);
 
+	if (metadata == NULL)
+		return ;
+
 	char* abierto = config_get_string_value(metadata, "OPEN");
 
 	if (abierto == NULL)

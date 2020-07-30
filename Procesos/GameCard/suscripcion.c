@@ -363,22 +363,22 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 			archivo = open_file(newpok->pokemon);
 
-			if (archivo != NULL){
-
-				if (existePosicionesNew(newpok,archivo) != 0){
-							log_info(logger, "Se agrego la posicion\n");
-							printf("Se agrego posicion\n");
-						}
-
-						sleep(TIEMPO_RETARDO_OPERACION);
-
-				cerrarArchivo(archivo->nombre);
-				enviarAppeared(archivo, id_correlativo);
-				printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
-
-			} else {
-				printf("el pokemon: %s NO EXISTE en TALLGRASS\n", getpok->pokemon);
+			if (archivo == NULL){
+				archivo = crear_file(newpok->pokemon);
 			}
+
+			if (existePosicionesNew(newpok,archivo) != 0)
+			{
+				log_info(logger, "Se agrego la posicion\n");
+				printf("Se agrego posicion\n");
+			}
+
+			sleep(TIEMPO_RETARDO_OPERACION);
+
+			cerrarArchivo(archivo->nombre);
+			enviarAppeared(archivo, id_correlativo);
+			printf("el pokemon: %s existe en TALLGRASS\n", newpok->pokemon);
+
 			break;
 
 		case CATCH_POKEMON:
@@ -440,6 +440,7 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 existePosicionesNew(t_newPokemon *newpok,t_File *archivo){
 
 	t_posiciones * pos;
+	char* auxFile;
 
 	bool _estaPosicion(void* elemento){
 		return (newpok->posx == ((t_posiciones*)elemento)->posx && newpok->posy == ((t_posiciones*)elemento)->posy );
@@ -447,11 +448,20 @@ existePosicionesNew(t_newPokemon *newpok,t_File *archivo){
 
 	pos = list_find(archivo->posiciones,_estaPosicion);
 
-	if (pos == NULL )
-		return -1;
+	int block = list_get(archivo->blocks,0);
 
-	if( sumar_linea( pos ) != 0)
+	if (pos == NULL ){
+		sprintf(auxFile,"%s%s/%d.bin",PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block );
+
+		FILE *blockBin;
+		blockBin=fopen(auxFile,"w");
+		fprintf(blockBin,"%d-%d=%d\n", pos->posx,pos->posy,pos->cantidad);
+		free(auxFile);
+		fclose(blockBin);
+	}else{
+		if( sumar_linea( pos ) != 0)
 		return -1;
+	}
 
 	return 0;
 }

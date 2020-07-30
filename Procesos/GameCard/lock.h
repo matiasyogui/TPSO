@@ -13,5 +13,7 @@
 #include "utils_gamecard.h"
 #include "variables_globales.h"
 
+void abrirArchivoSinoEspero(char*);
+void cerrarArchivo(t_File*);
 
 #endif /* LOCK_H_ */

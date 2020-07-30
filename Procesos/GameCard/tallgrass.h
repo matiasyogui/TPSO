@@ -27,6 +27,7 @@ t_metadata* metadata;
 
 static size_t deleteLine( char* , size_t , t_posiciones* );
 t_File * open_file(char*);
+t_File * crear_file(char *);
 t_list * leer_archivo_bloque(char*, char*);
 t_File * leer_file(char*, char*);
 void montar_TallGrass(void);
