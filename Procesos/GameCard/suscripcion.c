@@ -453,12 +453,12 @@ existePosicionesNew(t_newPokemon *newpok,t_File *archivo){
 
 	if (pos == NULL ){
 
-		printf("%s%s/%d.bin",PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block);
+		printf("agregando pos X:%d Y:%d en %s%s/%d.bin/n",newpok->posx, newpok->posy,PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block);
 		fflush(stdout);
 		sprintf(auxFile,"%s%s/%d.bin",PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block);
 
 		FILE *blockBin;
-		blockBin=fopen(auxFile,"w");
+		blockBin=fopen(auxFile,"a");
 		fprintf(blockBin,"%d-%d=%d\n", newpok->posx,newpok->posy,newpok->cantidad);
 
 		fclose(blockBin);
