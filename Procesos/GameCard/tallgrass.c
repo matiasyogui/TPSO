@@ -155,7 +155,7 @@ t_File * crear_file(char * nombre){
 
 	retFile->blocks = list_create();
 
-	list_add_in_index(retFile->blocks,index, (void*)block);
+	list_add(retFile->blocks,(void*)block);
 
 	fprintf(f, "BLOCKS=[%d]\n",block);
 
@@ -205,14 +205,15 @@ t_File * open_file(char * nombre){
 
 	split = string_split(arch_get_string_value(arch,BLOCKS) ,",");
 
+
+	int block = 0;
 	int index = 0;
 	if (split[0][0] == '[')
 		split[0][0] = '0';
 
 	while(!string_contains(split[index], "]"))
 	{
-		int* block = malloc(sizeof(int));
-		*block = atoi(split[index]);
+		block = atoi(split[index]);
 		list_add_in_index(retFile->blocks,index, (void*)block);
 		index++;
 	}
@@ -220,10 +221,9 @@ t_File * open_file(char * nombre){
 	if (split[index][strlen(split[index])-1] == ']')
 		split[index][strlen(split[index])-1] = '\0';
 
-	int* block = malloc(sizeof(int));
-		*block = atoi(split[index]);
+	block = atoi(split[index]);
 
-	list_add_in_index(retFile->blocks,index, (void*)block);
+	list_add_in_index(retFile->blocks,index, (void*)(block));
 
 	 auxFile = malloc(strlen(PUNTO_MONTAJE_TALLGRASS)+3+strlen(BLOCKSDIR));
 

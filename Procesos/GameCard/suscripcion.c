@@ -91,7 +91,7 @@ void esperar_cliente(int socket_servidor){
 	*p_socket = socket_cliente;
 
 	pthread_create(&thread, NULL, (void*)serve_client, p_socket);
-	pthread_detach(thread);
+	pthread_join(thread, NULL);
 
 }
 
@@ -359,6 +359,7 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 		// definir las acciones que debe realizar
 		case NEW_POKEMON:
 
+
 			newpok = recibirNewPokemon(mensaje);
 
 			archivo = open_file(newpok->pokemon);
@@ -375,9 +376,9 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 			sleep(TIEMPO_RETARDO_OPERACION);
 
-			cerrarArchivo(archivo->nombre);
+			cerrarArchivo(archivo);
 			enviarAppeared(archivo, id_correlativo);
-			printf("el pokemon: %s existe en TALLGRASS\n", newpok->pokemon);
+			printf("Envio APPEARED pokemon: %s\n", newpok->pokemon);
 
 			break;
 
@@ -440,7 +441,7 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 existePosicionesNew(t_newPokemon *newpok,t_File *archivo){
 
 	t_posiciones * pos;
-	char* auxFile;
+	char* auxFile = malloc(strlen(PUNTO_MONTAJE_TALLGRASS)+strlen(BLOCKSDIR)+10);
 
 	bool _estaPosicion(void* elemento){
 		return (newpok->posx == ((t_posiciones*)elemento)->posx && newpok->posy == ((t_posiciones*)elemento)->posy );
@@ -448,16 +449,28 @@ existePosicionesNew(t_newPokemon *newpok,t_File *archivo){
 
 	pos = list_find(archivo->posiciones,_estaPosicion);
 
-	int block = list_get(archivo->blocks,0);
+	int block = (int)list_get(archivo->blocks,0);
 
 	if (pos == NULL ){
-		sprintf(auxFile,"%s%s/%d.bin",PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block );
+
+		printf("%s%s/%d.bin",PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block);
+		fflush(stdout);
+		sprintf(auxFile,"%s%s/%d.bin",PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block);
 
 		FILE *blockBin;
 		blockBin=fopen(auxFile,"w");
-		fprintf(blockBin,"%d-%d=%d\n", pos->posx,pos->posy,pos->cantidad);
-		free(auxFile);
+		fprintf(blockBin,"%d-%d=%d\n", newpok->posx,newpok->posy,newpok->cantidad);
+
 		fclose(blockBin);
+
+		t_posiciones * posAux = malloc(sizeof(t_posiciones));
+		posAux->posx = newpok->posx;
+		posAux->posy = newpok->posy;
+		posAux->cantidad = newpok->cantidad;
+
+		list_add(archivo->posiciones,posAux);
+
+//		free(auxFile);
 	}else{
 		if( sumar_linea( pos ) != 0)
 		return -1;
