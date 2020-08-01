@@ -225,25 +225,9 @@ t_File * open_file(char * nombre){
 
 	list_add_in_index(retFile->blocks,index, (void*)(block));
 
-	 auxFile = malloc(strlen(PUNTO_MONTAJE_TALLGRASS)+3+strlen(BLOCKSDIR));
-
-	strcpy(auxFile, PUNTO_MONTAJE_TALLGRASS);
-
-	strcat(auxFile,BLOCKSDIR);
-	strcat(auxFile,"/");
-
-	char*auxNameBlockFile = malloc(100);
-
 	retFile->posiciones = list_create();
-	t_list * list_pos_aux;
 
-	for(int i = 0; i < list_size(retFile->blocks); i++){
-
-		sprintf(auxNameBlockFile,"%d.bin", (int)list_get(retFile->blocks, i));
-		list_pos_aux = leer_archivo_bloque(auxFile, auxNameBlockFile);
-	    list_add_all(retFile->posiciones, list_pos_aux);
-
-	}
+	retFile->posiciones = leer_archivo_todos_bloques(retFile);
 
 	return retFile;
 }
@@ -495,6 +479,73 @@ t_metadata * leer_metadata(char *pathTallGrass){
 char *arch_get_string_value(t_archivo *self, char *key) {
 	return dictionary_get(self->datos, key);
 }
+
+t_list * leer_archivo_todos_bloques(t_File * retFile){
+
+	char* auxFile = malloc(strlen(PUNTO_MONTAJE_TALLGRASS) + 25 + strlen(BLOCKSDIR));
+
+	  t_list* lista = list_create();
+
+	  FILE* file;
+	  char* buffer = calloc(1,metadata->Block_size * list_size(retFile->blocks) + 1);
+	  char* bufferAux = calloc(1,metadata->Block_size + 1);
+	  int mempos=0;
+
+	  for(int i = 0; i < list_size(retFile->blocks); i++){
+
+			sprintf(auxFile,"%s/%s/%d.bin", PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,(int)list_get(retFile->blocks, i));
+
+			file = fopen(auxFile, "r+");
+
+			if (file == NULL) {
+					printf("Error en archivo %s\n",auxFile);
+					return NULL;
+				}
+
+			struct stat stat_file;
+			stat(auxFile, &stat_file);
+
+			//char* buffer = calloc(1, stat_file.st_size + 1);
+			fread(bufferAux, stat_file.st_size, 1, file);
+			memcpy(buffer + mempos, bufferAux, stat_file.st_size);
+			mempos += stat_file.st_size;
+
+		}
+
+	  t_posiciones * posiciones;
+	  char *line;
+
+		char** lines = string_split(buffer, "\n");
+
+		while (*lines != NULL) {
+
+			char** keyAndValue = string_n_split(*lines, 2, "=");
+			posiciones = malloc(sizeof(t_posiciones));
+
+			posiciones->file = malloc(strlen(auxFile)+1);
+			strcpy(posiciones->file,auxFile);
+
+			posiciones->lineaRaw = malloc(strlen(*lines)+1);
+			strcpy(posiciones->lineaRaw,*lines);
+
+			posiciones->posx = atoi(strtok(keyAndValue[0],"-"));
+			posiciones->posy = atoi(strtok(NULL,"-"));
+
+			posiciones->cantidad = atoi(keyAndValue[1]);
+
+			list_add(lista, posiciones);
+
+			lines++;
+
+		}
+
+
+	free(auxFile);
+
+	return lista;
+
+}
+
 
 t_list * leer_archivo_bloque(char*directorio, char*nombreArchivo){
 

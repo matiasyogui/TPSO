@@ -421,7 +421,7 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 			if (archivo != NULL){
 
-				cerrarArchivo(archivo->nombre);
+				cerrarArchivo(archivo);
 				enviarLocalized(archivo,id_correlativo);
 				printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
 
@@ -441,7 +441,6 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 existePosicionesNew(t_newPokemon *newpok,t_File *archivo){
 
 	t_posiciones * pos;
-	char* auxFile = malloc(strlen(PUNTO_MONTAJE_TALLGRASS)+strlen(BLOCKSDIR)+10);
 
 	bool _estaPosicion(void* elemento){
 		return (newpok->posx == ((t_posiciones*)elemento)->posx && newpok->posy == ((t_posiciones*)elemento)->posy );
@@ -449,19 +448,7 @@ existePosicionesNew(t_newPokemon *newpok,t_File *archivo){
 
 	pos = list_find(archivo->posiciones,_estaPosicion);
 
-	int block = (int)list_get(archivo->blocks,0);
-
 	if (pos == NULL ){
-
-		printf("agregando pos X:%d Y:%d en %s%s/%d.bin/n",newpok->posx, newpok->posy,PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block);
-		fflush(stdout);
-		sprintf(auxFile,"%s%s/%d.bin",PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block);
-
-		FILE *blockBin;
-		blockBin=fopen(auxFile,"a");
-		fprintf(blockBin,"%d-%d=%d\n", newpok->posx,newpok->posy,newpok->cantidad);
-
-		fclose(blockBin);
 
 		t_posiciones * posAux = malloc(sizeof(t_posiciones));
 		posAux->posx = newpok->posx;
@@ -469,14 +456,65 @@ existePosicionesNew(t_newPokemon *newpok,t_File *archivo){
 		posAux->cantidad = newpok->cantidad;
 
 		list_add(archivo->posiciones,posAux);
-
-//		free(auxFile);
 	}else{
-		if( sumar_linea( pos ) != 0)
-		return -1;
+		pos->cantidad = pos->cantidad + newpok->cantidad;
 	}
 
-	return 0;
+	bajarPosiciones(archivo);
+
+	return;
+}
+
+void bajarPosiciones(t_File *archivo){
+
+	struct stat st = {0};
+	char* auxFile = malloc(strlen(PUNTO_MONTAJE_TALLGRASS)+strlen(BLOCKSDIR)+10);
+
+
+	printf("tamaño Maximo de bloque %d\n",metadata->Block_size);
+
+	char* buffer = calloc(1,(list_size(archivo->blocks) + 1) * metadata->Block_size );
+
+	char* linea=calloc(1,100);
+	int mempos = 0;
+
+	for(int a=0;a<list_size(archivo->posiciones);a++){
+		t_posiciones * pos = (t_posiciones*)list_get(archivo->posiciones,a);
+		sprintf(linea, "%d-%d=%d\n", pos->posx,pos->posy,pos->cantidad);
+
+    	int lineSize = strcspn(linea,"\n") + 1 ;
+
+
+		memcpy(buffer + mempos, linea, lineSize);
+		mempos += lineSize;
+
+	}
+
+	int sizeBuf=0;
+	int filepos=0;
+
+	for(int b=0; b < list_size(archivo->blocks); b++){
+
+		int block = (int)list_get(archivo->blocks,b);
+
+		sprintf(auxFile,"%s%s/%d.bin",PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block);
+
+		FILE *blockBin;
+		blockBin=fopen(auxFile,"w");
+
+		if (b == (list_size(archivo->blocks)-1)){
+			sizeBuf = mempos - ((b-1)*metadata->Block_size );
+		}else{
+			sizeBuf = metadata->Block_size;
+		}
+
+		fwrite(buffer+filepos,1,sizeBuf,blockBin);
+		filepos +=sizeBuf;
+		fclose(blockBin);
+
+	}
+
+
 }
 
 

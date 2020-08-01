@@ -24,7 +24,7 @@
 t_bitarray * bitBloques ;
 t_metadata* metadata;
 
-
+t_list * leer_archivo_todos_bloques(t_File*);
 static size_t deleteLine( char* , size_t , t_posiciones* );
 t_File * open_file(char*);
 t_File * crear_file(char *);
