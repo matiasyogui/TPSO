@@ -42,10 +42,9 @@ t_bitarray * leerArchivoBitmap(char* directorioBitmap, t_metadata *meta ){
 
 		size_t tope = bitarray_get_max_bit(bitmap);
 
-		for(int i = 0; i < tope; i++){
-
+/*		for(int i = 0; i < tope; i++){
 			 bitarray_clean_bit(bitmap, i);
-		}
+		}*/
 
 		close(fd);
 		return bitmap;

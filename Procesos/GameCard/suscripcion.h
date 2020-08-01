@@ -37,8 +37,8 @@ typedef struct{
 }t_newPokemon;
 
 void iniciar_servidor(void);
-
+void bajarPosiciones(t_File *);
 void iniciar_suscripciones(int cola0, int cola1, int cola2);
 void finalizar_suscripciones(void);
-
+int existePosiciones(t_catchPokemon*,t_File*);
 #endif /* SUSCRIPCION_H_ */

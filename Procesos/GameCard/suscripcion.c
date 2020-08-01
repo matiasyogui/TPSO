@@ -91,7 +91,7 @@ void esperar_cliente(int socket_servidor){
 	*p_socket = socket_cliente;
 
 	pthread_create(&thread, NULL, (void*)serve_client, p_socket);
-	pthread_detach(thread);
+	pthread_join(thread, NULL);
 
 }
 
@@ -363,15 +363,22 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 			archivo = open_file(newpok->pokemon);
 
-			if (archivo != NULL){
-
-				cerrarArchivo(archivo->nombre);
-				enviarAppeared(archivo, id_correlativo);
-				printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
-
-			} else {
-				printf("el pokemon: %s NO EXISTE en TALLGRASS\n", getpok->pokemon);
+			if (archivo == NULL){
+				archivo = crear_file(newpok->pokemon);
 			}
+
+			if (existePosicionesNew(newpok,archivo) != 0)
+			{
+				log_info(logger, "Se agrego la posicion\n");
+				printf("Se agrego posicion\n");
+			}
+
+			sleep(TIEMPO_RETARDO_OPERACION);
+
+			cerrarArchivo(archivo);
+			enviarAppeared(archivo, id_correlativo);
+			printf("Envio APPEARED pokemon: %s\n", newpok->pokemon);
+
 			break;
 
 		case CATCH_POKEMON:
@@ -382,17 +389,22 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 			if (archivo != NULL){
 
-				if (existePosiciones(catchpok,archivo) != 0)
+				if (existePosicionesCatch(catchpok,archivo) != 0){
+					log_info(logger, "No se encontro la posicion\n");
 					printf("No se encontro la posicion\n");
+				}
+
+				sleep(TIEMPO_RETARDO_OPERACION);
 
 				cerrarArchivo(archivo);
 
 				bool loAtrapo = true;
 				enviarCaught(id_correlativo,loAtrapo);
-				printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
+				printf("el pokemon: %s existe en TALLGRASS\n", catchpok->pokemon);
 
 			}else
 			{
+				log_info(logger, "el pokemon: %s NO EXISTE en TALLGRASS\n", getpok->pokemon);
 				printf("el pokemon: %s NO EXISTE en TALLGRASS\n", getpok->pokemon);
 				//TODO: informar error
 
@@ -408,7 +420,7 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 			if (archivo != NULL){
 
-				cerrarArchivo(archivo->nombre);
+				cerrarArchivo(archivo);
 				enviarLocalized(archivo,id_correlativo);
 				printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
 
@@ -425,7 +437,96 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 }
 
 
-int existePosiciones(t_catchPokemon *catchpok,t_File *archivo){
+existePosicionesNew(t_newPokemon *newpok,t_File *archivo){
+
+	t_posiciones * pos;
+
+	bool _estaPosicion(void* elemento){
+		return (newpok->posx == ((t_posiciones*)elemento)->posx && newpok->posy == ((t_posiciones*)elemento)->posy );
+	}
+
+	pos = list_find(archivo->posiciones,_estaPosicion);
+
+	if (pos == NULL ){
+
+		t_posiciones * posAux = malloc(sizeof(t_posiciones));
+		posAux->posx = newpok->posx;
+		posAux->posy = newpok->posy;
+		posAux->cantidad = newpok->cantidad;
+
+		list_add(archivo->posiciones,posAux);
+	}else{
+		pos->cantidad = pos->cantidad + newpok->cantidad;
+	}
+
+	bajarPosiciones(archivo);
+
+	return;
+}
+
+void bajarPosiciones(t_File *archivo){
+
+	struct stat st = {0};
+	char* auxFile = malloc(strlen(PUNTO_MONTAJE_TALLGRASS)+strlen(BLOCKSDIR)+10);
+
+
+	printf("tamaño Maximo de bloque %d\n",metadata->Block_size);
+
+	char* buffer = calloc(1,(list_size(archivo->blocks) + 1) * metadata->Block_size );
+
+	char* linea=calloc(1,100);
+	int mempos = 0;
+
+	for(int a=0;a<list_size(archivo->posiciones);a++){
+		t_posiciones * pos = (t_posiciones*)list_get(archivo->posiciones,a);
+		sprintf(linea, "%d-%d=%d\n", pos->posx,pos->posy,pos->cantidad);
+
+    	int lineSize = strcspn(linea,"\n") + 1 ;
+
+
+		memcpy(buffer + mempos, linea, lineSize);
+		mempos += lineSize;
+
+	}
+
+	int sizeBuf=0;
+	int filepos=0;
+	int blockIndex = 0;
+
+	while(filepos <= mempos  ){
+
+		int block = (int)list_get(archivo->blocks,(blockIndex));
+
+		if (block == NULL){
+			bitBloques = leerArchivoBitmap(PUNTO_MONTAJE_TALLGRASS, metadata );
+			block = elegirBloqueLibre();
+			marcarBloqueUsado(block);
+		}
+
+		sprintf(auxFile,"%s%s/%d.bin",PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block);
+
+		FILE *blockBin;
+		blockBin=fopen(auxFile,"w");
+
+		if (filepos <= mempos ){
+			sizeBuf = mempos - ((b-1)*metadata->Block_size );
+		}else{
+			sizeBuf = metadata->Block_size;
+		}
+
+		fwrite(buffer+filepos,1,sizeBuf,blockBin);
+		fclose(blockBin);
+
+		filepos +=sizeBuf;
+		blockIndex++;
+
+	}
+
+
+}
+
+
+int existePosicionesCatch(t_catchPokemon *catchpok,t_File *archivo){
 
 	t_posiciones * pos;
 

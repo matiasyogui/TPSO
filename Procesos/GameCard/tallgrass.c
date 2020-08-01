@@ -82,13 +82,9 @@ void montar_TallGrass(){
 	printf("Metadata blocksize %d\n", metadata->Block_size);
 	printf("Metadata blocks %d\n", metadata->Blocks);
 
-	bitBloques = leerArchivoBitmap(PUNTO_MONTAJE_TALLGRASS, metadata );
-
-//	listaFiles = listarTallGrassFiles(PUNTO_MONTAJE_TALLGRASS);
-
 }
 
-bool estaUsadoBloque(ind){
+bool estaUsadoBloque(int ind){
 	return bitarray_test_bit(bitBloques, ind);
 }
 
@@ -99,6 +95,86 @@ void marcarBloqueUsado(int index){
 	ActualizarBitmap(PUNTO_MONTAJE_TALLGRASS,metadata, bitBloques);
 }
 
+int elegirBloqueLibre(){
+	int index=0;
+
+	while(bitarray_test_bit(bitBloques, index)){
+		index++;
+	}
+
+	return index;
+}
+
+t_File * crear_file(char * nombre){
+
+	struct stat st = {0};
+
+	char* auxFile = malloc(strlen(PUNTO_MONTAJE_TALLGRASS) +
+						   strlen(FILES) +
+						   strlen(nombre)+
+						   strlen(METADATAFILE) +
+						   3);
+
+	char* auxDir = malloc(strlen(PUNTO_MONTAJE_TALLGRASS) +
+						   strlen(FILES) +
+						   strlen(nombre)+ 3);
+
+	strcpy(auxFile,PUNTO_MONTAJE_TALLGRASS);
+	strcat(auxFile,FILES);
+	strcat(auxFile,"/");
+	strcat(auxFile,nombre);
+	strcat(auxFile,"/");
+	strcat(auxFile,METADATAFILE);
+
+
+	strcpy(auxDir,PUNTO_MONTAJE_TALLGRASS);
+	strcat(auxDir,FILES);
+	strcat(auxDir,"/");
+	strcat(auxDir,nombre);
+
+	if (stat(auxDir, &st) == -1) {
+	    mkdir(auxDir, 0700);
+	}
+
+	FILE *f = fopen(auxFile, "w");
+
+	t_File * retFile = malloc(sizeof(t_File));
+
+	retFile->path = auxFile;
+	retFile->nombre = strdup(nombre);
+
+	fprintf(f, "DIRECTORY=N\n");
+	retFile->directory = 'N';
+
+	fprintf(f, "SIZE=0\n");
+	retFile->size = 0;
+
+	bitBloques = leerArchivoBitmap(PUNTO_MONTAJE_TALLGRASS, metadata );
+	int block = elegirBloqueLibre();
+	marcarBloqueUsado(block);
+
+	retFile->blocks = list_create();
+
+	list_add(retFile->blocks,(void*)block);
+
+	fprintf(f, "BLOCKS=[%d]\n",block);
+
+	fprintf(f, "OPEN=Y\n");
+	retFile->open = 'Y';
+
+	fclose(f);
+
+	auxFile = malloc(strlen(PUNTO_MONTAJE_TALLGRASS)+strlen(BLOCKSDIR)+20);
+
+	retFile->posiciones = list_create();
+
+	sprintf(auxFile,"%s%s/%d.bin",PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block );
+
+	FILE *fileBlock = fopen(auxFile, "w");
+	fclose(fileBlock);
+
+	return retFile;
+}
 
 
 
@@ -121,53 +197,43 @@ t_File * open_file(char * nombre){
 
 	retFile->path = arch->path;
 	retFile->nombre = strdup(nombre);
-	retFile->directory = (char*)arch_get_string_value(arch,DIRECTORY);
+	retFile->directory = (char)(*arch_get_string_value(arch,DIRECTORY));
 	retFile->size = atoi(arch_get_string_value(arch,FILESIZE));
-	retFile->open = (char*)arch_get_string_value(arch,OPEN);
+	retFile->open = (char)(*arch_get_string_value(arch,OPEN));
 
 	retFile->blocks = list_create();
 
 	split = string_split(arch_get_string_value(arch,BLOCKS) ,",");
 
+
+	int block = 0;
 	int index = 0;
 	if (split[0][0] == '[')
 		split[0][0] = '0';
 
 	while(!string_contains(split[index], "]"))
 	{
-		list_add_in_index(retFile->blocks,index, atoi(split[index]));
+		block = atoi(split[index]);
+		list_add_in_index(retFile->blocks,index, (void*)block);
 		index++;
 	}
 
 	if (split[index][strlen(split[index])-1] == ']')
 		split[index][strlen(split[index])-1] = '\0';
 
-	list_add_in_index(retFile->blocks,index, atoi(split[index]));
+	block = atoi(split[index]);
 
-	 auxFile = malloc(strlen(PUNTO_MONTAJE_TALLGRASS)+3+strlen(BLOCKSDIR));
-
-	strcpy(auxFile, PUNTO_MONTAJE_TALLGRASS);
-
-	strcat(auxFile,BLOCKSDIR);
-	strcat(auxFile,"/");
-
-	char*auxNameBlockFile = malloc(100);
+	list_add_in_index(retFile->blocks,index, (void*)(block));
 
 	retFile->posiciones = list_create();
-	t_list * list_pos_aux;
 
-	for(int i = 0; i < list_size(retFile->blocks); i++){
-
-		sprintf(auxNameBlockFile,"%d.bin", list_get(retFile->blocks, i));
-		list_pos_aux = leer_archivo_bloque(auxFile, auxNameBlockFile);
-	    list_add_all(retFile->posiciones, list_pos_aux);
-
-	}
+	retFile->posiciones = leer_archivo_todos_bloques(retFile);
 
 	return retFile;
 }
 
-static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
+
+static size_t addLine( char* buffer, size_t size, t_posiciones* pos )
 {
   // file format assumed to be as specified in the question i.e. name{space}somevalue{space}someothervalue\n
   // find playerName
@@ -177,21 +243,13 @@ static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
   size_t newSize = 0;
   do
   {
-    char* q = strchr( p, *pos->lineaRaw ); // look for first letter in playerName
+    char* q = strchr( p, *pos->lineaRaw );
     if ( q != NULL )
     {
-      if ( strncmp( q, pos->lineaRaw, len ) == 0 ) // found name?
+      if ( strncmp( q, pos->lineaRaw, len ) == 0 )
       {
 
-    	  //        size_t lineSize = 1; // include \n already in line size
-//        for ( char* line = q; *line != '\n'; ++line)
-//        {
-//          ++lineSize;
-//        }
-
-    	  size_t lineSize = strcspn(q,"\n") + 1 ;
-
-        // calculate length left after line by subtracting offsets
+    	size_t lineSize = strcspn(q,"\n") + 1 ;
         size_t restSize = (size_t)((buffer + size) - (q + lineSize));
 
         char * posChar = malloc(lineSize + 1);
@@ -209,13 +267,14 @@ static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
         	posChar[strlen(posChar)] = '\n';
 
         	char* restChar = malloc(restSize);
-        	memcpy(restChar, q + lineSize +1,restSize );
+        	memcpy(restChar, q + lineSize,restSize);
 
         	memcpy(q, posChar,lineSize);
         	memcpy(q + lineSize , restChar ,restSize );
 
-        	newSize = lineSize + restSize;
-	        done = true;
+//        	newSize = lineSize + restSize;
+        	newSize = size;
+        	done = true;
 
         }
 
@@ -223,7 +282,7 @@ static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
       }
       else
       {
-        p = q + 1; // continue search
+        p = q + 1;
       }
     }
     else
@@ -235,6 +294,70 @@ static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
 
   return newSize;
 }
+
+
+static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
+{
+  // file format assumed to be as specified in the question i.e. name{space}somevalue{space}someothervalue\n
+  // find playerName
+  char* p = buffer;
+  bool done = false;
+  size_t len = sizeof(strlen(pos->lineaRaw));
+  size_t newSize = 0;
+  do
+  {
+    char* q = strchr( p, *pos->lineaRaw );
+    if ( q != NULL )
+    {
+      if ( strncmp( q, pos->lineaRaw, len ) == 0 )
+      {
+
+    	size_t lineSize = strcspn(q,"\n") + 1 ;
+        size_t restSize = (size_t)((buffer + size) - (q + lineSize));
+
+        char * posChar = malloc(lineSize + 1);
+
+        if (pos->cantidad == 1){
+			// move block with next line forward
+			memmove( q, q + lineSize, restSize );
+	        newSize = size - lineSize;
+	        done = true;
+        }else{
+        	pos->cantidad = pos->cantidad - 1;
+        	sprintf(posChar, "%d-%d=%d",pos->posx,pos->posy,pos->cantidad);
+
+        	lineSize = strlen(posChar)+1;
+        	posChar[strlen(posChar)] = '\n';
+
+        	char* restChar = malloc(restSize);
+        	memcpy(restChar, q + lineSize,restSize);
+
+        	memcpy(q, posChar,lineSize);
+        	memcpy(q + lineSize , restChar ,restSize );
+
+//        	newSize = lineSize + restSize;
+        	newSize = size;
+        	done = true;
+
+        }
+
+        // calculate new size
+      }
+      else
+      {
+        p = q + 1;
+      }
+    }
+    else
+    {
+      done = true;
+    }
+  }
+  while (!done);
+
+  return newSize;
+}
+
 
 
 int sacar_linea( t_posiciones *pos){
@@ -279,9 +402,68 @@ int sacar_linea( t_posiciones *pos){
 	      printf( "did not find %s", pos->file );
 	    }
 
+	    if ( stat( pos->file, &st ) != -1 )
+	   	{
+	    	printf( "archivo: %s tamaño: %d\n",pos->file, (int)st.st_size);
+	   	}
+
+
 	  return 0;
 
 }
+
+int sumar_linea( t_posiciones *pos){
+
+	    struct stat st;
+	    if ( stat( pos->file, &st ) != -1 )
+	    {
+	      // open the file in binary format
+	      FILE* fp = fopen( pos->file, "rb" );
+	      if ( fp != NULL )
+	      {
+	        // allocate memory to hold file
+	        char* buffer = malloc( st.st_size );
+
+	        // read the file into a buffer
+	        if ( fread(buffer, 1, st.st_size, fp) == st.st_size)
+	        {
+	          fclose(fp);
+
+	          size_t newSize = addLine( buffer, st.st_size, pos );
+
+	          fp = fopen( pos->file, "wb" );
+	          if ( fp != NULL )
+	          {
+	            fwrite(buffer, 1, newSize, fp);
+	            fclose(fp);
+	          }
+	          else
+	          {
+	            perror(pos->file);
+	          }
+	        }
+	        free(buffer);
+	      }
+	      else
+	      {
+	        perror(pos->file);
+	      }
+	    }
+	    else
+	    {
+	      printf( "did not find %s", pos->file );
+	    }
+
+	    if ( stat( pos->file, &st ) != -1 )
+	   	{
+	    	printf( "archivo: %s tamaño: %d\n",pos->file, (int)st.st_size);
+	   	}
+
+
+	  return 0;
+
+}
+
 
 t_metadata * leer_metadata(char *pathTallGrass){
 
@@ -297,6 +479,73 @@ t_metadata * leer_metadata(char *pathTallGrass){
 char *arch_get_string_value(t_archivo *self, char *key) {
 	return dictionary_get(self->datos, key);
 }
+
+t_list * leer_archivo_todos_bloques(t_File * retFile){
+
+	char* auxFile = malloc(strlen(PUNTO_MONTAJE_TALLGRASS) + 25 + strlen(BLOCKSDIR));
+
+	  t_list* lista = list_create();
+
+	  FILE* file;
+	  char* buffer = calloc(1,metadata->Block_size * list_size(retFile->blocks) + 1);
+	  char* bufferAux = calloc(1,metadata->Block_size + 1);
+	  int mempos=0;
+
+	  for(int i = 0; i < list_size(retFile->blocks); i++){
+
+			sprintf(auxFile,"%s/%s/%d.bin", PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,(int)list_get(retFile->blocks, i));
+
+			file = fopen(auxFile, "r+");
+
+			if (file == NULL) {
+					printf("Error en archivo %s\n",auxFile);
+					return NULL;
+				}
+
+			struct stat stat_file;
+			stat(auxFile, &stat_file);
+
+			//char* buffer = calloc(1, stat_file.st_size + 1);
+			fread(bufferAux, stat_file.st_size, 1, file);
+			memcpy(buffer + mempos, bufferAux, stat_file.st_size);
+			mempos += stat_file.st_size;
+
+		}
+
+	  t_posiciones * posiciones;
+	  char *line;
+
+		char** lines = string_split(buffer, "\n");
+
+		while (*lines != NULL) {
+
+			char** keyAndValue = string_n_split(*lines, 2, "=");
+			posiciones = malloc(sizeof(t_posiciones));
+
+			posiciones->file = malloc(strlen(auxFile)+1);
+			strcpy(posiciones->file,auxFile);
+
+			posiciones->lineaRaw = malloc(strlen(*lines)+1);
+			strcpy(posiciones->lineaRaw,*lines);
+
+			posiciones->posx = atoi(strtok(keyAndValue[0],"-"));
+			posiciones->posy = atoi(strtok(NULL,"-"));
+
+			posiciones->cantidad = atoi(keyAndValue[1]);
+
+			list_add(lista, posiciones);
+
+			lines++;
+
+		}
+
+
+	free(auxFile);
+
+	return lista;
+
+}
+
 
 t_list * leer_archivo_bloque(char*directorio, char*nombreArchivo){
 
