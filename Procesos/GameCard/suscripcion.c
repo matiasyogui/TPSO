@@ -359,7 +359,6 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 		// definir las acciones que debe realizar
 		case NEW_POKEMON:
 
-
 			newpok = recibirNewPokemon(mensaje);
 
 			archivo = open_file(newpok->pokemon);
@@ -492,25 +491,34 @@ void bajarPosiciones(t_File *archivo){
 
 	int sizeBuf=0;
 	int filepos=0;
+	int blockIndex = 0;
 
-	for(int b=0; b < list_size(archivo->blocks); b++){
+	while(filepos <= mempos  ){
 
-		int block = (int)list_get(archivo->blocks,b);
+		int block = (int)list_get(archivo->blocks,(blockIndex));
+
+		if (block == NULL){
+			bitBloques = leerArchivoBitmap(PUNTO_MONTAJE_TALLGRASS, metadata );
+			block = elegirBloqueLibre();
+			marcarBloqueUsado(block);
+		}
 
 		sprintf(auxFile,"%s%s/%d.bin",PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block);
 
 		FILE *blockBin;
 		blockBin=fopen(auxFile,"w");
 
-		if (b == (list_size(archivo->blocks)-1)){
+		if (filepos <= mempos ){
 			sizeBuf = mempos - ((b-1)*metadata->Block_size );
 		}else{
 			sizeBuf = metadata->Block_size;
 		}
 
 		fwrite(buffer+filepos,1,sizeBuf,blockBin);
-		filepos +=sizeBuf;
 		fclose(blockBin);
+
+		filepos +=sizeBuf;
+		blockIndex++;
 
 	}
 
