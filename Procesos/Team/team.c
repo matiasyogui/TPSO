@@ -6,6 +6,35 @@
 
 pthread_mutex_t mBlockAReady;
 
+void leer_archivo_configuracion(){
+
+	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team1.config");
+
+
+	LOG_FILE= config_get_string_value(config,"LOG_FILE");
+	logger = iniciar_logger(LOG_FILE, "TEAM", 0, LOG_LEVEL_INFO);
+
+
+	//PASO TODOS LOS PARAMETROS
+	POSICIONES_ENTRENADORES = config_get_array_value(config,"POSICIONES_ENTRENADORES");
+	POKEMON_ENTRENADORES = config_get_array_value(config,"POKEMON_ENTRENADORES");
+	OBJETIVOS_ENTRENADORES = config_get_array_value(config,"OBJETIVOS_ENTRENADORES");
+	TIEMPO_RECONEXION = config_get_int_value(config,"TIEMPO_RECONEXION");
+	RETARDO_CICLO_CPU = config_get_int_value(config,"RETARDO_CICLO_CPU");
+	ALGORITMO_PLANIFICACION = config_get_string_value(config,"ALGORITMO_PLANIFICACION");
+
+	if(string_equals_ignore_case(ALGORITMO_PLANIFICACION,"RR"))
+		QUANTUM = config_get_int_value(config,"QUANTUM");
+
+	if(string_equals_ignore_case(ALGORITMO_PLANIFICACION,"SJFCD") || string_equals_ignore_case(ALGORITMO_PLANIFICACION,"SJFSD")){
+		ESTIMACION_INICIAL = config_get_int_value(config,"ESTIMACION_INICIAL");
+		ALPHA = config_get_int_value(config, "ALPHA");
+	}
+
+	IP_BROKER = config_get_string_value(config,"IP_BROKER");
+	PUERTO_BROKER = config_get_string_value(config,"PUERTO_BROKER");
+}
+
 void pedir_pokemones(){
 	list_destroy(pokemonesAPedir);
 	list_destroy(pokemonAPedirSinRepetidos);
@@ -266,10 +295,15 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			memcpy(pokemon, stream + offset, size);
 			offset += size;
 
-		/*	pokemonAux = (char*) pokemon;
-			string_append(&pokemonAux,'\0');
+			pokemonAux = (char*) pokemon;
+			ptr = realloc(pokemonAux,size+1);
+			if(ptr == NULL){
+				printf("mal realloc.");
+			}
+			pokemonAux = ptr;
+			pokemonAux[size] = '\0';
 			pokemon = (void*) pokemonAux;
-		*/
+
 			memcpy(&cantidad, stream + offset, sizeof(int));
 
 			pthread_mutex_lock(&mPokemonesAPedirSinRepetidos);
@@ -343,15 +377,6 @@ int main(){
 
 	leer_archivo_configuracion();
 
-	hiloMain = pthread_self();
-
-	pthread_t hiloSuscriptor[3], server;
-	pthread_create(&hiloSuscriptor[1], NULL, (void*)suscribirse, "appeared_pokemon");
-	pthread_create(&hiloSuscriptor[2], NULL, (void*)suscribirse, "caught_pokemon");
-	pthread_create(&hiloSuscriptor[0], NULL, (void*)suscribirse, "localized_pokemon");
-
-	pthread_create(&server, NULL, (void*)iniciar_servidor, NULL);
-
 	int cantEntrenadores = cant_elementos(POSICIONES_ENTRENADORES);
 
 	hilos = calloc(cantEntrenadores, sizeof(*hilos));
@@ -359,7 +384,7 @@ int main(){
 	for(i=0;i<cantEntrenadores;i++){
 		t_entrenador* ent = setteoEntrenador(i);
 
-	    pthread_create(hilos + 1, NULL, (void*) ejecutarMensaje, (void*) ent);
+		pthread_create(hilos + 1, NULL, (void*) ejecutarMensaje, (void*) ent);
 	}
 
 	pthread_t blockAReady;
@@ -371,8 +396,17 @@ int main(){
 	pthread_create(&blockAReady, NULL, pasajeBlockAReady, NULL);
 	pthread_create(&planificarEntrenadorAEjecutar,NULL, planificarEntrenadoresAExec, NULL);
 
-
 	pedir_pokemones();
+
+	hiloMain = pthread_self();
+
+	pthread_t hiloSuscriptor[3], server;
+	pthread_create(&hiloSuscriptor[1], NULL, (void*)suscribirse, "appeared_pokemon");
+	pthread_create(&hiloSuscriptor[2], NULL, (void*)suscribirse, "caught_pokemon");
+	pthread_create(&hiloSuscriptor[0], NULL, (void*)suscribirse, "localized_pokemon");
+
+	pthread_create(&server, NULL, (void*)iniciar_servidor, NULL);
+
 
 	for(i=0;i<3;i++){
 		pthread_detach(hiloSuscriptor[i]);
@@ -394,36 +428,6 @@ int main(){
 	terminarEjecucionTeam();
 
 	return 0;
-}
-
-
-void leer_archivo_configuracion(){
-
-	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team1.config");
-
-
-	LOG_FILE= config_get_string_value(config,"LOG_FILE");
-	logger = iniciar_logger(LOG_FILE, "TEAM", 0, LOG_LEVEL_INFO);
-
-
-	//PASO TODOS LOS PARAMETROS
-	POSICIONES_ENTRENADORES = config_get_array_value(config,"POSICIONES_ENTRENADORES");
-	POKEMON_ENTRENADORES = config_get_array_value(config,"POKEMON_ENTRENADORES");
-	OBJETIVOS_ENTRENADORES = config_get_array_value(config,"OBJETIVOS_ENTRENADORES");
-	TIEMPO_RECONEXION = config_get_int_value(config,"TIEMPO_RECONEXION");
-	RETARDO_CICLO_CPU = config_get_int_value(config,"RETARDO_CICLO_CPU");
-	ALGORITMO_PLANIFICACION = config_get_string_value(config,"ALGORITMO_PLANIFICACION");
-
-	if(string_equals_ignore_case(ALGORITMO_PLANIFICACION,"RR"))
-		QUANTUM = config_get_int_value(config,"QUANTUM");
-
-	if(string_equals_ignore_case(ALGORITMO_PLANIFICACION,"SJFCD") || string_equals_ignore_case(ALGORITMO_PLANIFICACION,"SJFSD")){
-		ESTIMACION_INICIAL = config_get_int_value(config,"ESTIMACION_INICIAL");
-		ALPHA = config_get_int_value(config, "ALPHA");
-	}
-
-	IP_BROKER = config_get_string_value(config,"IP_BROKER");
-	PUERTO_BROKER = config_get_string_value(config,"PUERTO_BROKER");
 }
 
 t_entrenador* setteoEntrenador(int i){

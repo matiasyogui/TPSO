@@ -33,7 +33,7 @@ void esperar_cliente(int);
 void serve_client(int *socket);
 t_buffer* recibir_mensaje_id(int socket_cliente, int*);
 void leer_mensaje(t_buffer* buffer);
-void enviarLocalizeVacio();
+void enviarLocalizeVacio(char*, int);
 void crearArchivoPokemon(char*);
 void enviarAppeared(t_File* , int );
 void enviarCaught(int , bool);
@@ -428,7 +428,7 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 			{
 				printf("el pokemon: %s NO EXISTE en TALLGRASS\n", getpok->pokemon);
 				crearArchivoPokemon(getpok->pokemon);
-				enviarLocalizeVacio(archivo);
+				enviarLocalizeVacio(getpok->pokemon, id_correlativo);
 			}
 
 			break;
@@ -620,16 +620,21 @@ int existePosicionesCatch(t_catchPokemon *catchpok,t_File *archivo){
 
 void enviarAppeared(t_File* archivo, int id_correlativo){
 	int cod_op = APPEARED_POKEMON;
-	int len = strlen(archivo->nombre) + 1;
+	int len = strlen(archivo->nombre);
 
 	int offset = 0;
 
-	void* stream = malloc( sizeof(uint32_t)*3 + len + 2*sizeof(uint32_t));
+	void* stream = malloc( sizeof(uint32_t)*4 + len + 2*sizeof(uint32_t));
+
+	int sizeStream = sizeof(uint32_t) + len + 2*sizeof(uint32_t);
 
 	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
 	memcpy(stream + offset, &id_correlativo, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &sizeStream, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
 	memcpy(stream + offset, &len, sizeof(uint32_t));
@@ -703,14 +708,16 @@ void enviarCaught(int id_correlativo, bool loAtrapo){
 	}
 }
 
-void enviarLocalizeVacio(t_File* archivo, int id_correlativo){
+void enviarLocalizeVacio(char* pokemon, int id_correlativo){
 	int cod_op = LOCALIZED_POKEMON;
-	int len = strlen(archivo->nombre) + 1;
+	int len = strlen(pokemon);
 	int cero = 0;
 
 	int offset = 0;
 
-	void* stream = malloc( sizeof(uint32_t)*4 + len + 2*archivo->posiciones->elements_count*sizeof(uint32_t));
+	void* stream = malloc( sizeof(uint32_t)*5 + len);
+
+	int sizeStream = sizeof(uint32_t)*2 + len;
 
 	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
@@ -718,10 +725,13 @@ void enviarLocalizeVacio(t_File* archivo, int id_correlativo){
 	memcpy(stream + offset, &id_correlativo, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
+	memcpy(stream + offset, &sizeStream, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
 	memcpy(stream + offset, &len, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	memcpy(stream + offset, archivo->nombre, len);
+	memcpy(stream + offset, pokemon, len);
 	offset += len;
 
 	memcpy(stream + offset, &cero, sizeof(uint32_t));
@@ -746,17 +756,22 @@ void enviarLocalizeVacio(t_File* archivo, int id_correlativo){
 
 void enviarLocalized(t_File* archivo, int id_correlativo){
 		int cod_op = LOCALIZED_POKEMON;
-		int len = strlen(archivo->nombre) + 1;
+		int len = strlen(archivo->nombre);
 
 		int offset = 0;
-		int sizeMalloc = (4*sizeof(uint32_t)) + len + (2*(archivo->posiciones->elements_count)*sizeof(uint32_t));
+		int sizeMalloc = (5*sizeof(uint32_t)) + len + (2*(archivo->posiciones->elements_count)*sizeof(uint32_t));
 //cod_op + id + longitud del pokemon + pokemon + 2 * cantidad de pos
 		void* stream = malloc( sizeMalloc );
+
+		int sizeStream = 2*sizeof(uint32_t) + len + (2*(archivo->posiciones->elements_count)*sizeof(uint32_t));
 
 		memcpy(stream + offset, &cod_op, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
 
 		memcpy(stream + offset, &id_correlativo, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		memcpy(stream + offset, &sizeStream, sizeof(uint32_t));
 		offset += sizeof(uint32_t);
 
 		memcpy(stream + offset, &len, sizeof(uint32_t));
