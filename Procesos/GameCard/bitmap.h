@@ -60,6 +60,6 @@ char* eliminarBarra0(char*);
 int existeBitmap();
 void ActualizarBitmap();
 void pruebasSet();
-t_bitarray * leerArchivoBitmap(char* , t_metadata * );
+t_bitarray * leerArchivoBitmap(char* , t_metadata *, int );
 
 #endif /* BITMAP_H_ */
