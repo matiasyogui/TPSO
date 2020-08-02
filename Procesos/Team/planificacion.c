@@ -1031,6 +1031,7 @@ void agregarMensajeLista(int socket, int cod_op){
 
 	recv(socket, &id_correlativo, sizeof(uint32_t), 0);
 	recv(socket, &size, sizeof(uint32_t), 0);
+
 	mensaje = malloc(size);
 	recv(socket, mensaje, size, 0);
 
@@ -1164,9 +1165,14 @@ void enviarGet(void* elemento){
 
 	int offset = 0;
 
-	void* stream = malloc( 2*sizeof(uint32_t) + len);
+	void* stream = malloc( 3*sizeof(uint32_t) + len);
+
+	int sizeStream = sizeof(uint32_t) + len;
 
 	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &sizeStream, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
 	memcpy(stream + offset, &len, sizeof(uint32_t));
