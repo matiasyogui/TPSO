@@ -27,44 +27,14 @@ char* ultimoDirectorio(char*pathDirectorio){
 
 void crearMetadataDePuntoDeMontaje(char* directorioMetadata){
 	FILE *metadataBin;
-	metadataBin=fopen(directorioMetadata,"w");
+	char* pathArchivo = malloc(strlen(directorioMetadata)+strlen(METADATADIR)+20);
+
+	sprintf(pathArchivo,"%s%smetadata.bin",directorioMetadata,METADATADIR);
+	metadataBin=fopen(pathArchivo,"w");
 	fprintf(metadataBin,"BLOCK_SIZE=64\nBLOCKS=5096\nMAGIC_NUMBER=TALLGRASS");
 	free(directorioMetadata);
 	fclose(metadataBin);
 }
-
-/*t_list * listarTallGrassFiles(char * path) {
-
-	  struct dirent *dir;
-	  char * nombreDir = malloc(strlen(path) + strlen(FILES)+1);
-	  t_list *lista = list_create() ;
-	  t_File * file;
-
-	  strcpy(nombreDir,path);
-	  strcat(nombreDir,FILES);
-
-	  DIR * d = opendir(nombreDir);
-
-	  if (d != NULL)
-	  {
-		    while ((dir = readdir(d)) != NULL)
-		    {
-		    	if (!string_contains(dir->d_name, "."))
-		    	{
-					printf("Directorio %s archivo %s\n",FILES, dir->d_name);
-
-					file = leer_file(nombreDir, dir->d_name);
-
-					list_add(lista, file);
-		    	}
-		    }
-
-	  }else{
-		  crearTallGrassFiles(PUNTO_MONTAJE_TALLGRASS);
-	  }
-
-	  return lista;
-}*/
 
 void crearTallGrassFiles(char*pathMontaje){
 
@@ -76,16 +46,30 @@ void montar_TallGrass(){
 
 	metadata =leer_metadata(PUNTO_MONTAJE_TALLGRASS);
 
-	if(metadata == NULL)
+	if(metadata == NULL){
 		crearMetadataDePuntoDeMontaje(PUNTO_MONTAJE_TALLGRASS);
+		metadata =leer_metadata(PUNTO_MONTAJE_TALLGRASS);
+		bitBloques = leerArchivoBitmap(PUNTO_MONTAJE_TALLGRASS, metadata, 0);
+	}else{
+		bitBloques = leerArchivoBitmap(PUNTO_MONTAJE_TALLGRASS, metadata, -1);
+	}
 
 	printf("Metadata blocksize %d\n", metadata->Block_size);
 	printf("Metadata blocks %d\n", metadata->Blocks);
+
+
 
 }
 
 bool estaUsadoBloque(int ind){
 	return bitarray_test_bit(bitBloques, ind);
+}
+
+void marcarBloqueLibre(int index){
+
+	bitarray_clean_bit(bitBloques, index);
+
+	ActualizarBitmap(PUNTO_MONTAJE_TALLGRASS,metadata, bitBloques);
 }
 
 void marcarBloqueUsado(int index){
@@ -149,7 +133,7 @@ t_File * crear_file(char * nombre){
 	fprintf(f, "SIZE=0\n");
 	retFile->size = 0;
 
-	bitBloques = leerArchivoBitmap(PUNTO_MONTAJE_TALLGRASS, metadata );
+	//bitBloques = leerArchivoBitmap(PUNTO_MONTAJE_TALLGRASS, metadata, -1 );
 	int block = elegirBloqueLibre();
 	marcarBloqueUsado(block);
 
@@ -470,10 +454,13 @@ t_metadata * leer_metadata(char *pathTallGrass){
 	  t_archivo * arch = leer_archivo(pathTallGrass,METADATADIR , METADATAFILE);
 	  t_metadata * meta = malloc(sizeof(t_metadata));
 
+	  if(arch == NULL)
+		  return NULL;
+
 	  meta->Block_size = atoi(arch_get_string_value(arch,BLOCKSIZE));
 	  meta->Blocks	= atoi(arch_get_string_value(arch,BLOCKS));
 
-	return meta;
+	  return meta;
 }
 
 char *arch_get_string_value(t_archivo *self, char *key) {

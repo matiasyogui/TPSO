@@ -8,12 +8,14 @@
 #include "bitmap.h"
 t_bitarray *bitmap ;
 
-t_bitarray * leerArchivoBitmap(char* directorioBitmap, t_metadata *meta ){
+t_bitarray * leerArchivoBitmap(char* directorioBitmap, t_metadata *meta, int crear ){
 
-	char* pathCompleto = malloc(strlen(directorioBitmap)+strlen(BITMAPFILE)+1);
+	char* pathCompleto = malloc(strlen(directorioBitmap) +
+						        strlen(BITMAPFILE) +
+								strlen(METADATADIR) +
+								100);
 
-	strcpy(pathCompleto,directorioBitmap);
-	strcat(pathCompleto,BITMAPFILE);
+	sprintf(pathCompleto,"%s%s%s",directorioBitmap,METADATADIR,BITMAPFILE );
 
 	int size = BIT_CHAR((meta->Blocks/8));
 	if (meta->Blocks%8!=0)
@@ -42,11 +44,16 @@ t_bitarray * leerArchivoBitmap(char* directorioBitmap, t_metadata *meta ){
 
 		size_t tope = bitarray_get_max_bit(bitmap);
 
-/*		for(int i = 0; i < tope; i++){
-			 bitarray_clean_bit(bitmap, i);
-		}*/
+		if (crear == 0){
+
+//			bitarray_set_bit(bitmap, 0);
+			for(int i = 0; i < tope; i++){
+				 bitarray_clean_bit(bitmap, i);
+			}
+		}
 
 		close(fd);
+
 		return bitmap;
 }
 

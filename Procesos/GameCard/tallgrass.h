@@ -40,5 +40,6 @@ void crearMetadataDePuntoDeMontaje(char* );
 bool estaUsadoBloque(int);
 void marcarBloqueUsado(int);
 int sacar_linea( t_posiciones*);
+int elegirBloqueLibre();
 
 #endif /* TALLGRASS_H_ */

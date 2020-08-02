@@ -11,7 +11,7 @@ char* PUERTO_BROKER;
 static void cargar_datos_suscripcion(void);
 static int _crear_conexion(void* mensaje, int size_mensaje, int *id_suscripcion);
 static void enviar_mensaje_suscripcion(void* _cola);
-static int reconectarse(int cola_suscrito, int* id_suscripcion);
+static int reconectarse(int cola_suscbloquerito, int* id_suscripcion);
 static void esperando_mensajes(int _socket, int cola_suscrito, int _id_suscriptor);
 static int enviar_confirmacion(int socket, bool estado);
 static void procesar_mensaje(int cod_op, int id_correlatvio, void* mensaje, int size);
@@ -493,14 +493,16 @@ void bajarPosiciones(t_File *archivo){
 	int filepos=0;
 	int blockIndex = 0;
 
-	while(filepos <= mempos  ){
+	archivo->size = mempos;
+
+	while(filepos < mempos  ){
 
 		int block = (int)list_get(archivo->blocks,(blockIndex));
 
-		if (block == NULL){
-			bitBloques = leerArchivoBitmap(PUNTO_MONTAJE_TALLGRASS, metadata );
+		if ((list_size(archivo->blocks) - 1) < blockIndex){
 			block = elegirBloqueLibre();
 			marcarBloqueUsado(block);
+			list_add(archivo->blocks,block);
 		}
 
 		sprintf(auxFile,"%s%s/%d.bin",PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block);
@@ -508,8 +510,8 @@ void bajarPosiciones(t_File *archivo){
 		FILE *blockBin;
 		blockBin=fopen(auxFile,"w");
 
-		if (filepos <= mempos ){
-			sizeBuf = mempos - ((b-1)*metadata->Block_size );
+		if ((mempos - filepos) <= metadata->Block_size ){
+			sizeBuf = mempos - filepos;
 		}else{
 			sizeBuf = metadata->Block_size;
 		}
@@ -522,6 +524,67 @@ void bajarPosiciones(t_File *archivo){
 
 	}
 
+	if(blockIndex < list_size(archivo->blocks)){
+		int block = (int)list_get(archivo->blocks,list_size(archivo->blocks)-1);
+
+		sprintf(auxFile,"%s%s/%d.bin",PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block);
+		remove(auxFile);
+		marcarBloqueLibre(block);
+		list_remove(archivo->blocks, list_size(archivo->blocks)-1);
+
+	}
+
+	actualizarBloquesMetadata(archivo);
+
+}
+
+actualizarBloquesMetadata(t_File *archivo){
+
+	char* charBlocks = calloc(1,100);
+
+	if (list_size(archivo->blocks) == 1){
+		int block = (int)list_get(archivo->blocks, 0);
+		char* charBlock = malloc(10);
+		sprintf(charBlock,"%d",block);
+
+			strcat(charBlocks,"[");
+			strcat(charBlocks,charBlock);
+			strcat(charBlocks,"]");
+
+	}else{
+
+		for(int a=0; a < list_size(archivo->blocks); a++){
+
+			int block = (int)list_get(archivo->blocks, a);
+			char* charBlock = malloc(10);
+			sprintf(charBlock,"%d",block);
+
+			if (a==0){
+				strcat(charBlocks,"[");
+				strcat(charBlocks,charBlock);
+				strcat(charBlocks,",");
+			}else if(a==(list_size(archivo->blocks)-1)){
+				strcat(charBlocks,charBlock);
+				strcat(charBlocks,"]");
+			}else{
+				strcat(charBlocks,charBlock);
+				strcat(charBlocks,",");
+			}
+
+		}
+	}
+
+	t_config* metadata = config_create(archivo->path);
+
+	if (metadata == NULL)
+		return ;
+	char* charSize = malloc(10);
+	sprintf(charSize,"%d",archivo->size);
+
+	config_set_value(metadata, "BLOCKS", charBlocks);
+	config_set_value(metadata, "SIZE", charSize);
+
+	config_save(metadata);
 
 }
 
@@ -539,8 +602,15 @@ int existePosicionesCatch(t_catchPokemon *catchpok,t_File *archivo){
 	if (pos == NULL )
 		return -1;
 
-	if( sacar_linea( pos ) != 0)
-		return -1;
+	if(pos->cantidad == 1){
+		list_remove_by_condition(archivo->posiciones, _estaPosicion);
+	}
+	else
+	{
+		pos->cantidad -= 1 ;
+	}
+
+	bajarPosiciones(archivo);
 
 	return 0;
 }
