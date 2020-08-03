@@ -190,9 +190,9 @@ void* stream_new_pokemon_id(char*datos[], int* bytes){
 void* stream_appeared_pokemon(char* datos[], int* bytes){
 
 	char* nombre_pokemon = datos[0];
-	uint32_t size_nombre = strlen(nombre_pokemon) + 1,
-			 posX = atoi(datos[1]),
-			 posY = atoi(datos[2]);
+	uint32_t size_nombre = strlen(nombre_pokemon),
+			 posX = (int) datos[1],//atoi(datos[1]),
+			 posY = (int) datos[2];//atoi(datos[2]);
 
 	*bytes = sizeof(uint32_t) + size_nombre + 2 * sizeof(uint32_t);
 

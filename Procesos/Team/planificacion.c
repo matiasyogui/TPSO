@@ -1116,7 +1116,7 @@ void agregarMensajeLista(int socket, int cod_op){
 				pthread_mutex_unlock(&mListaGlobal);
 			}
 
-			log_info(logger, "Llego el mensaje %s del pokemon &s con la cantidad de %d y los datos de %s", cod_opToString(cod_op), pokemon, cantidad, localized);
+			log_info(logger, "Llego el mensaje %s del pokemon %s con la cantidad de %d y los datos de %s", cod_opToString(cod_op), pokemon, cantidad, localized);
 		}
 	}else{
 
