@@ -53,10 +53,10 @@ void pedir_pokemones(){
 		printf("id = %d\n", (int)list_get(lista_id_correlativos, i));
 	}
 
-
 }
 
 t_entrenador* elegirEntrenadorXCercania(int posx, int posy){
+
 	void* _algoritmoCercano(void* elemento){
 		return algortimoCercano(elemento, posx, posy);
 	}

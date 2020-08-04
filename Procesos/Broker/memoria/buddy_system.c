@@ -167,7 +167,6 @@ void* buscar_particion_libre(int size, int id_mensaje, int cod_op)
 		if(tamanio_particion >= size)// si la particion alcanza hay dos opciones
 			return creo_particiones_internas(particion, i, size, id_mensaje, cod_op);
 	}
-	printf("no hay memoria disponilbe  \n");
 
 	return NULL;
 }

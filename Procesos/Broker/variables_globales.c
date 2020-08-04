@@ -130,7 +130,6 @@ char* estado_conexion_toString(estado_conexion estado){
 		case DESCONECTADO:
 			return "DESCONECTADO";
 	}
-
 	return "ESTADO NO VALIDO";
 }
 
@@ -145,7 +144,6 @@ char* estado_mensaje_toString(estado_mensaje estado){
 		case ELIMINADO:
 			return "ELIMINADO";
 	}
-
 	return "ESTADO NO VALIDO";
 }
 
@@ -239,7 +237,7 @@ void* serializar_nodo_mensaje(t_mensaje* mensaje_enviar, int* size){
 
 	pthread_mutex_unlock(&MUTEX_PARTICIONES);
 
-	printf("SE ENVIO UN %s CON ID CORRELATIVO %d\n", cod_opToString(mensaje_enviar -> cod_op), mensaje_enviar -> id_correlativo);
+	printf("Se envio un mensaje %s con id %d y id correlativo %d\n", cod_opToString(mensaje_enviar->cod_op), mensaje_enviar->id, mensaje_enviar->id_correlativo);
 
 	*size = offset;
 	return stream;
