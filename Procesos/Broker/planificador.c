@@ -6,6 +6,7 @@ pthread_t thread_gestionEnvios[GESTORES_ENVIOS];
 
 static void* _obtener_ficha_envios(void);
 static int realizar_envio(void* envio);
+static int recibir_confirmacion(int id_mensaje, int id_suscriptor, int cod_op, int socket_cliente);
 
 
 
@@ -103,28 +104,34 @@ static int realizar_envio(void* _envio){
 	int s, size;
 
 	int socket = obtener_socket(cod_op, id_suscriptor);
-	if (socket == -1) {  desconectar_suscriptor(id_suscriptor, cod_op); return EXIT_FAILURE; }
+	if (socket == -1) {  desconectar_suscriptor(id_suscriptor, cod_op); eliminar_envio_obligatorio(cod_op, id_mensaje, id_suscriptor); return EXIT_FAILURE; }
 
 	void* stream = serializar_mensaje(cod_op, id_mensaje, &size);
 	if (stream == NULL) { eliminar_mensaje_id(id_mensaje, cod_op); return EXIT_FAILURE; }
+
+	eliminar_envio_obligatorio(cod_op, id_mensaje, id_suscriptor);
 
 	s = send(socket, stream, size, MSG_NOSIGNAL);
 	if (s < 0) { perror("[PLANIFICAR.C] SEND ERROR"); desconectar_suscriptor(id_suscriptor, cod_op); free(stream); return EXIT_FAILURE; }
 
 	free(stream);
 
-	int confirmacion;
+	agregar_notificacion(cod_op, id_mensaje, id_suscriptor);
 
-	s = recv(socket, &confirmacion, sizeof(int), 0);
-	if (s <= 0) { perror("[PLANIFICAR.C] RECV ERROR"); desconectar_suscriptor(id_suscriptor, cod_op); return EXIT_FAILURE; }
-
-	t_notificacion* notificacion = crear_nodo_notificacion(id_suscriptor, confirmacion);
-
-	agregar_notificacion(cod_op, id_mensaje, notificacion); // podria buscar si existe ya la notificacion en ese caso solo cambiaria el valor del ack
-
-	//cambiar_estado_notificacion(cod_op, id_mensaje, id_suscriptor, confirmacion);
-
-	return EXIT_SUCCESS;
+	return recibir_confirmacion(id_mensaje, id_suscriptor, cod_op, socket);
 }
 
+
+static int recibir_confirmacion(int id_mensaje, int id_suscriptor, int cod_op, int socket_cliente){
+
+	int s, confirmacion;
+
+	s = recv(socket_cliente, &confirmacion, sizeof(int), 0);
+	if (s <= 0) { perror("[PLANIFICAR.C] RECV ERROR"); desconectar_suscriptor(id_suscriptor, cod_op); return EXIT_FAILURE; }
+
+	cambiar_estado_notificacion(cod_op, id_mensaje, id_suscriptor, confirmacion);
+
+	return EXIT_SUCCESS;
+
+}
 

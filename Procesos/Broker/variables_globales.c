@@ -44,8 +44,12 @@ t_mensaje* crear_nodo_mensaje(int cod_op, int id_correlativo){
 	nodo_mensaje -> cod_op = cod_op;
 	nodo_mensaje -> id = obtener_id();
 	nodo_mensaje -> id_correlativo = id_correlativo;
+	nodo_mensaje -> envios_obligatorios = list_create();
 	nodo_mensaje -> notificiones_envio = list_create();
 	nodo_mensaje -> estado = EN_MEMORIA;
+
+	pthread_mutex_init(&(nodo_mensaje->mutex_eliminar), NULL);
+	pthread_mutex_lock(&(nodo_mensaje->mutex_eliminar));
 
 	return nodo_mensaje;
 }
@@ -103,6 +107,11 @@ void borrar_nodo_mensaje(void* nodo_mensaje){
 
 	t_mensaje* aux = nodo_mensaje;
 	list_destroy_and_destroy_elements(aux->notificiones_envio, free);
+
+	list_destroy_and_destroy_elements(aux->envios_obligatorios, free);
+	pthread_mutex_unlock(&(aux->mutex_eliminar));
+	pthread_mutex_destroy(&(aux->mutex_eliminar));
+
 	free(aux);
 }
 
@@ -177,31 +186,6 @@ void logear_mensaje(char* mensaje){
 }
 
 
-/*
-void* serializar_nodo_mensaje(t_mensaje* mensaje_enviar, int* size){
-
-	void* stream = malloc(3 * sizeof(uint32_t) + mensaje_enviar->mensaje->size);
-	int offset = 0;
-
-	memcpy(stream + offset, &(mensaje_enviar->cod_op), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	if (mensaje_enviar -> id_correlativo != -1)
-		memcpy(stream + offset, &(mensaje_enviar->id_correlativo), sizeof(uint32_t));
-	else
-		memcpy(stream + offset, &(mensaje_enviar->id), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(stream + offset, &(mensaje_enviar->mensaje->size), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	memcpy(stream + offset, mensaje_enviar->mensaje->stream, mensaje_enviar->mensaje->size);
-	offset += mensaje_enviar->mensaje->size;
-
-	*size = offset;
-	return stream;
-}*/
-
 void* serializar_nodo_mensaje(t_mensaje* mensaje_enviar, int* size){
 
 	void* stream = malloc(3 * sizeof(uint32_t) + mensaje_enviar->size_mensaje);
@@ -237,7 +221,7 @@ void* serializar_nodo_mensaje(t_mensaje* mensaje_enviar, int* size){
 
 	pthread_mutex_unlock(&MUTEX_PARTICIONES);
 
-	printf("Se envio un mensaje %s con id %d y id correlativo %d\n", cod_opToString(mensaje_enviar->cod_op), mensaje_enviar->id, mensaje_enviar->id_correlativo);
+	printf("-Se envio un mensaje %s con id %d\n", cod_opToString(mensaje_enviar->cod_op), mensaje_enviar->id);
 
 	*size = offset;
 	return stream;

@@ -27,7 +27,7 @@ void* pedir_memoria_particiones(int size, int id_mensaje, int cod_op)
 
 	if (inicio_particion == NULL) {
 
-		printf("No se encontro un espacio libre\n");
+		//printf("No se encontro un espacio libre\n");
 		return NULL;
 
 	} else {

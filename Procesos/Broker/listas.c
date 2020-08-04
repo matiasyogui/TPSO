@@ -241,15 +241,24 @@ void* serializar_mensaje(int cod_op, int id, int* size){
 }
 
 
-void agregar_notificacion(int cod_op, int id, void* notificacion){
+void agregar_notificacion(int cod_op, int id_mensaje, int id_suscriptor){
+
+	bool _existe_notificacion(void* _notificacion){
+		return ((t_notificacion*)_notificacion)->id_suscriptor == id_suscriptor;
+	}
 
 	t_list* sublista = list_get(LISTA_MENSAJES, cod_op);
 
 	pthread_rwlock_wrlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
 
-	t_mensaje* mensaje = buscar_por_id(sublista, id, _obtener_id_mensaje);
+	t_mensaje* mensaje = buscar_por_id(sublista, id_mensaje, _obtener_id_mensaje);
 
-	if (mensaje != NULL) list_add(mensaje->notificiones_envio, notificacion);
+	if (!list_any_satisfy(mensaje->notificiones_envio, _existe_notificacion) && mensaje != NULL) {
+
+		t_notificacion* notificacion = crear_nodo_notificacion(id_suscriptor, false);
+
+		list_add(mensaje->notificiones_envio, notificacion);
+	}
 
 	pthread_rwlock_unlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
 
@@ -505,4 +514,57 @@ static void informe_lista_subs(void){
 	printf("======================================================================================================\n\n");
 }
 
+
+//======================================================================================================================================
+
+
+void eliminar_envio_obligatorio(int cod_op, int id_mensaje, int id_suscriptor){
+
+	t_list* sublista = list_get(LISTA_MENSAJES, cod_op);
+
+	bool _buscar_id(void* id){
+		return *((int*)id) == id_suscriptor;
+	}
+
+	pthread_rwlock_wrlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
+
+	t_mensaje* mensaje = buscar_por_id(sublista, id_mensaje, _obtener_id_mensaje);
+
+	if (mensaje != NULL) {
+
+		if (list_size(mensaje->envios_obligatorios) > 0){
+
+			list_remove_and_destroy_by_condition(mensaje->envios_obligatorios, _buscar_id, free);
+
+			if (list_size(mensaje->envios_obligatorios) == 0)
+				pthread_mutex_unlock(&(mensaje->mutex_eliminar));
+		}
+	}
+
+	pthread_rwlock_unlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
+}
+
+
+pthread_mutex_t* obtener_mutex_mensaje(int cod_op, int id_mensaje){
+
+	t_list* sublista = list_get(LISTA_MENSAJES, cod_op);
+
+	pthread_mutex_t* mutex = NULL;
+
+	pthread_rwlock_rdlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
+
+	t_mensaje* mensaje = buscar_por_id(sublista, id_mensaje, _obtener_id_mensaje);
+
+	if (mensaje != NULL){
+
+		if(list_size(mensaje->envios_obligatorios) == 0)
+			pthread_mutex_unlock(&(mensaje->mutex_eliminar));
+
+		mutex = &(mensaje->mutex_eliminar);
+	}
+
+	pthread_rwlock_unlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
+
+	return mutex;
+}
 

@@ -393,7 +393,7 @@ int main(){
 	pthread_create(&blockAReady, NULL, pasajeBlockAReady, NULL);
 	pthread_create(&planificarEntrenadorAEjecutar,NULL, planificarEntrenadoresAExec, NULL);
 
-	pedir_pokemones();
+
 
 	hiloMain = pthread_self();
 
@@ -404,6 +404,7 @@ int main(){
 
 	pthread_create(&server, NULL, (void*)iniciar_servidor, NULL);
 
+	pedir_pokemones();
 
 	for(i=0;i<3;i++){
 		pthread_detach(hiloSuscriptor[i]);

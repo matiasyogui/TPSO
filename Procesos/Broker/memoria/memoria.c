@@ -177,9 +177,6 @@ void eliminar_particion_fifo(){
 
 	if (almenos_hay_un_elemento)
 		liberar(particion_eliminar, posicion);
-	else
-		printf("\nNo hay particiones en la memoria \nAsi que no trate de borrar que es en vano\n");
-
 }
 
 
@@ -217,8 +214,6 @@ void eliminar_particion_lru(){
 
 	if (almenos_hay_un_elemento)
 		liberar(particion_eliminar, posicion);
-	else
-		printf("\nNo hay particiones en la memoria \nAsi que no trate de borrar que es en vano\n");
 }
 
 
@@ -251,7 +246,7 @@ void compactar(){
 		compactar_buddy();
 
 	if((!string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES")) && (!string_equals_ignore_case(ALGORITMO_MEMORIA, "BS")))
-		printf("No se reconocio el algoritmo_memoria fijarse compactar()  \n");
+		printf("No se reconocio el algoritmo de compactacion \n");
 
 	pthread_mutex_unlock(&MUTEX_PARTICIONES);
 }

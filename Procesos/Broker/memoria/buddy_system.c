@@ -179,7 +179,7 @@ void* pedir_memoria_buddy(int size, int id_mensaje, int cod_op)
 	void* inicio_particion = buscar_particion_libre(size, id_mensaje, cod_op);
 
 	if(inicio_particion == NULL) {
-		printf("No se encontro un espacio libre\n");
+		//printf("No se encontro un espacio libre\n");
 		return NULL;
 	}
 	else

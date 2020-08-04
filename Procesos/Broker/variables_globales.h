@@ -42,9 +42,12 @@ typedef struct{
 	uint32_t cod_op;
 	uint32_t id;
 	int id_correlativo;
+	t_list* envios_obligatorios;
 	t_list* notificiones_envio;
 	estado_mensaje estado;
 	int size_mensaje;
+
+	pthread_mutex_t mutex_eliminar;
 
 }t_mensaje;
 
@@ -52,6 +55,7 @@ typedef struct{
 typedef struct{
 
 	int id_suscriptor;
+	bool estado;
 	bool ACK;
 
 }t_notificacion;

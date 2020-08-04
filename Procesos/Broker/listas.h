@@ -44,12 +44,15 @@ t_list* obtener_lista_ids_mensajes_restantes(int cod_op, int id_suscriptor);
 
 void* serializar_mensaje(int cod_op, int id, int* size);
 
-void agregar_notificacion(int cod_op, int id, void* notificacion);
+void agregar_notificacion(int cod_op, int id_mensaje, int id_suscriptor);
 
 void cambiar_estado_notificacion(int cod_op, int id_mensaje, int id_suscriptor, bool confirmacion);
 
 int obtener_socket(int cod_op, int id_suscriptor);
 
 
+void eliminar_envio_obligatorio(int cod_op, int id_mensaje, int id_suscriptor);
+
+pthread_mutex_t* obtener_mutex_mensaje(int cod_op, int id_mensaje);
 
 #endif /* LISTAS_H_ */

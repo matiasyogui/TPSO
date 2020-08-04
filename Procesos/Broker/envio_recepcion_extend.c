@@ -20,6 +20,8 @@ int tratar_mensaje(int socket, int cod_op, bool esCorrelativo){
 	t_mensaje* mensaje = generar_nodo_mensaje(socket, cod_op, esCorrelativo);
 	if (mensaje == NULL) return EXIT_FAILURE;
 
+	printf("\n*Llego un mensaje %s con id %d\n", cod_opToString(mensaje->cod_op), mensaje->id);
+
 	guardar_mensaje(mensaje, cod_op);
 
 	char* log_mensaje = string_from_format("Llego un mensaje a la cola %s", cod_opToString(cod_op));
@@ -152,13 +154,15 @@ static void* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
 
 	t_mensaje* n_mensaje = crear_nodo_mensaje(cod_op, id_correlativo);
 
+	n_mensaje->envios_obligatorios = obtener_lista_ids_suscriptores(n_mensaje->cod_op);
+
 	s = recv(socket, &size_mensaje, sizeof(uint32_t), 0);
 	if (s < 0) { perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
 
-	//
 	n_mensaje-> size_mensaje = size_mensaje;
 
-	t_particion* particion = pedir_memoria(size_mensaje, n_mensaje->id, n_mensaje->cod_op);//pedir_memoria(size_mensaje);
+	t_particion* particion = pedir_memoria(size_mensaje, n_mensaje->id, n_mensaje->cod_op);
+
 
 	pthread_mutex_lock(&MUTEX_PARTICIONES);
 
@@ -167,14 +171,13 @@ static void* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
 
 	pthread_mutex_unlock(&MUTEX_PARTICIONES);
 
+
 	pthread_mutex_lock(&MUTEX_LOG);
 
 	log_info(LOGGER, "Se guardo un mensaje del tipo %s en la posicion de memoria %p", cod_opToString(cod_op), particion->inicio_particion);
 
 	pthread_mutex_unlock(&MUTEX_LOG);
-	//
 
-	//printf("Cod_op = %d, Id_correlativo = %d, Mensaje_size = %d\n", n_mensaje->cod_op, n_mensaje->id_correlativo, n_mensaje->mensaje->size);
 
 	return n_mensaje;
 }

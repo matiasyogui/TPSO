@@ -184,7 +184,7 @@ static int process_request(int cliente_fd, int cod_op){
 
 			tratar_mensaje(cliente_fd, cod_op, false);
 
-			printf("Llego un mensaje %s\n", cod_opToString(cod_op));
+			//printf("Llego un mensaje %s\n", cod_opToString(cod_op));
 
 			break;
 
@@ -194,7 +194,7 @@ static int process_request(int cliente_fd, int cod_op){
 
 			tratar_mensaje(cliente_fd, cod_op, true);
 
-			printf("Llego un mensaje %s\n", cod_opToString(cod_op));
+			//printf("Llego un mensaje %s\n", cod_opToString(cod_op));
 
 			break;
 

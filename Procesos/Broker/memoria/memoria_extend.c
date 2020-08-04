@@ -18,17 +18,16 @@ void obtener_datos()
 //=============================================================================
 
 //void* buscar_espacio_libre_en_memoria(int size)
-void* buscar_espacio_libre_en_memoria(int size, int id_mensaje, int cod_op)
-{
+void* buscar_espacio_libre_en_memoria(int size, int id_mensaje, int cod_op){
 
-	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
+	if (string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
 		return pedir_memoria_particiones(size, id_mensaje, cod_op);
 
-	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "BS"))
-		//return 	pedir_memoria_buddy(size);
+	if (string_equals_ignore_case(ALGORITMO_MEMORIA, "BS"))
 		return 	pedir_memoria_buddy(size, id_mensaje, cod_op);
 
-	printf("No se reconocio el algoritmo memoria \nfijarse pedir_memoria() linea 40  \n");
+	printf("No se reconocio el algoritmo memoria\n");
+
 	return NULL;
 }
 
@@ -36,8 +35,7 @@ void* buscar_espacio_libre_en_memoria(int size, int id_mensaje, int cod_op)
 //=============================================================================
 
 
-void consolidar()
-{
+void consolidar(){
 
 	pthread_mutex_lock(&MUTEX_PARTICIONES);
 
@@ -48,7 +46,7 @@ void consolidar()
 		consolidar_buddy();
 
 	if((!string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES")) && (!string_equals_ignore_case(ALGORITMO_MEMORIA, "BS")))
-		printf("No se reconocio el algoritmo_memoria fijarse consolidar()  \n");
+		printf("No se reconocio el algoritmo_memoria \n");
 
 	pthread_mutex_unlock(&MUTEX_PARTICIONES);
 }
@@ -57,8 +55,13 @@ void consolidar()
 //=============================================================================
 
 
-void liberar(t_particion* particion, int posicion)
-{
+void liberar(t_particion* particion, int posicion){
+
+	//printf("Esperando a eliminar mensaje\n");
+
+	pthread_mutex_lock(obtener_mutex_mensaje(particion->cola_pertenece, particion->id_mensaje));
+
+	//printf("Eliminando mensaje\n");
 
 	estado_mensaje_eliminado(particion->id_mensaje, particion->cola_pertenece);
 
@@ -71,54 +74,11 @@ void liberar(t_particion* particion, int posicion)
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
 		list_remove_and_destroy_element(particiones, posicion, free);
 
-	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "BS"))
-	{
+	if (string_equals_ignore_case(ALGORITMO_MEMORIA, "BS")) {
+
 		particion->libre = true;
 		particion->fifo = -1;
 	}
 }
-
-
-
-
-    /*
- 	char* cadena1 = " ok ";//#4
-	char* cadena2 = "fail";//#4
-	char* cadena3 = "xxxxpicachuposXposY";//#19
-	char* cadena4 = "xxxxsquirtleposXposY";//#20
-	char* cadena5 = "xxxxonyxposXposY";//#16
-	char* cadena6 = "ya la cague";//#11
-	char* cadena7 = "xxxxsquirtleposXposY";//#20
-
-
-	dump_memoria();
-
-	void* stream1 = pedir_memoria(strlen(cadena1));
-	memcpy(stream1, cadena1, strlen(cadena1));
-
-	void* stream2 = pedir_memoria(strlen(cadena2));
-	memcpy(stream2, cadena2, strlen(cadena2));
-
-	void* stream3 = pedir_memoria(strlen(cadena3));
-	memcpy(stream3, cadena3, strlen(cadena3));
-
-	void* stream4 = pedir_memoria(strlen(cadena4));
-	memcpy(stream4, cadena4, strlen(cadena4));
-
-	void* stream5 = pedir_memoria(strlen(cadena5));
-	memcpy(stream5, cadena5, strlen(cadena5));
-	dump_memoria();
-
-	void* stream6 = pedir_memoria(strlen(cadena6));
-	memcpy(stream6, cadena6, strlen(cadena6));
-	dump_memoria();
-
-	void* stream7 = pedir_memoria(strlen(cadena7));
-	memcpy(stream7, cadena7, strlen(cadena7));
-
-	dump_memoria();
-
-  */
-
 
 
