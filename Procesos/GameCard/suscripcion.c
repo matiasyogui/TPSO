@@ -672,14 +672,16 @@ void enviarCaught(int id_correlativo, bool loAtrapo){
 
 	int offset = 0;
 
-	uint32_t loAtrapoInt;
+//	uint32_t loAtrapoInt;
 
-	if (loAtrapo == true)
-		loAtrapoInt = 0;
-	else
+	int sizeStream = sizeof(uint32_t);
+
+	/*if (loAtrapo)
 		loAtrapoInt = 1;
-
-	void* stream = malloc( sizeof(uint32_t)*3);
+	else
+		loAtrapoInt = 0;
+*/
+	void* stream = malloc( sizeof(uint32_t)*4);
 
 	memcpy(stream + offset, &cod_op, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
@@ -687,7 +689,10 @@ void enviarCaught(int id_correlativo, bool loAtrapo){
 	memcpy(stream + offset, &id_correlativo, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-	memcpy(stream + offset, &loAtrapoInt, sizeof(uint32_t));
+	memcpy(stream + offset, &sizeStream, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	memcpy(stream + offset, &loAtrapo, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
 	//enviamos el mensaje
@@ -704,6 +709,8 @@ void enviarCaught(int id_correlativo, bool loAtrapo){
 	if(s<0){
 		//log_info(logger,"Fallo el envio del localized al Broker");
 	}
+
+	printf("Se envio un caught con valor %d\n", loAtrapo);
 
 	}
 }
@@ -891,6 +898,8 @@ t_catchPokemon * recibirCatchPokemon(void * mensaje){
 	pokemonAux = ptr;
 	pokemonAux[size] = '\0';
 	ret->pokemon = (void*) pokemonAux;
+
+	printf("Se recibio un catch con los datos: %d, %s, %d, %d\n", size, ret -> pokemon, ret -> posx, ret -> posy);
 
 	string_to_upper(ret-> pokemon);
 

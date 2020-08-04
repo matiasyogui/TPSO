@@ -8,7 +8,7 @@ pthread_mutex_t mBlockAReady;
 
 void leer_archivo_configuracion(){
 
-	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team1.config");
+	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team2.config");
 
 
 	LOG_FILE= config_get_string_value(config,"LOG_FILE");
@@ -95,7 +95,7 @@ void* algortimoCercano(void* elemento, int posicionPokemonx, int posicionPokemon
 }
 
 bool buscarPokemon(void* elemento, void* pokemon){
-	printf("pokemon1 %s se compara con pokemon2 %s en BUSCAR POKEMON \n",(char*) pokemon, (char*)elemento);
+	//printf("pokemon1 %s se compara con pokemon2 %s en BUSCAR POKEMON \n",(char*) pokemon, (char*)elemento);
 	return string_equals_ignore_case((char*) pokemon, (char*)elemento);
 }
 
@@ -262,7 +262,6 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 			log_info(logger, "Llego el mensaje %s con los datos %s %d %d", cod_opToString(msg->cod_op), (char*) pokemon, posx, posy);
 
-
 			pthread_mutex_lock(&mPokemonesAPedir);
 			valor = list_any_satisfy(pokemonesAPedir, _buscarPokemon);
 
@@ -317,7 +316,7 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			pthread_mutex_unlock(&mPokemonesAPedirSinRepetidos);
 
 			pthread_mutex_lock(&mPokemonesAPedir);
-			for(int j = 0; j < cantidad; i++){
+			for(int j = 0; j < cantidad; j++){
 				list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
 			}
 			pthread_mutex_unlock(&mPokemonesAPedir);
@@ -332,8 +331,6 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			offset = 0;
 
 			//logs
-			memcpy(&size, stream, sizeof(int));
-			offset += sizeof(int);
 
 			memcpy(&valorCaught, stream + offset, sizeof(int));
 
