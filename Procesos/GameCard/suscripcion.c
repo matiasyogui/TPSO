@@ -350,10 +350,10 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 	printf("Se recibio un %s del broker, id_correlativo = %d\n", cod_opToString(cod_op), id_correlativo);
 
-	t_getPokemon * getpok;
-	t_catchPokemon * catchpok;
-	t_newPokemon * newpok;
-	t_File * archivo;
+	t_getPokemon * getpok = NULL;
+	t_catchPokemon * catchpok = NULL;
+	t_newPokemon * newpok = NULL;
+	t_File * archivo = NULL;
 
 	switch(cod_op){
 		// definir las acciones que debe realizar
@@ -398,8 +398,7 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 				cerrarArchivo(archivo);
 
-				bool loAtrapo = true;
-				enviarCaught(id_correlativo,loAtrapo);
+				enviarCaught(id_correlativo, true);
 				printf("el pokemon: %s existe en TALLGRASS\n", catchpok->pokemon);
 
 			}else
@@ -542,6 +541,14 @@ actualizarBloquesMetadata(t_File *archivo){
 
 	char* charBlocks = calloc(1,100);
 
+	if (list_is_empty(archivo->blocks)){
+
+		char* charBlock = malloc(3);
+
+		strcat(charBlocks,"[");
+		strcat(charBlocks,"]");
+	}
+
 	if (list_size(archivo->blocks) == 1){
 		int block = (int)list_get(archivo->blocks, 0);
 		char* charBlock = malloc(10);
@@ -671,8 +678,6 @@ void enviarCaught(int id_correlativo, bool loAtrapo){
 	int cod_op = CAUGHT_POKEMON;
 
 	int offset = 0;
-
-//	uint32_t loAtrapoInt;
 
 	int sizeStream = sizeof(uint32_t);
 

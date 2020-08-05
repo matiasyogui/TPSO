@@ -6,6 +6,7 @@ void* pasajeBlockAReady(){
 
 	while(faltanAtraparPokemones())
 	{
+
 		sem_wait(&sem_cant_mensajes);
 
 		pthread_mutex_lock(&mListaGlobal);
@@ -28,6 +29,8 @@ void* pasajeBlockAReady(){
 		}*/
 
 		case APPEARED_POKEMON:
+
+			printf("***Se pone a ejecutar appeared\n");
 
 			if(!hayEntrenadoresDisponiblesBlocked()){
 				pthread_mutex_lock(&mNewCaught);
@@ -464,7 +467,7 @@ void* planificarEntrenadoresAExec(){
 				nodo = list_remove(listaReady, 0);
 				pthread_mutex_unlock(&mListaReady);
 				ent = (t_entrenador*) nodo;
-				pthread_mutex_unlock(&(ent -> semaforo));
+				pthread_mutex_unlock(&(ent->semaforo));
 				pthread_mutex_lock(&mEjecutarMensaje);
 
 				break;
@@ -477,13 +480,13 @@ void* planificarEntrenadoresAExec(){
 				pthread_mutex_unlock(&mListaReady);
 				ent = (t_entrenador*) nodo;
 				entrenadorEnEjecucion = ent;
-				pthread_mutex_unlock(&(ent -> semaforo));
+				pthread_mutex_unlock(&(ent->semaforo));
 				pthread_mutex_lock(&mEjecutarMensaje);
 
 				break;
 		}
 	}
-return NULL;
+	return NULL;
 }
 
 void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
@@ -1048,8 +1051,6 @@ void agregarMensajeLista(int socket, int cod_op){
 	mensajeAGuardar -> id = id_correlativo;
 	mensajeAGuardar -> cod_op = cod_op;
 
-	printf("EL mensaje a guardar tiene: \n el codigo de operacion es %d \n el size es %d \n el id_correlativo es %d \n el stream es %s \n",cod_op,size,id_correlativo,(char*) mensaje);
-
 	if(cod_op == LOCALIZED_POKEMON){
 
 		if(nosInteresaMensaje(mensajeAGuardar)){
@@ -1108,8 +1109,8 @@ void agregarMensajeLista(int socket, int cod_op){
 
 				pthread_mutex_lock(&mListaGlobal);
 
-				list_add(lista_mensajes, mensajeAGuardar);
-				printf("CANTIDAD DE MENSAJES EN LISTA = %d", list_size(lista_mensajes));
+				list_add(lista_mensajes, nuevoMensajeAGuardar);
+				printf("CANTIDAD DE MENSAJES EN LISTA = %d\n", list_size(lista_mensajes));
 
 				sem_post(&sem_cant_mensajes);
 
@@ -1182,7 +1183,6 @@ void enviarGet(void* elemento){
 	offset += len;
 
 
-	//enviamos el mensaje
 	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
 		perror(" FALLO EL SEND DEL GET \n");

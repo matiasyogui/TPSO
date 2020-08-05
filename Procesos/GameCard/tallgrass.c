@@ -189,6 +189,12 @@ t_File * open_file(char * nombre){
 
 	split = string_split(arch_get_string_value(arch,BLOCKS) ,",");
 
+	if (strlen(arch_get_string_value(arch,BLOCKS)) == 2) {
+
+		retFile->posiciones = list_create();
+
+		return retFile;
+	}
 
 	int block = 0;
 	int index = 0;

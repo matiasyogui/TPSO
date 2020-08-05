@@ -8,12 +8,10 @@ pthread_mutex_t mBlockAReady;
 
 void leer_archivo_configuracion(){
 
-	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team2.config");
-
+	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team1.config");
 
 	LOG_FILE= config_get_string_value(config,"LOG_FILE");
 	logger = iniciar_logger(LOG_FILE, "TEAM", 0, LOG_LEVEL_INFO);
-
 
 	//PASO TODOS LOS PARAMETROS
 	POSICIONES_ENTRENADORES = config_get_array_value(config,"POSICIONES_ENTRENADORES");
@@ -36,6 +34,17 @@ void leer_archivo_configuracion(){
 }
 
 void pedir_pokemones(){
+
+	pthread_mutex_lock(&mPokemonesAPedirSinRepetidos);
+
+	list_iterate(pokemonAPedirSinRepetidos, enviarGet);
+
+	pthread_mutex_unlock(&mPokemonesAPedirSinRepetidos);
+
+}
+
+void buscar_pokemones_pedir(){
+
 	list_destroy(pokemonesAPedir);
 	list_destroy(pokemonAPedirSinRepetidos);
 
@@ -43,15 +52,8 @@ void pedir_pokemones(){
 
 	pokemonAPedirSinRepetidos = listaSinRepetidos(pokemonesAPedir);
 
-	for(int i = 0; i< list_size(pokemonAPedirSinRepetidos); i++){
+	for(int i = 0; i < list_size(pokemonAPedirSinRepetidos); i++)
 		printf("pokemon = %s\n", (char*) list_get(pokemonAPedirSinRepetidos, i));
-	}
-
-	list_iterate(pokemonAPedirSinRepetidos, enviarGet);
-
-	for(int i = 0; i< list_size(pokemonAPedirSinRepetidos); i++){
-		printf("id = %d\n", (int)list_get(lista_id_correlativos, i));
-	}
 
 }
 
@@ -211,7 +213,7 @@ int suscribirse(char* cola){
 bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 	void* stream = msg -> buffer -> stream;
-	int size, offset, cantidad;
+	int size, offset=0, cantidad;
 
 	bool _buscarID(void* elemento){
 		return msg->id == (int)elemento;
@@ -221,8 +223,8 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 	char* pokemonAux;
 	char* ptr;
 
-	int* posx, posy;
-	int* valorCaught;
+	int posx, posy;
+	int valorCaught;
 
 	bool _buscarPokemon(void* elemento){
 		return buscarPokemon(elemento, pokemon);
@@ -236,7 +238,6 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 	switch(msg -> cod_op){
 
 		case APPEARED_POKEMON:
-			offset = 0;
 
 			memcpy(&size, stream, sizeof(int));
 			offset += sizeof(int);
@@ -285,8 +286,6 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			}
 			pthread_mutex_unlock(&mIdsCorrelativos);
 
-			offset = 0;
-
 			memcpy(&size, stream, sizeof(int));
 			offset += sizeof(int);
 
@@ -327,8 +326,6 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 
 		case CAUGHT_POKEMON:
-
-			offset = 0;
 
 			//logs
 
@@ -393,14 +390,15 @@ int main(){
 	pthread_create(&blockAReady, NULL, pasajeBlockAReady, NULL);
 	pthread_create(&planificarEntrenadorAEjecutar,NULL, planificarEntrenadoresAExec, NULL);
 
-
+	buscar_pokemones_pedir();
 
 	hiloMain = pthread_self();
 
 	pthread_t hiloSuscriptor[3], server;
 	pthread_create(&hiloSuscriptor[1], NULL, (void*)suscribirse, "appeared_pokemon");
-	pthread_create(&hiloSuscriptor[2], NULL, (void*)suscribirse, "caught_pokemon");
 	pthread_create(&hiloSuscriptor[0], NULL, (void*)suscribirse, "localized_pokemon");
+	pthread_create(&hiloSuscriptor[2], NULL, (void*)suscribirse, "caught_pokemon");
+
 
 	pthread_create(&server, NULL, (void*)iniciar_servidor, NULL);
 

@@ -194,6 +194,8 @@ void* stream_appeared_pokemon(char* datos[], int* bytes){
 			 posX = (int) datos[1],//atoi(datos[1]),
 			 posY = (int) datos[2];//atoi(datos[2]);
 
+	printf("**pokemon %s, posx %d, posy %d\n", nombre_pokemon, posX, posY);
+
 	*bytes = sizeof(uint32_t) + size_nombre + 2 * sizeof(uint32_t);
 
 	void* stream = malloc(*bytes);
