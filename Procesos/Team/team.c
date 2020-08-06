@@ -224,7 +224,7 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 	char* ptr;
 
 	int posx, posy;
-	int valorCaught;
+	bool valorCaught;
 
 	bool _buscarPokemon(void* elemento){
 		return buscarPokemon(elemento, pokemon);
@@ -329,7 +329,7 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 			//logs
 
-			memcpy(&valorCaught, stream + offset, sizeof(int));
+			memcpy(&valorCaught, stream + offset, sizeof(uint32_t));
 
 			log_info(logger, "Llego el mensaje %s con los datos %d", cod_opToString(msg->cod_op), valorCaught);
 

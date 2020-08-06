@@ -522,9 +522,7 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 	if(socket>0){
 	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
-	{
 		perror(" FALLO EL SEND DEL CATCH \n");
-	}
 
 	//esperamos respuesta del broker
 	int id_mensaje,s;
@@ -591,7 +589,7 @@ bool entrenadorEnExit(t_entrenador* ent){
 			return true;
 		}
 	}
-return false;
+	return false;
 }
 
 void ejecutarMensaje(void* entAux){
@@ -620,9 +618,8 @@ void ejecutarMensaje(void* entAux){
 
 			pokemonAux = (char*) pokemon;
 			ptr = realloc(pokemonAux,size+1);
-			if(ptr == NULL){
-				printf("mal realloc.");
-			}
+			if(ptr == NULL) printf("mal realloc.");
+
 			pokemonAux = ptr;
 			pokemonAux[size] = '\0';
 			pokemon = (void*) pokemonAux;
@@ -650,7 +647,7 @@ void ejecutarMensaje(void* entAux){
 				}else{
 					log_info(logger, "Entrenador %d entra a lista Ready por desalojo del SJFCD.", ent -> idEntrenador);
 
-				}
+			}
 
 				//metricas;
 				cambiosDeContexto += 2;
