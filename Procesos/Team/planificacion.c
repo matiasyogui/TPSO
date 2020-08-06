@@ -6,7 +6,6 @@ void* pasajeBlockAReady(){
 
 	while(faltanAtraparPokemones())
 	{
-
 		sem_wait(&sem_cant_mensajes);
 
 		pthread_mutex_lock(&mListaGlobal);
@@ -154,6 +153,8 @@ void* pasajeBlockAReady(){
 			pokemonAux = ptr;
 			pokemonAux[size] = '\0';
 			pokemon = (void*) pokemonAux;
+
+			printf("loAtrapo  = %d, size = %d, pokemon  = %s, ent id = %d\n", loAtrapo, size, (char*) pokemon, ent -> idEntrenador);
 
 			if(loAtrapo){
 				list_add(ent->pokemones,(char*) pokemon);
@@ -689,10 +690,27 @@ void ejecutarMensaje(void* entAux){
 
 				realizarIntercambio(ent,entAux1);
 
+				bool _estaID(void* elemento){
+					int idAuxiliar = (int) elemento;
+					return idAuxiliar == ent -> idEntrenador;
+				}
+
+				bool _estanEnDLCon(void* elemento){
+					t_entrenador* entAuxiliar = (t_entrenador*) elemento;
+					return list_any_satisfy(entAuxiliar -> entrenadoresEstoyDeadlock, _estaID);
+				}
 
 				if(tienenLosMismosElementos(ent->pokemones,ent->objetivo)){
 					list_add(listaExit, ent);
 					log_info(logger, "Entrenador %d entra a lista Exit porque logro su objetivo personal.", ent -> idEntrenador);
+
+					t_list* listaFiltrada = list_filter(listaReady, _estanEnDLCon);
+
+					for(int i = 0; i < list_size(listaFiltrada); i++){
+						t_entrenador* entAux2 = list_get(listaFiltrada, i);
+						list_remove_by_condition(entAux2 -> entrenadoresEstoyDeadlock, _estaID);
+						list_add(entAux2 -> entrenadoresEstoyDeadlock, (void*) idEntDeadLock);
+					}
 
 					//metricas
 					cambiosDeContexto += 2;
@@ -1126,6 +1144,7 @@ void agregarMensajeLista(int socket, int cod_op){
 			pthread_mutex_lock(&mListaGlobal);
 				if(cod_op == CAUGHT_POKEMON){
 					list_add_in_index(lista_mensajes, 0, mensajeAGuardar);
+					pthread_mutex_unlock(&mNewCaught);
 				}else{
 					list_add(lista_mensajes, mensajeAGuardar);
 				}
