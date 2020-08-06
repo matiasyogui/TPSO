@@ -1,25 +1,24 @@
 #include "envio_recepcion.h"
 
-#define GESTORES_CLIENTES 5
+//#define GESTORES_CLIENTES 5
 
 char* IP_SERVER;
 char* PUERTO_SERVER;
 int socket_servidor;
 
-pthread_t THREADS[GESTORES_CLIENTES];
+//pthread_t THREADS[GESTORES_CLIENTES];
 
-t_queue* cola_clientes;
-pthread_mutex_t mutex_cola = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+//t_queue* cola_clientes;
+//pthread_mutex_t mutex_cola = PTHREAD_MUTEX_INITIALIZER;
+//pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 static int esperar_cliente(int socket_servidor);
-static void _interruptor_handler(void* elemento);
 static int server_client(void* p_socket);
 static int process_request(int cliente_fd, int cod_op);
 
-static void* _gestor_clientes();
-static void _interruptor_handler(void* elemento);
-static void detener_servidor(void* nada);
+//static void* _gestor_clientes();
+//static void _interruptor_handler(void* elemento);
+static void detener_servidor(void*);
 static void cargar_datos(void);
 
 
@@ -29,7 +28,7 @@ static void cargar_datos(void){
 	IP_SERVER = config_get_string_value(CONFIG, "IP_BROKER");
 	PUERTO_SERVER = config_get_string_value(CONFIG, "PUERTO_BROKER");
 
-	cola_clientes = queue_create();
+	//cola_clientes = queue_create();
 }
 
 
@@ -40,11 +39,12 @@ void* iniciar_servidor(void){
 	int s;
 
     pthread_cleanup_push(detener_servidor, NULL);
-
+    /*
     for (int i = 0; i < GESTORES_CLIENTES; i++) {
     	s = pthread_create(&THREADS[i], NULL, _gestor_clientes, NULL);
     	if (s != 0) printf("[ENVIO_RECEPCION.C] PTHREAD_CREATE ERROR");
     }
+     */
 
     struct addrinfo hints, *servinfo, *p;
 
@@ -102,7 +102,7 @@ static int esperar_cliente(int socket_servidor){
 	int* p_socket = malloc(sizeof(int));
 	*p_socket = socket_cliente;
 
-
+	/*
 	pthread_mutex_lock(&mutex_cola);
 
 	queue_push(cola_clientes, p_socket);
@@ -110,13 +110,20 @@ static int esperar_cliente(int socket_servidor){
 	pthread_cond_signal(&cond);
 
 	pthread_mutex_unlock(&mutex_cola);
+	*/
+
+	pthread_t tid;
+
+	pthread_create(&tid, NULL, server_client, p_socket);
+
+	pthread_detach(tid);
 
 	logear_mensaje("Un proceso se conecto al broker");
 
 	return EXIT_SUCCESS;
 }
 
-
+/*
 static void _interruptor_handler(void* elemento){
 	pthread_mutex_unlock(elemento);
 }
@@ -157,7 +164,7 @@ static void* _gestor_clientes(){
 	pthread_exit(0);
 }
 
-
+*/
 static int server_client(void* p_socket){
 
 	int socket, cod_op;
@@ -232,7 +239,7 @@ static int process_request(int cliente_fd, int cod_op){
 static void detener_servidor(void* nada){
 
 	int s;
-
+	/*
     for (int i = 0; i < GESTORES_CLIENTES; i++) {
     	s = pthread_cancel(THREADS[i]);
     	if (s != 0 ) perror("[ENVIO_RECEPCION.C] PTHREAD_CANCEL ERROR");
@@ -242,13 +249,14 @@ static void detener_servidor(void* nada){
     	s = pthread_join(THREADS[i], NULL);
     	if (s != 0 ) perror("[ENVIO_RECEPCION.C] PTHREAD_JOIN ERROR");
     }
+    */
 
     close(socket_servidor);
 
-    queue_destroy_and_destroy_elements(cola_clientes, free);
+    //queue_destroy_and_destroy_elements(cola_clientes, free);
 
-    pthread_cond_destroy(&cond);
-    pthread_mutex_destroy(&mutex_cola);
+    //pthread_cond_destroy(&cond);
+    //pthread_mutex_destroy(&mutex_cola);
 }
 
 
