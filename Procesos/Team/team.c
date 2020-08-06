@@ -5,10 +5,11 @@
 #include <commons/string.h>
 
 pthread_mutex_t mBlockAReady;
+sem_t sem_suscripciones;
 
 void leer_archivo_configuracion(){
 
-	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team1.config");
+	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team2.config");
 
 	LOG_FILE= config_get_string_value(config,"LOG_FILE");
 	logger = iniciar_logger(LOG_FILE, "TEAM", 0, LOG_LEVEL_INFO);
@@ -166,6 +167,7 @@ int suscribirse(char* cola){
 	}
 
 	printf("[CONFIRMACION DE SUSCRIPCION] estado suscripcion = %d\n", id_suscripcion);
+	sem_post(&sem_suscripciones);
 
 	while(list_size(listaExit) != cant_elementos(POSICIONES_ENTRENADORES)){
 		printf("espero recibir algo \n");
@@ -209,7 +211,6 @@ int suscribirse(char* cola){
 }
 
 
-
 bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 	void* stream = msg -> buffer -> stream;
@@ -232,7 +233,7 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 	printf("id del mensaje = %d\n",msg-> id);
 
-	printf("cod_op = %s\n", cod_opToString(msg->cod_op));
+	printf(".....cod_op = %s\n", cod_opToString(msg->cod_op));
 	fflush(stdout);
 	bool valor;
 	switch(msg -> cod_op){
@@ -281,10 +282,12 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 		case LOCALIZED_POKEMON:
 			pthread_mutex_lock(&mIdsCorrelativos);
-			if(!list_any_satisfy(lista_id_correlativos, _buscarID)){
+			bool estaEnLista = list_any_satisfy(lista_id_correlativos, _buscarID);
+			pthread_mutex_unlock(&mIdsCorrelativos);
+
+			if(!estaEnLista){
 				return false;
 			}
-			pthread_mutex_unlock(&mIdsCorrelativos);
 
 			memcpy(&size, stream, sizeof(int));
 			offset += sizeof(int);
@@ -327,15 +330,29 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 		case CAUGHT_POKEMON:
 
-			//logs
+			//log
 
 			memcpy(&valorCaught, stream + offset, sizeof(uint32_t));
 
-			log_info(logger, "Llego el mensaje %s con los datos %d", cod_opToString(msg->cod_op), valorCaught);
+			printf("....valor = %d, id correlativo = %d\n", valorCaught, msg->id);
+
+
+			if(valorCaught > 0){
+				log_info(logger, "Llego el mensaje %s con los datos %d", cod_opToString(msg->cod_op), 1);
+			}else{
+				log_info(logger, "Llego el mensaje %s con los datos %d", cod_opToString(msg->cod_op), 0);
+			}
+
+			//log_info(logger, "Llego el mensaje %s con los datos %d", cod_opToString(msg->cod_op), valorCaught);
+
 
 			pthread_mutex_lock(&mIdsCorrelativos);
-			return list_any_satisfy(lista_id_correlativos, _buscarID);
+			bool estaEnListaID = list_any_satisfy(lista_id_correlativos, _buscarID);
 			pthread_mutex_unlock(&mIdsCorrelativos);
+
+			printf("esta en lista ID = %d\n", estaEnListaID);
+
+			return estaEnListaID;
 	}
 
 	return false;
@@ -366,6 +383,7 @@ int main(){
 
 	sem_init(&sem_cant_mensajes, 0, 0);
 	sem_init(&sem_entrenadores_ready, 0, 0);
+	sem_init(&sem_suscripciones, 0, -3);
 
 	inicializar_listas();
 
@@ -399,10 +417,12 @@ int main(){
 	pthread_create(&hiloSuscriptor[0], NULL, (void*)suscribirse, "localized_pokemon");
 	pthread_create(&hiloSuscriptor[2], NULL, (void*)suscribirse, "caught_pokemon");
 
+	sem_wait(&sem_suscripciones);
+
+	pedir_pokemones();
 
 	pthread_create(&server, NULL, (void*)iniciar_servidor, NULL);
 
-	pedir_pokemones();
 
 	for(i=0;i<3;i++){
 		pthread_detach(hiloSuscriptor[i]);
