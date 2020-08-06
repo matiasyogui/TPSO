@@ -7,9 +7,16 @@
 pthread_mutex_t mBlockAReady;
 sem_t sem_suscripciones;
 
-void leer_archivo_configuracion(){
+void leer_archivo_configuracion(char *config_utilizar){
 
-	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team2.config");
+	char* direccion = string_new();
+	string_append(&direccion, "/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/");
+	string_append(&direccion, config_utilizar);
+	printf("direccion = %s", direccion);
+
+	config = leer_config(direccion);
+
+	free(direccion);
 
 	LOG_FILE= config_get_string_value(config,"LOG_FILE");
 	logger = iniciar_logger(LOG_FILE, "TEAM", 0, LOG_LEVEL_INFO);
@@ -359,7 +366,7 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 }
 
 
-int main(){
+int main(int argc, char* argv[]){
 	idFuncionesDefault = -2;
 	cantPokemonesFinales = 0;
 	cantPokemonesActuales = 0;
@@ -387,7 +394,7 @@ int main(){
 
 	inicializar_listas();
 
-	leer_archivo_configuracion();
+	leer_archivo_configuracion(argv[1]);
 
 	int cantEntrenadores = cant_elementos(POSICIONES_ENTRENADORES);
 

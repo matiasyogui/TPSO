@@ -13,7 +13,7 @@
 #include <stdbool.h>
 
 
-void leer_archivo_configuracion();
+void leer_archivo_configuracion(char *config_utilizar);
 void* algortimoCercano(void* elemento, int posicionPokemonx, int posicionPokemony);
 t_entrenador* elegirEntrenadorXCercania(int posx, int posy);
 
