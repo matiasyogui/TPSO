@@ -67,10 +67,6 @@ void liberarEntrenadores(void* elemento){
 	list_destroy_and_destroy_elements(entrenadorALiberar -> objetivo, free);
 	list_destroy_and_destroy_elements(entrenadorALiberar -> pokemones, free);
 
-	if(entrenadorALiberar->entrenadoresEstoyDeadlock->head==NULL){
-		list_destroy_and_destroy_elements(entrenadorALiberar -> pokemonesAtrapadosDeadlock, free);
-		list_destroy_and_destroy_elements(entrenadorALiberar -> pokemonesFaltantesDeadlock, free);
-	}
 
 	free(entrenadorALiberar -> ultimoMensajeEnviado -> buffer -> stream);
 	free(entrenadorALiberar -> ultimoMensajeEnviado -> buffer);

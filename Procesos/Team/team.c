@@ -130,6 +130,7 @@ int suscribirse(char* cola){
 
 	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 	while(socket<=0){
+		sePudoConectar = false;
 		log_info(logger, "Inicio del proceso de reintento de comunicación.");
 		sleep(TIEMPO_RECONEXION);
 		socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
@@ -365,6 +366,7 @@ int main(){
 	cantPokemonesActuales = 0;
 	hayDesalojo = false;
 	rafagasCPUTotales = 0;
+	sePudoConectar = true;
 
 	pthread_mutex_init(&mListaGlobal, NULL);
 	pthread_mutex_init(&mListaReady, NULL);
@@ -375,9 +377,8 @@ int main(){
 	pthread_mutex_init(&mPokemonesAPedirSinRepetidos, NULL);
 	pthread_mutex_init(&mIdsCorrelativos, NULL);
 	pthread_mutex_init(&mHayDesalojo, NULL);
-	pthread_mutex_init(&mNewCaught, NULL);
 
-	pthread_mutex_lock(&mNewCaught);
+	sem_init(&mNewCaught, 0, 0);
 
 	pthread_mutex_lock(&mEjecutarMensaje);
 
@@ -417,11 +418,13 @@ int main(){
 	pthread_create(&hiloSuscriptor[0], NULL, (void*)suscribirse, "localized_pokemon");
 	pthread_create(&hiloSuscriptor[2], NULL, (void*)suscribirse, "caught_pokemon");
 
-	sem_wait(&sem_suscripciones);
+	pthread_create(&server, NULL, (void*)iniciar_servidor, NULL);
+
+	if(sePudoConectar){
+		sem_wait(&sem_suscripciones);
+	}
 
 	pedir_pokemones();
-
-	pthread_create(&server, NULL, (void*)iniciar_servidor, NULL);
 
 
 	for(i=0;i<3;i++){

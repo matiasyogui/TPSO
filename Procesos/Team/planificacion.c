@@ -32,9 +32,40 @@ void* pasajeBlockAReady(){
 			printf("***Se pone a ejecutar appeared\n");
 
 			if(!hayEntrenadoresDisponiblesBlocked()){
-				pthread_mutex_lock(&mNewCaught);
+				printf("WARD1\n");
+				sem_wait(&mNewCaught);
+				printf("WARD2\n");
 				pthread_mutex_lock(&mListaGlobal);
-				list_add(lista_mensajes, mensaje);
+				printf("WARD3\n");
+
+				for(int i = 0; i < list_size(lista_mensajes); i++){
+					printf("AAAAAAAAAA El mensaje en la pos %d tiene codigo %d      AAAAAAAAAAAAA\n", i, ((t_mensajeTeam*) list_get(lista_mensajes, i))->cod_op);
+					if(((t_mensajeTeam*) list_get(lista_mensajes, i))->cod_op != CAUGHT_POKEMON || i == (list_size(lista_mensajes)-1)){
+						if(i == (list_size(lista_mensajes)-1)){
+							if(((t_mensajeTeam*) list_get(lista_mensajes, i))->cod_op == CAUGHT_POKEMON){
+								list_add(lista_mensajes, mensaje);
+							}else{
+								list_add_in_index(lista_mensajes, i, mensaje);
+							}
+
+							for(int j = 0; j < list_size(lista_mensajes); j++){
+								printf("AAAAAAAAAA DESPUES El mensaje en la pos %d tiene codigo %d y ID %d      AAAAAAAAAAAAA\n", j, ((t_mensajeTeam*) list_get(lista_mensajes, j))->cod_op, ((t_mensajeTeam*) list_get(lista_mensajes, j))->id);
+							}
+							break;
+						}
+
+						list_add_in_index(lista_mensajes, i, mensaje);
+
+						for(int j = 0; j < list_size(lista_mensajes); j++){
+							printf("AAAAAAAAAA DESPUES El mensaje en la pos %d tiene codigo %d      AAAAAAAAAAAAA\n", j, ((t_mensajeTeam*) list_get(lista_mensajes, j))->cod_op);
+						}
+
+						printf(":::::::::AGREGANDO MENSAJE:::::::\n");
+						break;
+					}
+				}
+
+				printf("...................salgo del for.................\n");
 				pthread_mutex_unlock(&mListaGlobal);
 				sem_post(&sem_cant_mensajes);
 				break;
@@ -565,7 +596,9 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 		nuevoMensaje->buffer->stream = stream_caught_pokemon(datos,&size);
 		nuevoMensaje->buffer->size=size;
 		pthread_mutex_lock(&mListaGlobal);
+
 		list_add_in_index(lista_mensajes, 0, nuevoMensaje);
+
 		pthread_mutex_unlock(&mListaGlobal);
 
 		ent ->idCorrelativo = idFuncionesDefault;
@@ -578,7 +611,7 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 		list_add(listaBlocked, ent);
 		pthread_mutex_unlock(&mListaBlocked);
 
-		pthread_mutex_unlock(&mNewCaught);
+		sem_post(&mNewCaught);
 		sem_post(&sem_cant_mensajes);
 	}
 }
@@ -1141,7 +1174,7 @@ void agregarMensajeLista(int socket, int cod_op){
 			pthread_mutex_lock(&mListaGlobal);
 				if(cod_op == CAUGHT_POKEMON){
 					list_add_in_index(lista_mensajes, 0, mensajeAGuardar);
-					pthread_mutex_unlock(&mNewCaught);
+					sem_post(&mNewCaught);
 				}else{
 					list_add(lista_mensajes, mensajeAGuardar);
 				}
