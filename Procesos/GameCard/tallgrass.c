@@ -57,8 +57,6 @@ void montar_TallGrass(){
 	printf("Metadata blocksize %d\n", metadata->Block_size);
 	printf("Metadata blocks %d\n", metadata->Blocks);
 
-
-
 }
 
 bool estaUsadoBloque(int ind){
@@ -215,9 +213,12 @@ t_File * open_file(char * nombre){
 
 	list_add_in_index(retFile->blocks,index, (void*)(block));
 
-	retFile->posiciones = list_create();
-
 	retFile->posiciones = leer_archivo_todos_bloques(retFile);
+
+	dictionary_destroy(arch -> datos);
+
+
+	free(arch);
 
 	return retFile;
 }
@@ -286,7 +287,7 @@ static size_t addLine( char* buffer, size_t size, t_posiciones* pos )
 }
 
 
-static size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
+size_t deleteLine( char* buffer, size_t size, t_posiciones* pos )
 {
   // file format assumed to be as specified in the question i.e. name{space}somevalue{space}someothervalue\n
   // find playerName
@@ -466,6 +467,10 @@ t_metadata * leer_metadata(char *pathTallGrass){
 	  meta->Block_size = atoi(arch_get_string_value(arch,BLOCKSIZE));
 	  meta->Blocks	= atoi(arch_get_string_value(arch,BLOCKS));
 
+	  dictionary_destroy(arch-> datos);
+	  free(arch -> path);
+	  free(arch);
+
 	  return meta;
 }
 
@@ -506,7 +511,6 @@ t_list * leer_archivo_todos_bloques(t_File * retFile){
 		}
 
 	  t_posiciones * posiciones;
-	  char *line;
 
 		char** lines = string_split(buffer, "\n");
 
@@ -528,11 +532,15 @@ t_list * leer_archivo_todos_bloques(t_File * retFile){
 
 			list_add(lista, posiciones);
 
+
+			free(keyAndValue);
+
 			lines++;
 
 		}
 
-
+	free(buffer);
+	free(bufferAux);
 	free(auxFile);
 
 	return lista;
@@ -644,7 +652,7 @@ t_archivo * leer_archivo(char *pathTallGrass, char*directorio, char*nombreArchiv
 	string_iterate_lines(lines, add_cofiguration);
 	string_iterate_lines(lines, (void*) free);
 
-
+	free(pathfile);
 	free(lines);
 	free(buffer);
 	fclose(file);
