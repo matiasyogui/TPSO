@@ -125,6 +125,10 @@ int flag_to_int(char* flag){
 
 	if(string_equals_ignore_case(flag, "FAIL") == 1)
 		return 1;
+
+	printf("No se reconocio el flag\n");
+
+	return -1;
 }
 
 

@@ -3,11 +3,9 @@
 
 #include"utils_team.h"
 #include <signal.h>
-//#include <cosas_comunes.h>
-#include "../../libreria-basica/cosas_comunes.h"
+#include <cosas_comunes.h>
 #include <pthread.h>
-//#include <commons/string.h>
-#include "../../libreria-basica/commons/string.h"
+#include <commons/string.h>
 #include "listas.h"
 #include "planificacion.h"
 #include <stdbool.h>

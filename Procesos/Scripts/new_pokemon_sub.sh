@@ -2,5 +2,5 @@
 
 cd ../GameBoy/Debug
 
-./gameboy suscriptor new_pokemon  -1
+./gameboy suscriptor appeared_pokemon  -1
 

@@ -59,17 +59,13 @@ void liberar(t_particion* particion, int posicion){
 
 	//printf("Esperando a eliminar mensaje\n");
 
-	pthread_mutex_lock(obtener_mutex_mensaje(particion->cola_pertenece, particion->id_mensaje));
+	//printf("WARD 0 %ld\n", pthread_self());
 
-	//printf("Eliminando mensaje\n");
+	//pthread_mutex_lock(obtener_mutex_mensaje(particion->cola_pertenece, particion->id_mensaje));
 
-	estado_mensaje_eliminado(particion->id_mensaje, particion->cola_pertenece);
-
-	pthread_mutex_lock(&MUTEX_LOG);
+	//printf("WARD 1 %ld\n", pthread_self());
 
 	log_info(LOGGER, "Se elimino una particion, inicio = %p", particion->inicio_particion);
-
-	pthread_mutex_unlock(&MUTEX_LOG);
 
 	if(string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES"))
 		list_remove_and_destroy_element(particiones, posicion, free);

@@ -3,3 +3,4 @@
 *.exe
 /Debug/team
 *.log
+/Debug/

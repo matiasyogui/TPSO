@@ -25,7 +25,7 @@ endif
 all: gamecard
 
 dependents:
-	-cd /home/utnso/workspace/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug && $(MAKE) all
+	-cd /home/utnso/workspace/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug && $(MAKE) clean all
 
 # Tool invocations
 gamecard: $(OBJS) $(USER_OBJS) /home/utnso/workspace/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug/liblibreria-basica.so

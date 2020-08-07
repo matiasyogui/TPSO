@@ -12,7 +12,6 @@ void iniciar_variables_globales(void){
 
 	CONFIG = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Broker/broker.config");
 
-	pthread_mutex_init(&MUTEX_LOG, NULL);
 	char* ruta_log = config_get_string_value(CONFIG, "LOG_FILE");
 	LOGGER = iniciar_logger(ruta_log, "broker", 0, LOG_LEVEL_INFO);
 
@@ -33,7 +32,6 @@ void finalizar_variables_globales(void){
 	config_destroy(CONFIG);
 
 	log_destroy(LOGGER);
-	pthread_mutex_destroy(&MUTEX_LOG);
 }
 
 
@@ -44,7 +42,7 @@ t_mensaje* crear_nodo_mensaje(int cod_op, int id_correlativo){
 	nodo_mensaje -> cod_op = cod_op;
 	nodo_mensaje -> id = obtener_id();
 	nodo_mensaje -> id_correlativo = id_correlativo;
-	nodo_mensaje -> envios_obligatorios = list_create();
+	nodo_mensaje -> envios_obligatorios = NULL;
 	nodo_mensaje -> notificiones_envio = list_create();
 	nodo_mensaje -> estado = EN_MEMORIA;
 
@@ -177,11 +175,7 @@ static int obtener_id(void){
 
 void logear_mensaje(char* mensaje){
 
-	pthread_mutex_lock(&MUTEX_LOG);
-
 	log_info(LOGGER, mensaje);
-
-	pthread_mutex_unlock(&MUTEX_LOG);
 
 }
 
@@ -217,11 +211,13 @@ void* serializar_nodo_mensaje(t_mensaje* mensaje_enviar, int* size){
 
 		free(stream);
 		stream = NULL;
+		mensaje_enviar -> estado = ELIMINADO;
 	}
 
 	pthread_mutex_unlock(&MUTEX_PARTICIONES);
 
-	printf("-Se envio un mensaje %s con id %d\n", cod_opToString(mensaje_enviar->cod_op), mensaje_enviar->id);
+	if(stream != NULL)
+		printf("-Se envio un mensaje %s con id %d\n", cod_opToString(mensaje_enviar->cod_op), mensaje_enviar->id);
 
 	*size = offset;
 	return stream;
