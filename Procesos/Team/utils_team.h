@@ -20,7 +20,9 @@
 
 
 #define IP "127.0.0.2"
-#define PUERTO "5002"
+#define PUERTO "5007"
+
+bool sePudoConectar;
 
 int server_team;
 int idFuncionesDefault;
@@ -109,7 +111,7 @@ pthread_mutex_t semPlanificador;
 
 pthread_mutex_t mHayDesalojo;
 
-pthread_mutex_t mNewCaught;
+sem_t mNewCaught;
 
 pthread_t hiloMain;
 

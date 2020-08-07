@@ -52,7 +52,7 @@ void esperar_cliente(int socket_servidor)
 	*p_socket = socket_cliente;
 
 	pthread_create(&thread, NULL, (void*)serve_client, p_socket);
-	pthread_join(thread, NULL);
+	pthread_join(thread,NULL);
 
 }
 
