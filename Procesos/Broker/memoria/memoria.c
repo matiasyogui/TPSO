@@ -41,48 +41,7 @@ void finalizar_memoria(){
 
 //=============================================================================
 
-//void* pedir_memoria(int size){
-/*
-void* pedir_memoria(int size, int id_mensaje, int cod_op){
 
-	void* memoria_libre = NULL;
-
-	//memoria_libre = buscar_espacio_libre_en_memoria(size);
-	memoria_libre = buscar_espacio_libre_en_memoria(size, id_mensaje, cod_op);
-
-	if (memoria_libre != NULL) {
-
-		return memoria_libre;
-
-	} else {
-
-		if (FRECUENCIA_COMPACTACION == 0) {
-
-			pthread_mutex_lock(&MUTEX_PARTICIONES);
-
-			FRECUENCIA_COMPACTACION = config_get_int_value(CONFIG, "FRECUENCIA_COMPACTACION");
-			compactar();
-
-			pthread_mutex_unlock(&MUTEX_PARTICIONES);
-
-			//return pedir_memoria(size);
-			return pedir_memoria(size, id_mensaje, cod_op);
-
-		} else {
-
-			pthread_mutex_lock(&MUTEX_PARTICIONES);
-
-			eliminar_particion();
-			FRECUENCIA_COMPACTACION--;
-
-			pthread_mutex_unlock(&MUTEX_PARTICIONES);
-
-			//return pedir_memoria(size);
-			return pedir_memoria(size, id_mensaje, cod_op);
-		}
-	}
-}
-*/
 void* pedir_memoria(int size, int id_mensaje, int cod_op){
 
 	void* memoria_libre = NULL;
@@ -102,17 +61,14 @@ void* pedir_memoria(int size, int id_mensaje, int cod_op){
 
 			else {
 				eliminar_particion();
-				//printf("elimino particion\n");
 			}
 		}
 
 		compactar();
 
-		//printf("compacto memoria\n");
-
 	} while (memoria_libre == NULL) ;
 
-	return NULL;
+	return memoria_libre;
 }
 
 
@@ -121,11 +77,7 @@ void* pedir_memoria(int size, int id_mensaje, int cod_op){
 
 void dump_memoria(){
 
-	pthread_mutex_lock(&MUTEX_LOG);
-
 	log_info(LOGGER, "Se solicito realizar el dump de la memoria");
-
-	pthread_mutex_unlock(&MUTEX_LOG);
 
 	pthread_mutex_lock(&MUTEX_PARTICIONES);
 
@@ -136,7 +88,7 @@ void dump_memoria(){
 		dump_memoria_buddy();
 
 	if ((!string_equals_ignore_case(ALGORITMO_MEMORIA, "PARTICIONES")) && (!string_equals_ignore_case(ALGORITMO_MEMORIA, "BS")))
-		printf("No se reconocio el algoritmo_memoria fijarse dump_memoria() linea 54 \n");
+		printf("No se reconocio el algoritmo_memoria\n");
 
 	pthread_mutex_unlock(&MUTEX_PARTICIONES);
 }

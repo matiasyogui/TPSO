@@ -275,11 +275,7 @@ void unificar(int posicion)
 		t_particion* particionA = list_get(particiones, i);
 		t_particion* particionB = list_get(particiones, i+1);
 
-		pthread_mutex_lock(&MUTEX_LOG);
-
 		log_info(LOGGER, "Se realiza la asicion de bloques entre el bloque1 con direccion = %p y el bloque2 con direccion = %p", particionA->inicio_particion, particionB->inicio_particion);
-
-		pthread_mutex_unlock(&MUTEX_LOG);
 
 		if(particionA->libre && particionB->libre)
 		{

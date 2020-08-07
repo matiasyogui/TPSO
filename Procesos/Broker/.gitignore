@@ -3,3 +3,4 @@
 *.exe
 /Debug/broker
 *.log
+/Debug/

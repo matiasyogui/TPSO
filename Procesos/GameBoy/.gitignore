@@ -3,3 +3,4 @@
 *.exe
 /Debug/gameboy
 *.log
+/Debug/

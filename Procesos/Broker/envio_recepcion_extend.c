@@ -171,13 +171,7 @@ static void* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
 
 	pthread_mutex_unlock(&MUTEX_PARTICIONES);
 
-
-	pthread_mutex_lock(&MUTEX_LOG);
-
 	log_info(LOGGER, "Se guardo un mensaje del tipo %s en la posicion de memoria %p", cod_opToString(cod_op), particion->inicio_particion);
-
-	pthread_mutex_unlock(&MUTEX_LOG);
-
 
 	return n_mensaje;
 }

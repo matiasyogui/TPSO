@@ -83,8 +83,6 @@ typedef struct{
 t_log* LOGGER;
 t_config* CONFIG;
 
-pthread_mutex_t MUTEX_LOG;
-
 t_queue* cola_envios;
 pthread_mutex_t mutex_cola_envios;
 pthread_cond_t cond_cola_envios;
