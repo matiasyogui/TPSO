@@ -25,7 +25,7 @@ t_bitarray * bitBloques ;
 t_metadata* metadata;
 
 t_list * leer_archivo_todos_bloques(t_File*);
-static size_t deleteLine( char* , size_t , t_posiciones* );
+size_t deleteLine( char* , size_t , t_posiciones* );
 t_File * open_file(char*);
 t_File * crear_file(char *);
 t_list * leer_archivo_bloque(char*, char*);
@@ -41,5 +41,6 @@ bool estaUsadoBloque(int);
 void marcarBloqueUsado(int);
 int sacar_linea( t_posiciones*);
 int elegirBloqueLibre();
+void marcarBloqueLibre(int index);
 
 #endif /* TALLGRASS_H_ */

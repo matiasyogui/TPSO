@@ -9,8 +9,10 @@ void abrirArchivoSinoEspero(char* ruta){
 
 	char* abierto = config_get_string_value(metadata, "OPEN");
 
-	if (abierto == NULL)
+	if (abierto == NULL){
+		config_destroy(metadata);
 		return ;
+	}
 
 
 	while(string_equals_ignore_case(abierto, "Y")){
@@ -21,6 +23,7 @@ void abrirArchivoSinoEspero(char* ruta){
 	config_set_value(metadata, "OPEN", "Y");
 	config_save(metadata);
 
+	config_destroy(metadata);
 }
 
 
@@ -38,5 +41,23 @@ void cerrarArchivo(t_File* archivo){
 	config_set_value(metadata, "OPEN", "N");
 	config_save(metadata);
 	printf("\nvalor Despues de Cerrar: %s\n", config_get_string_value(metadata,"OPEN"));
+
+	config_destroy(metadata);
+
+	list_destroy(archivo -> blocks);
+	list_destroy_and_destroy_elements(archivo -> posiciones, _destruirPosiciones);
+
+
+	free(archivo -> path);
+	free(archivo);
+
+}
+
+void _destruirPosiciones(void* elemento){
+	t_posiciones* pos = (t_posiciones*) elemento;
+
+	free(pos-> file);
+	free(pos->lineaRaw);
+	free(pos);
 
 }

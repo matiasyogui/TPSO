@@ -34,7 +34,7 @@ char* PUNTO_MONTAJE_TALLGRASS;
 		char *nombre;
 		char directory;
 		int size;
-		t_list  * blocks;
+		t_list * blocks;
 		char open;
 		t_list * posiciones;
 		char * path;

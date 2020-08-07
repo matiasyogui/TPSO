@@ -15,5 +15,6 @@
 
 void abrirArchivoSinoEspero(char*);
 void cerrarArchivo(t_File*);
+void _destruirPosiciones(void* elemento);
 
 #endif /* LOCK_H_ */

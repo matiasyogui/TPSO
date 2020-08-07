@@ -564,6 +564,9 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 
 	log_info(logger, "Enviamos Catch y recibimos confirmación por parte del BROKER del pokemon %s en la posicion X = %d | Y = %d.", pokemon, posx, posy);
 
+	sleep(1);
+	rafagasCPUTotales++;
+
 	pthread_mutex_lock(&mIdsCorrelativos);
 	list_add(lista_id_correlativos, (void*) id_mensaje);
 	pthread_mutex_unlock(&mIdsCorrelativos);
@@ -1233,9 +1236,12 @@ void enviarGet(void* elemento){
 
 
 	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
-	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
+	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0){
 		perror(" FALLO EL SEND DEL GET \n");
-
+	}else{
+		sleep(1);
+		rafagasCPUTotales++;
+	}
 
 	//esperamos respuesta del broker
 	int id_mensaje,s;
