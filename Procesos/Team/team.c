@@ -39,6 +39,10 @@ void leer_archivo_configuracion(char *config_utilizar){
 
 	IP_BROKER = config_get_string_value(config,"IP_BROKER");
 	PUERTO_BROKER = config_get_string_value(config,"PUERTO_BROKER");
+
+	PUERTO_TEAM = config_get_string_value(config, "PUERTO_TEAM");
+	IP_TEAM = config_get_string_value(config, "IP_TEAM");
+
 }
 
 void pedir_pokemones(){

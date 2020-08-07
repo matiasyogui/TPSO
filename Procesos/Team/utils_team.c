@@ -13,7 +13,7 @@ void iniciar_servidor(void)
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
 
-    getaddrinfo(IP, PUERTO, &hints, &servinfo);
+    getaddrinfo(IP_TEAM, PUERTO_TEAM, &hints, &servinfo);
 
     for (p=servinfo; p != NULL; p = p->ai_next)
     {

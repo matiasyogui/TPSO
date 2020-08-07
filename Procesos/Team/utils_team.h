@@ -19,9 +19,6 @@
 #include <semaphore.h>
 
 
-#define IP "127.0.0.2"
-#define PUERTO "5007"
-
 bool sePudoConectar;
 
 int server_team;
@@ -138,6 +135,8 @@ char* LOG_FILE;
 int mensajeActual;
 int i;
 int ALPHA;
+char* PUERTO_TEAM;
+char* IP_TEAM;
 
 
 pthread_t* hilos;
