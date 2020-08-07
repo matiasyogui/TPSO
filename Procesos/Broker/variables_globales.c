@@ -103,6 +103,29 @@ t_datos* crear_nodo_datos(int cod_op, int id_suscriptor, int tiempo_suscripcion)
 }
 
 
+t_datos_envios* crear_nodo_datos_envios(int id, int cod_op){
+
+	t_datos_envios* datos_envios = malloc(sizeof(t_datos_envios));
+
+	datos_envios -> id = id;
+	datos_envios -> cod_op = cod_op;
+
+	return datos_envios;
+}
+
+
+t_datos_envio* crear_nodo_datos_envio(int id_mensaje, int id_suscriptor, int cod_op){
+
+	t_datos_envio* datos_envio = malloc(sizeof(t_datos_envio));
+
+	datos_envio -> id_mensaje = id_mensaje;
+	datos_envio -> id_suscriptor = id_suscriptor;
+	datos_envio -> cod_op = cod_op;
+
+	return datos_envio;
+}
+
+
 void borrar_nodo_mensaje(void* nodo_mensaje){
 
 	t_mensaje* aux = nodo_mensaje;

@@ -79,6 +79,23 @@ typedef struct{
 }t_datos;
 
 
+typedef struct{
+
+	int id_mensaje;
+	int id_suscriptor;
+	int cod_op;
+
+}t_datos_envio;
+
+
+typedef struct{
+
+	int id;
+	int cod_op;
+
+}t_datos_envios;
+
+
 
 t_log* LOGGER;
 t_config* CONFIG;
@@ -104,6 +121,10 @@ t_notificacion* crear_nodo_notificacion(int id_suscriptor, bool confirmacion);
 t_envio* crear_nodo_envio(int cod_op, int id_mensaje, int id_suscriptor);
 
 t_datos* crear_nodo_datos(int cod_op, int id_suscriptor, int tiempo_suscripcion);
+
+t_datos_envios* crear_nodo_datos_envios(int id, int cod_op);
+
+t_datos_envio* crear_nodo_datos_envio(int id_mensaje, int id_suscriptor, int cod_op);
 
 void borrar_nodo_mensaje(void* nodo_mensaje);
 

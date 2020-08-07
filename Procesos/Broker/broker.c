@@ -17,7 +17,7 @@ int main(void){
 
 	comenzar_servidor();
 
-	iniciar_envios();
+	//iniciar_envios();
 
 	signal(SIGINT, (void*)finalizar_programa);
 
@@ -31,7 +31,7 @@ static void finalizar_programa(void){
 
 	detener_servidor();
 
-	detener_envios();
+	//detener_envios();
 
 	finalizar_listas();
 

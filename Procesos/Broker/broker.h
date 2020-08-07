@@ -1,9 +1,9 @@
 #ifndef BROKER_H_
 #define BROKER_H_
 
-#include "variables_globales.h"
-
 #include <signal.h>
+
+#include "variables_globales.h"
 
 #include "envio_recepcion.h"
 #include "listas.h"

@@ -1,11 +1,8 @@
 #ifndef LISTAS_H_
 #define LISTAS_H_
 
-#include <cosas_comunes.h>
-#include <commons/collections/list.h>
-#include <commons/collections/queue.h>
-
 #include "variables_globales.h"
+
 
 
 //==============================FUNCIONES CREACION DE LISTAS==========================================

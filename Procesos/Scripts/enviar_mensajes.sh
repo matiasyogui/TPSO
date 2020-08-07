@@ -2,7 +2,7 @@
 
 cd ../GameBoy/Debug
 
-for N in {1..3}
+for N in {1..20}
 do
 
 	./gameboy broker new_pokemon pikachu 2 3 4      			# tamaño del mensaje  = 24

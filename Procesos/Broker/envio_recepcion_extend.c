@@ -4,14 +4,18 @@
 static void* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo);
 
 static int enviar_confirmacion(int socket, int mensaje);
-
+/*
 static void cargar_envios_mensajes(int cod_op, int id_suscriptor);
 static void cargar_envios_suscriptores(int cod_op, int id_mensaje);
 static void cargar_envios_mensajes_faltantes(int cod_op, int id_suscriptor);
 static void cargar_envio(int cod_op, int id_mensaje, int id_suscriptor);
-
+*/
 void eliminar_suscriptor_tiempo(int tiempo, int id_sub, int cod_op);
 static void eliminar_sub_tiempo(void* _datos);
+
+int enviar_mensajes_restantes_suscriptor(void* _datos_envios);
+int enviar_mensajes_suscriptor(void* _datos_envios);
+int enviar_mensaje_suscriptores(void* _datos_envios);
 
 
 //revisar los casos de fallo de la funcion
@@ -30,7 +34,13 @@ int tratar_mensaje(int socket, int cod_op, bool esCorrelativo){
 
 	enviar_confirmacion(socket, mensaje->id);
 
-	cargar_envios_suscriptores(cod_op, mensaje->id);
+	//cargar_envios_suscriptores(cod_op, mensaje->id);
+
+	t_datos_envios* datos_envios = crear_nodo_datos_envios(mensaje->id, mensaje->cod_op);
+
+	pthread_t tid;
+	pthread_create(&tid, NULL, (void*)enviar_mensaje_suscriptores, datos_envios);
+	pthread_detach(tid);
 
 	close(socket);
 
@@ -65,7 +75,13 @@ int tratar_suscriptor(int socket){
 
 	enviar_confirmacion(suscriptor->socket, suscriptor->id);
 
-	cargar_envios_mensajes(cola_suscribirse, suscriptor->id);
+	//cargar_envios_mensajes(cola_suscribirse, suscriptor->id);
+
+	t_datos_envios* datos_envios = crear_nodo_datos_envios(suscriptor->id, suscriptor->cod_op);
+
+	pthread_t tid;
+	pthread_create(&tid, NULL, (void*)enviar_mensajes_suscriptor, datos_envios);
+	pthread_detach(tid);
 
 	return EXIT_SUCCESS;
 }
@@ -90,55 +106,21 @@ int tratar_reconexion(int socket){
 
 	enviar_confirmacion(socket, id_suscriptor);
 
-	cargar_envios_mensajes_faltantes(cola_suscrito, id_suscriptor);
+	//cargar_envios_mensajes_faltantes(cola_suscrito, id_suscriptor);
+
+
+	t_datos_envios* datos_envios = crear_nodo_datos_envios(id_suscriptor, cola_suscrito);
+
+	pthread_t tid;
+	pthread_create(&tid, NULL, (void*)enviar_mensajes_restantes_suscriptor, datos_envios);
+	pthread_detach(tid);
 
 	return EXIT_SUCCESS;
 }
 
-/*
-static void* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
-
-	int s, id_correlativo;
-
-	if (EsCorrelativo) {
-
-		s = recv(socket, &id_correlativo, sizeof(uint32_t), 0);
-		if (s < 0) { perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
-
-	} else id_correlativo = -1;
-
-	t_buffer* mensaje = recibir_mensaje(socket);
-	if (mensaje == NULL) return NULL;
-
-	void* n_mensaje = crear_nodo_mensaje(cod_op, id_correlativo, mensaje);
-
-	//printf("Cod_op = %d, Id_correlativo = %d, Mensaje_size = %d\n", n_mensaje->cod_op, n_mensaje->id_correlativo, n_mensaje->mensaje->size);
-
-	return n_mensaje;
-}
-
-static void* recibir_mensaje(int cliente_fd){
-
-	int s;
-	t_buffer* buffer = malloc(sizeof(t_buffer));
-
-	s = recv(cliente_fd, &(buffer->size), sizeof(uint32_t), 0);
-	if (s <= 0) { free(buffer); perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
-
-	//aqui debemos pedir la memoria para guardar el mensaje;
-	buffer->stream = pedir_memoria(buffer->size);
-	//buffer->stream = malloc(buffer->size); // puntero -> posicion_tu_bloque_memoria;
-
-	s = recv(cliente_fd, buffer->stream, buffer->size, 0);
-	if (s <= 0) { free(buffer); free(buffer->stream); perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
-
-	return buffer;
-}
-*/
-
 
 //=========================
-//PRUEBAS
+
 
 
 static void* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
@@ -201,9 +183,8 @@ static int enviar_confirmacion(int socket, int mensaje){
 }
 
 
-
 //====================================================================
-
+/*
 
 
 static void cargar_envios_mensajes(int cod_op, int id_suscriptor){
@@ -272,7 +253,7 @@ static void cargar_envios_mensajes_faltantes(int cod_op, int id_suscriptor){
 }
 
 
-
+*/
 //===================================================================================
 
 
@@ -300,4 +281,143 @@ void eliminar_suscriptor_tiempo(int tiempo, int id_sub, int cod_op){
 }
 
 
+//============================================================================================
+
+
+static int enviar_mensaje(void* _datos_envios);
+static int recibir_confirmacion(int id_mensaje, int id_suscriptor, int cod_op, int socket_cliente);
+
+
+int enviar_mensaje_suscriptores(void* _datos_envios){
+
+	t_datos_envios* datos_envios = _datos_envios;
+
+	int id_mensaje = datos_envios->id,
+		cod_op = datos_envios->cod_op;
+
+	free(datos_envios);
+
+	t_list* lista_id_subs = obtener_lista_ids_suscriptores(cod_op);
+	if (list_size(lista_id_subs) == 0) { list_destroy(lista_id_subs); return EXIT_FAILURE; }
+
+	pthread_t threads[list_size(lista_id_subs)];
+
+	for (int i = 0; i < list_size(lista_id_subs); i++) {
+
+		t_datos_envio* datos_envio = crear_nodo_datos_envio(id_mensaje, *((int*)list_get(lista_id_subs, i)), cod_op);
+
+		pthread_create(&threads[i], NULL, (void*)enviar_mensaje, datos_envio);
+	}
+
+	for (int i = 0; i < list_size(lista_id_subs); i++)
+		pthread_join(threads[i], NULL);
+
+	list_destroy_and_destroy_elements(lista_id_subs, free);
+
+	pthread_mutex_t* mutex_mensaje = obtener_mutex_mensaje(cod_op, id_mensaje);
+
+	pthread_mutex_unlock(mutex_mensaje);
+
+	return EXIT_SUCCESS;
+}
+
+int enviar_mensajes_suscriptor(void* _datos_envios){
+
+	t_datos_envios* datos_envios = _datos_envios;
+
+	int id_suscriptor = datos_envios->id,
+		cod_op = datos_envios->cod_op;
+
+	free(datos_envios);
+
+	t_list* lista_id_mensajes = obtener_lista_ids_mensajes(cod_op);
+
+	pthread_t threads[list_size(lista_id_mensajes)];
+
+	for (int i = 0; i < list_size(lista_id_mensajes); i++) {
+
+		t_datos_envio* datos_envio = crear_nodo_datos_envio(*((int*)list_get(lista_id_mensajes, i)), id_suscriptor, cod_op);
+
+		pthread_create(&threads[i], NULL, (void*)enviar_mensaje, datos_envio);
+	}
+
+	for (int i = 0; i < list_size(lista_id_mensajes); i++)
+		pthread_join(threads[i], NULL);
+
+	list_destroy_and_destroy_elements(lista_id_mensajes, free);
+
+	return EXIT_SUCCESS;
+}
+
+
+int enviar_mensajes_restantes_suscriptor(void* _datos_envios){
+
+	t_datos_envios* datos_envios = _datos_envios;
+
+	int id_suscriptor = datos_envios->id,
+		cod_op = datos_envios->cod_op;
+
+	free(datos_envios);
+
+	t_list* lista_id_mensajes = obtener_lista_ids_mensajes_restantes(cod_op, id_suscriptor);
+
+	pthread_t threads[list_size(lista_id_mensajes)];
+
+	for (int i = 0; i < list_size(lista_id_mensajes); i++) {
+
+		t_datos_envio* datos_envio = crear_nodo_datos_envio(*((int*)list_get(lista_id_mensajes, i)), id_suscriptor, cod_op);
+
+		pthread_create(&threads[i], NULL, (void*)enviar_mensaje, datos_envio);
+	}
+
+	for (int i = 0; i < list_size(lista_id_mensajes); i++)
+		pthread_join(threads[i], NULL);
+
+	list_destroy_and_destroy_elements(lista_id_mensajes, free);
+
+	return EXIT_SUCCESS;
+}
+
+
+static int enviar_mensaje(void* _datos_envios){
+
+	t_datos_envio* datos_envio = _datos_envios;
+
+	int id_mensaje = datos_envio->id_mensaje,
+		id_suscriptor = datos_envio->id_suscriptor,
+		cod_op = datos_envio->cod_op;
+
+	free(datos_envio);
+
+	int s, size;
+
+	int socket = obtener_socket(cod_op, id_suscriptor);
+	if (socket == -1) {  desconectar_suscriptor(id_suscriptor, cod_op); return EXIT_FAILURE; }
+
+	void* stream = serializar_mensaje(cod_op, id_mensaje, &size);
+	if (stream == NULL) { eliminar_mensaje_id(id_mensaje, cod_op); return EXIT_FAILURE; }
+
+	s = send(socket, stream, size, MSG_NOSIGNAL);
+	if (s < 0) { perror("[PLANIFICAR.C] SEND ERROR"); desconectar_suscriptor(id_suscriptor, cod_op); free(stream); return EXIT_FAILURE; }
+
+	free(stream);
+
+	agregar_notificacion(cod_op, id_mensaje, id_suscriptor);
+
+	return recibir_confirmacion(id_mensaje, id_suscriptor, cod_op, socket);
+}
+
+
+
+static int recibir_confirmacion(int id_mensaje, int id_suscriptor, int cod_op, int socket_cliente){
+
+	int s, confirmacion;
+
+	s = recv(socket_cliente, &confirmacion, sizeof(int), 0);
+	if (s <= 0) { perror("[PLANIFICAR.C] RECV ERROR"); desconectar_suscriptor(id_suscriptor, cod_op); return EXIT_FAILURE; }
+
+	cambiar_estado_notificacion(cod_op, id_mensaje, id_suscriptor, confirmacion);
+
+	return EXIT_SUCCESS;
+}
 

@@ -1,11 +1,9 @@
 #ifndef PLANIFICADOR_H_
 #define PLANIFICADOR_H_
 
-#include <cosas_comunes.h>
-#include <commons/collections/queue.h>
-
-#include "variables_globales.h"
 #include "listas.h"
+#include "variables_globales.h"
+
 
 int iniciar_envios(void);
 

@@ -1,5 +1,7 @@
 #include "listas.h"
 
+#include <commons/collections/list.h>
+
 #define CANTIDAD_SUBLISTAS 6
 
 t_list* LISTA_MENSAJES;
@@ -159,7 +161,7 @@ static t_list* _obtener_lista_ids(t_list* lista, int(*funcion_obtener_id)(void*)
 
 t_list* obtener_lista_ids_mensajes(int cod_op){
 
-	t_list* lista;
+	t_list* lista = NULL;
 
 	pthread_rwlock_rdlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
 
@@ -193,7 +195,7 @@ t_list* obtener_lista_ids_mensajes_restantes(int cod_op, int id_suscriptor){
 bool mensaje_se_envio_suscriptor(void* _mensaje, int id_suscriptor){
 
 	bool _suscriptor_en_notificacion(void* elemento){
-		return ((t_notificacion*)elemento)->id_suscriptor == id_suscriptor;
+		return ((t_notificacion*)elemento)->id_suscriptor == id_suscriptor && ((t_notificacion*)elemento)->ACK == true;
 	}
 
 	return list_any_satisfy(((t_mensaje*)_mensaje)->notificiones_envio, _suscriptor_en_notificacion);
