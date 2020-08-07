@@ -39,7 +39,8 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug}&quot;"/>
 								</option>
 								<option id="gnu.c.link.option.libs.2090353050" name="Libraries (-l)" superClass="gnu.c.link.option.libs" useByScannerDiscovery="false" valueType="libs">
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="libreria-basica"/>
+									<listOptionValue builtIn="false" value="libreria-basica"/>
+									<listOptionValue builtIn="false" value="commons"/>
 									<listOptionValue builtIn="false" value="pthread"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1674585083" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
