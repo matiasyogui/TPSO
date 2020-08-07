@@ -24,6 +24,13 @@ void leer_archivo_configuracion(char *config_utilizar){
 	//PASO TODOS LOS PARAMETROS
 	POSICIONES_ENTRENADORES = config_get_array_value(config,"POSICIONES_ENTRENADORES");
 	POKEMON_ENTRENADORES = config_get_array_value(config,"POKEMON_ENTRENADORES");
+	if(cant_elementos(POKEMON_ENTRENADORES) != 0){
+		if(cant_elementos(POSICIONES_ENTRENADORES) > cant_elementos(POKEMON_ENTRENADORES)){
+			for(int i= cant_elementos(POKEMON_ENTRENADORES); i < cant_elementos(POSICIONES_ENTRENADORES); i++){
+				POKEMON_ENTRENADORES[i] = "";
+			}
+		}
+	}
 	OBJETIVOS_ENTRENADORES = config_get_array_value(config,"OBJETIVOS_ENTRENADORES");
 	TIEMPO_RECONEXION = config_get_int_value(config,"TIEMPO_RECONEXION");
 	RETARDO_CICLO_CPU = config_get_int_value(config,"RETARDO_CICLO_CPU");
@@ -472,7 +479,10 @@ t_entrenador* setteoEntrenador(int i){
    	entrenador->posicion->posx = atoi(strtok(POSICIONES_ENTRENADORES[i],"|"));
    	entrenador->posicion->posy = atoi(strtok(NULL,"|"));
    	objetivo = string_split(OBJETIVOS_ENTRENADORES[i], "|");
-   	pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
+
+   	if(cant_elementos(POKEMON_ENTRENADORES) != 0){
+   		pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
+   	}
    	entrenador->estaDisponible = true;
     entrenador->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
 	entrenador -> estimacion = 0;
@@ -489,16 +499,20 @@ t_entrenador* setteoEntrenador(int i){
    		cantPokemonesFinales++;
    	}
 
-   	for(int jj = 0; jj < cant_elementos(pokemones); jj++){
-   		list_add(pokemonYaAtrapado, pokemones[jj]);
-   		list_add(entrenador->pokemones,pokemones[jj]);
-   		cantPokemonesActuales++;
+   	if(cant_elementos(POKEMON_ENTRENADORES) != 0){
+   	   	for(int jj = 0; jj < cant_elementos(pokemones); jj++){
+   	   		list_add(pokemonYaAtrapado, pokemones[jj]);
+   	   		list_add(entrenador->pokemones,pokemones[jj]);
+   	   		printf("\npokemones del entrenador %d = %s\n", i, pokemones[jj]);
+   	   		cantPokemonesActuales++;
+   	   	}
+   	   	free(pokemones);
    	}
+
    	list_add(listaBlocked, entrenador);
    	log_info(logger, "Entrenador %d entra a la lista Bloqueado, por inicio del proceso", i);
 
    	free(objetivo);
-   	free(pokemones);
 
    	return entrenador;
 }
