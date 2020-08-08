@@ -285,9 +285,18 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			log_info(logger, "Llego el mensaje %s con los datos %s %d %d", cod_opToString(msg->cod_op), (char*) pokemon, posx, posy);
 
 			pthread_mutex_lock(&mPokemonesAPedir);
+
+			for(int i = 0; i< list_size(pokemonesAPedir); i++){
+				printf("XXXXXXXXXXXXXXXXXXXXX POKEMON A PEDIR = %s\n", (char*)list_get(pokemonesAPedir, i));
+			}
+
 			valor = list_any_satisfy(pokemonesAPedir, _buscarPokemon);
 
 			list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
+
+			for(int i = 0; i< list_size(pokemonesAPedir); i++){
+				printf("XXXXXXXXXXXXXXXXXXXXX POKEMON A PEDIR = %s\n", (char*)list_get(pokemonesAPedir, i));
+			}
 			pthread_mutex_unlock(&mPokemonesAPedir);
 
 			pthread_mutex_lock(&mPokemonesAPedirSinRepetidos);
@@ -296,8 +305,9 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			for(int i = 0; i< list_size(pokemonAPedirSinRepetidos); i++){
 				printf("POKEMON A PEDIR = %s\n", (char*)list_get(pokemonAPedirSinRepetidos, i));
 			}
-			pthread_mutex_unlock(&mPokemonesAPedirSinRepetidos);
 
+
+			pthread_mutex_unlock(&mPokemonesAPedirSinRepetidos);
 			return valor;
 
 		case LOCALIZED_POKEMON:
@@ -306,8 +316,6 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			pthread_mutex_unlock(&mIdsCorrelativos);
 
 			if(!estaEnLista){
-				printf("-...............ASDASDASD");
-				printf("ID = %d", msg -> id);
 				return false;
 			}
 
@@ -339,11 +347,13 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			}
 			pthread_mutex_unlock(&mPokemonesAPedirSinRepetidos);
 
-			pthread_mutex_lock(&mPokemonesAPedir);
-			for(int j = 0; j < cantidad; j++){
-				list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
+			if(valor){
+				pthread_mutex_lock(&mPokemonesAPedir);
+				for(int j = 0; j < cantidad; j++){
+					list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
+				}
+				pthread_mutex_unlock(&mPokemonesAPedir);
 			}
-			pthread_mutex_unlock(&mPokemonesAPedir);
 
 			return valor;
 
