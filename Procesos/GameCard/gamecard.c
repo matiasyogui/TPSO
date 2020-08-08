@@ -26,7 +26,7 @@ int main(){
 
 void leer_archivo_configuracion(void){
 
-	CONFIG = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/GameCard/gamecard.config");
+	CONFIG = leer_config("/home/utnso/tp-2020-1c-Bomberman-2.0/Procesos/GameCard/gamecard.config");
 	char * auxPuntoMontaje;
 
 	TIEMPO_DE_REINTENTO_OPERACION = config_get_int_value(CONFIG, "TIEMPO_DE_REINTENTO_OPERACION");
