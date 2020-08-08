@@ -3,17 +3,15 @@
 
 #include"utils_team.h"
 #include <signal.h>
-//#include <cosas_comunes.h>
-#include "../../libreria-basica/cosas_comunes.h"
+#include <cosas_comunes.h>
 #include <pthread.h>
-//#include <commons/string.h>
-#include "../../libreria-basica/commons/string.h"
+#include <commons/string.h>
 #include "listas.h"
 #include "planificacion.h"
 #include <stdbool.h>
 
 
-void leer_archivo_configuracion();
+void leer_archivo_configuracion(char *config_utilizar);
 void* algortimoCercano(void* elemento, int posicionPokemonx, int posicionPokemony);
 t_entrenador* elegirEntrenadorXCercania(int posx, int posy);
 

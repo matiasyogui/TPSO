@@ -30,7 +30,7 @@
 								<option id="gnu.c.compiler.option.include.paths.1230844699" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libreria-basica}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.dialect.std.1242001345" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.dialect.std.1242001345" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.632434865" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.1707539774" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug">
@@ -39,6 +39,7 @@
 								</option>
 								<option id="gnu.c.link.option.libs.1978404028" name="Libraries (-l)" superClass="gnu.c.link.option.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" value="libreria-basica"/>
+									<listOptionValue builtIn="false" value="commons"/>
 									<listOptionValue builtIn="false" value="pthread"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.920640351" superClass="cdt.managedbuild.tool.gnu.c.linker.input">

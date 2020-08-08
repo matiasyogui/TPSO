@@ -519,7 +519,7 @@ static void informe_lista_subs(void){
 
 //======================================================================================================================================
 
-
+/*
 void eliminar_envio_obligatorio(int cod_op, int id_mensaje, int id_suscriptor){
 
 	t_list* sublista = list_get(LISTA_MENSAJES, cod_op);
@@ -545,8 +545,8 @@ void eliminar_envio_obligatorio(int cod_op, int id_mensaje, int id_suscriptor){
 
 	pthread_rwlock_unlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
 }
-
-
+*/
+/*
 pthread_mutex_t* obtener_mutex_mensaje(int cod_op, int id_mensaje){
 
 	t_list* sublista = list_get(LISTA_MENSAJES, cod_op);
@@ -569,4 +569,4 @@ pthread_mutex_t* obtener_mutex_mensaje(int cod_op, int id_mensaje){
 
 	return mutex;
 }
-
+*/

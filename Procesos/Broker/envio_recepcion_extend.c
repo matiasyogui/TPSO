@@ -28,9 +28,7 @@ int tratar_mensaje(int socket, int cod_op, bool esCorrelativo){
 
 	guardar_mensaje(mensaje, cod_op);
 
-	char* log_mensaje = string_from_format("Llego un mensaje a la cola %s", cod_opToString(cod_op));
-	logear_mensaje(log_mensaje);
-	free(log_mensaje);
+	log_info(LOGGER, "Llego un mensaje a la cola %s", cod_opToString(cod_op));
 
 	enviar_confirmacion(socket, mensaje->id);
 
@@ -61,17 +59,14 @@ int tratar_suscriptor(int socket){
 	s = recv(socket, &tiempo_suscripcion, sizeof(uint32_t), 0);
 	if (s <= 0) perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR");
 
-
 	t_suscriptor* suscriptor = crear_nodo_suscriptor(cola_suscribirse, socket);
 
 	//printf("cod_op = %d, socket = %d, suscriptor = %p\n", suscriptor->cod_op, suscriptor->socket, suscriptor);
 
 	guardar_suscriptor(suscriptor, cola_suscribirse);
-	if(tiempo_suscripcion != -1){ eliminar_suscriptor_tiempo(tiempo_suscripcion, suscriptor->id, cola_suscribirse); }
+	if(tiempo_suscripcion != -1) eliminar_suscriptor_tiempo(tiempo_suscripcion, suscriptor->id, cola_suscribirse);
 
-	char* log_mensaje = string_from_format("Un proceso se suscribio a la cola %s", cod_opToString(cola_suscribirse));
-	logear_mensaje(log_mensaje);
-	free(log_mensaje);
+	log_info(LOGGER, "Un proceso se suscribio a la cola %s", cod_opToString(cola_suscribirse));
 
 	enviar_confirmacion(suscriptor->socket, suscriptor->id);
 
@@ -136,7 +131,7 @@ static void* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
 
 	t_mensaje* n_mensaje = crear_nodo_mensaje(cod_op, id_correlativo);
 
-	n_mensaje->envios_obligatorios = obtener_lista_ids_suscriptores(n_mensaje->cod_op);
+	//n_mensaje->envios_obligatorios = obtener_lista_ids_suscriptores(n_mensaje->cod_op);
 
 	s = recv(socket, &size_mensaje, sizeof(uint32_t), 0);
 	if (s < 0) { perror("[ENVIO_RECEPCION_EXTEND.C] RECV ERROR"); return NULL; }
@@ -153,13 +148,7 @@ static void* generar_nodo_mensaje(int socket, int cod_op, bool EsCorrelativo){
 
 	pthread_mutex_unlock(&MUTEX_PARTICIONES);
 
-
-	pthread_mutex_lock(&MUTEX_LOG);
-
 	log_info(LOGGER, "Se guardo un mensaje del tipo %s en la posicion de memoria %p", cod_opToString(cod_op), particion->inicio_particion);
-
-	pthread_mutex_unlock(&MUTEX_LOG);
-
 
 	return n_mensaje;
 }
@@ -314,9 +303,9 @@ int enviar_mensaje_suscriptores(void* _datos_envios){
 
 	list_destroy_and_destroy_elements(lista_id_subs, free);
 
-	pthread_mutex_t* mutex_mensaje = obtener_mutex_mensaje(cod_op, id_mensaje);
+	//pthread_mutex_t* mutex_mensaje = obtener_mutex_mensaje(cod_op, id_mensaje);
 
-	pthread_mutex_unlock(mutex_mensaje);
+	//pthread_mutex_unlock(mutex_mensaje);
 
 	return EXIT_SUCCESS;
 }

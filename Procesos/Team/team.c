@@ -7,9 +7,16 @@
 pthread_mutex_t mBlockAReady;
 sem_t sem_suscripciones;
 
-void leer_archivo_configuracion(){
+void leer_archivo_configuracion(char *config_utilizar){
 
-	config = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/team2.config");
+	char* direccion = string_new();
+	string_append(&direccion, "/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/");
+	string_append(&direccion, config_utilizar);
+	printf("direccion = %s", direccion);
+
+	config = leer_config(direccion);
+
+	free(direccion);
 
 	LOG_FILE= config_get_string_value(config,"LOG_FILE");
 	logger = iniciar_logger(LOG_FILE, "TEAM", 0, LOG_LEVEL_INFO);
@@ -17,6 +24,13 @@ void leer_archivo_configuracion(){
 	//PASO TODOS LOS PARAMETROS
 	POSICIONES_ENTRENADORES = config_get_array_value(config,"POSICIONES_ENTRENADORES");
 	POKEMON_ENTRENADORES = config_get_array_value(config,"POKEMON_ENTRENADORES");
+	if(cant_elementos(POKEMON_ENTRENADORES) != 0){
+		if(cant_elementos(POSICIONES_ENTRENADORES) > cant_elementos(POKEMON_ENTRENADORES)){
+			for(int i= cant_elementos(POKEMON_ENTRENADORES); i < cant_elementos(POSICIONES_ENTRENADORES); i++){
+				POKEMON_ENTRENADORES[i] = "";
+			}
+		}
+	}
 	OBJETIVOS_ENTRENADORES = config_get_array_value(config,"OBJETIVOS_ENTRENADORES");
 	TIEMPO_RECONEXION = config_get_int_value(config,"TIEMPO_RECONEXION");
 	RETARDO_CICLO_CPU = config_get_int_value(config,"RETARDO_CICLO_CPU");
@@ -32,6 +46,10 @@ void leer_archivo_configuracion(){
 
 	IP_BROKER = config_get_string_value(config,"IP_BROKER");
 	PUERTO_BROKER = config_get_string_value(config,"PUERTO_BROKER");
+
+	PUERTO_TEAM = config_get_string_value(config, "PUERTO_TEAM");
+	IP_TEAM = config_get_string_value(config, "IP_TEAM");
+
 }
 
 void pedir_pokemones(){
@@ -218,7 +236,8 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 	int size, offset=0, cantidad;
 
 	bool _buscarID(void* elemento){
-		return msg->id == (int)elemento;
+		printf("COMPARANDO ID = %d CON ID = %d\n", msg -> id, (int)elemento);
+		return msg->id == (int) elemento;
 	}
 
 	void* pokemon;
@@ -287,6 +306,8 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			pthread_mutex_unlock(&mIdsCorrelativos);
 
 			if(!estaEnLista){
+				printf("-...............ASDASDASD");
+				printf("ID = %d", msg -> id);
 				return false;
 			}
 
@@ -324,8 +345,6 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			}
 			pthread_mutex_unlock(&mPokemonesAPedir);
 
-
-
 			return valor;
 
 
@@ -360,7 +379,7 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 }
 
 
-int main(){
+int main(int argc, char* argv[]){
 	idFuncionesDefault = -2;
 	cantPokemonesFinales = 0;
 	cantPokemonesActuales = 0;
@@ -388,7 +407,7 @@ int main(){
 
 	inicializar_listas();
 
-	leer_archivo_configuracion();
+	leer_archivo_configuracion(argv[1]);
 
 	int cantEntrenadores = cant_elementos(POSICIONES_ENTRENADORES);
 
@@ -461,7 +480,10 @@ t_entrenador* setteoEntrenador(int i){
    	entrenador->posicion->posx = atoi(strtok(POSICIONES_ENTRENADORES[i],"|"));
    	entrenador->posicion->posy = atoi(strtok(NULL,"|"));
    	objetivo = string_split(OBJETIVOS_ENTRENADORES[i], "|");
-   	pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
+
+   	if(cant_elementos(POKEMON_ENTRENADORES) != 0){
+   		pokemones = string_split(POKEMON_ENTRENADORES[i], "|");
+   	}
    	entrenador->estaDisponible = true;
     entrenador->algoritmo_de_planificacion = ALGORITMO_PLANIFICACION;
 	entrenador -> estimacion = 0;
@@ -478,16 +500,20 @@ t_entrenador* setteoEntrenador(int i){
    		cantPokemonesFinales++;
    	}
 
-   	for(int jj = 0; jj < cant_elementos(pokemones); jj++){
-   		list_add(pokemonYaAtrapado, pokemones[jj]);
-   		list_add(entrenador->pokemones,pokemones[jj]);
-   		cantPokemonesActuales++;
+   	if(cant_elementos(POKEMON_ENTRENADORES) != 0){
+   	   	for(int jj = 0; jj < cant_elementos(pokemones); jj++){
+   	   		list_add(pokemonYaAtrapado, pokemones[jj]);
+   	   		list_add(entrenador->pokemones,pokemones[jj]);
+   	   		printf("\npokemones del entrenador %d = %s\n", i, pokemones[jj]);
+   	   		cantPokemonesActuales++;
+   	   	}
+
    	}
+
    	list_add(listaBlocked, entrenador);
    	log_info(logger, "Entrenador %d entra a la lista Bloqueado, por inicio del proceso", i);
 
-   	free(objetivo);
-   	free(pokemones);
+
 
    	return entrenador;
 }

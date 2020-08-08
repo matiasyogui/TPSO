@@ -6,9 +6,12 @@
 #include <stdbool.h>
 #include <signal.h>
 #include "utils_gamecard.h"
+#include "lock.h"
 
 #include "tallgrass.h"
 
+char* IP_SERVER;
+char* PUERTO_SERVER;
 
 typedef struct{
 	int id;
@@ -41,4 +44,7 @@ void bajarPosiciones(t_File *);
 void iniciar_suscripciones(int cola0, int cola1, int cola2);
 void finalizar_suscripciones(void);
 int existePosiciones(t_catchPokemon*,t_File*);
+int existePosicionesNew(t_newPokemon *,t_File *);
+int existePosicionesCatch(t_catchPokemon *,t_File *);
+void actualizarBloquesMetadata(t_File *archivo);
 #endif /* SUSCRIPCION_H_ */

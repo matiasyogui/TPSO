@@ -114,11 +114,11 @@ static int esperar_cliente(int socket_servidor){
 
 	pthread_t tid;
 
-	pthread_create(&tid, NULL, server_client, p_socket);
+	pthread_create(&tid, NULL, (void*)server_client, p_socket);
 
 	pthread_detach(tid);
 
-	logear_mensaje("Un proceso se conecto al broker");
+	log_info(LOGGER, "Un proceso se conecto al broker");
 
 	return EXIT_SUCCESS;
 }
@@ -238,7 +238,7 @@ static int process_request(int cliente_fd, int cod_op){
 
 static void detener_servidor(void* nada){
 
-	int s;
+	//int s;
 	/*
     for (int i = 0; i < GESTORES_CLIENTES; i++) {
     	s = pthread_cancel(THREADS[i]);

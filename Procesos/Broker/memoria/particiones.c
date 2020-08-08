@@ -81,11 +81,7 @@ void compactar_particiones()
 		}
 	}
 
-	pthread_mutex_lock(&MUTEX_LOG);
-
 	log_info(LOGGER, "Se realizo la compactacion de memoria");
-
-	pthread_mutex_unlock(&MUTEX_LOG);
 }
 
 

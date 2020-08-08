@@ -104,12 +104,12 @@ static int realizar_envio(void* _envio){
 	int s, size;
 
 	int socket = obtener_socket(cod_op, id_suscriptor);
-	if (socket == -1) {  desconectar_suscriptor(id_suscriptor, cod_op); eliminar_envio_obligatorio(cod_op, id_mensaje, id_suscriptor); return EXIT_FAILURE; }
+	if (socket == -1) {  desconectar_suscriptor(id_suscriptor, cod_op); /*eliminar_envio_obligatorio(cod_op, id_mensaje, id_suscriptor);*/ return EXIT_FAILURE; }
 
 	void* stream = serializar_mensaje(cod_op, id_mensaje, &size);
 	if (stream == NULL) { eliminar_mensaje_id(id_mensaje, cod_op); return EXIT_FAILURE; }
 
-	eliminar_envio_obligatorio(cod_op, id_mensaje, id_suscriptor);
+	//eliminar_envio_obligatorio(cod_op, id_mensaje, id_suscriptor);
 
 	s = send(socket, stream, size, MSG_NOSIGNAL);
 	if (s < 0) { perror("[PLANIFICAR.C] SEND ERROR"); desconectar_suscriptor(id_suscriptor, cod_op); free(stream); return EXIT_FAILURE; }

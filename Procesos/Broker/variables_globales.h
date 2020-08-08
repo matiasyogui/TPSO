@@ -42,12 +42,12 @@ typedef struct{
 	uint32_t cod_op;
 	uint32_t id;
 	int id_correlativo;
-	t_list* envios_obligatorios;
+	//t_list* envios_obligatorios;
 	t_list* notificiones_envio;
 	estado_mensaje estado;
 	int size_mensaje;
 
-	pthread_mutex_t mutex_eliminar;
+	//pthread_mutex_t mutex_eliminar;
 
 }t_mensaje;
 
@@ -100,8 +100,6 @@ typedef struct{
 t_log* LOGGER;
 t_config* CONFIG;
 
-pthread_mutex_t MUTEX_LOG;
-
 t_queue* cola_envios;
 pthread_mutex_t mutex_cola_envios;
 pthread_cond_t cond_cola_envios;
@@ -141,7 +139,6 @@ char* estado_mensaje_toString(estado_mensaje estado);
 //==========================MOSTRAS AUXILIARES============================
 
 
-void logear_mensaje(char* mensaje);
 void* serializar_nodo_mensaje(t_mensaje* mensaje_enviar, int* size);
 
 

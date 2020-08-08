@@ -6,21 +6,16 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <netdb.h>
-//#include <commons/log.h>
-#include "../../libreria-basica/commons/log.h"
-//#include <commons/collections/list.h>
-#include "../../libreria-basica/commons/collections/list.h"
+#include <commons/log.h>
+#include <commons/config.h>
+#include <commons/collections/list.h>
 #include <string.h>
 #include <pthread.h>
-#include "../../libreria-basica/cosas_comunes.h"
-//#include <cosas_comunes.h>
+#include <cosas_comunes.h>
 #include "listas.h"
 #include <stdbool.h>
 #include <semaphore.h>
 
-
-#define IP "127.0.0.2"
-#define PUERTO "5007"
 
 bool sePudoConectar;
 
@@ -138,6 +133,8 @@ char* LOG_FILE;
 int mensajeActual;
 int i;
 int ALPHA;
+char* PUERTO_TEAM;
+char* IP_TEAM;
 
 
 pthread_t* hilos;
