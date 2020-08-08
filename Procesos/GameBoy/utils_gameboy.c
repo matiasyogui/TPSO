@@ -10,8 +10,8 @@ void leer_mensaje(int cod_op, void* mensaje, int size);
 
 void inicializar_archivos(){
 
-	CONFIG = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/GameBoy/gameboy.config");
-	LOGGER = iniciar_logger("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/GameBoy/gameboy.log", "gameboy", 0, LOG_LEVEL_INFO);
+	CONFIG = leer_config("/home/utnso/tp-2020-1c-Bomberman-2.0/Procesos/GameBoy/gameboy.config");
+	LOGGER = iniciar_logger("/home/utnso/tp-2020-1c-Bomberman-2.0/Procesos/GameBoy/gameboy.log", "gameboy", 0, LOG_LEVEL_INFO);
 }
 
 
