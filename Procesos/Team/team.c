@@ -236,7 +236,8 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 	int size, offset=0, cantidad;
 
 	bool _buscarID(void* elemento){
-		return msg->id == (int)elemento;
+		printf("COMPARANDO ID = %d CON ID = %d\n", msg -> id, (int)elemento);
+		return msg->id == (int) elemento;
 	}
 
 	void* pokemon;
@@ -305,6 +306,8 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			pthread_mutex_unlock(&mIdsCorrelativos);
 
 			if(!estaEnLista){
+				printf("-...............ASDASDASD");
+				printf("ID = %d", msg -> id);
 				return false;
 			}
 
@@ -341,8 +344,6 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 				list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
 			}
 			pthread_mutex_unlock(&mPokemonesAPedir);
-
-
 
 			return valor;
 
@@ -506,13 +507,13 @@ t_entrenador* setteoEntrenador(int i){
    	   		printf("\npokemones del entrenador %d = %s\n", i, pokemones[jj]);
    	   		cantPokemonesActuales++;
    	   	}
-   	   	free(pokemones);
+
    	}
 
    	list_add(listaBlocked, entrenador);
    	log_info(logger, "Entrenador %d entra a la lista Bloqueado, por inicio del proceso", i);
 
-   	free(objetivo);
+
 
    	return entrenador;
 }

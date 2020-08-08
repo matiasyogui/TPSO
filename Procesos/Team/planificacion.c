@@ -579,6 +579,8 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 
 	//metricas;
 	cambiosDeContexto += 2;
+	//sleep(1);
+	//rafagasCPUTotales++;
 
 	}
 	}
@@ -614,6 +616,7 @@ void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 		sem_post(&mNewCaught);
 		sem_post(&sem_cant_mensajes);
 	}
+
 }
 
 
@@ -1231,11 +1234,12 @@ void enviarGet(void* elemento){
 	memcpy(stream + offset, pokemon, len);
 	offset += len;
 
+	printf("SE ENVIA GET CON %d, %d, %d, %s", cod_op, sizeStream, len, pokemon);
 
 	int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
-	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0)
+	if(send(socket, stream, offset, MSG_NOSIGNAL) < 0){
 		perror(" FALLO EL SEND DEL GET \n");
-
+	}
 
 	//esperamos respuesta del broker
 	int id_mensaje,s;
@@ -1243,7 +1247,10 @@ void enviarGet(void* elemento){
 	if(s>=0){
 		printf("[CONFIRMACION DE RECEPCION DE MENSAJE] mi id del mensaje = %d \n", id_mensaje);
 		list_add(lista_id_correlativos, (void*) id_mensaje);
+		//sleep(1);
+		//rafagasCPUTotales++;
 	}else{
 		log_info(logger, "Fallo conexión con el BROKER se procedera a realizar la funcion DEFAULT del Get.");
 	}
+
 }

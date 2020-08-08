@@ -375,8 +375,8 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 			sleep(TIEMPO_RETARDO_OPERACION);
 
-			cerrarArchivo(archivo);
 			enviarAppeared(archivo, id_correlativo);
+			cerrarArchivo(archivo);
 			printf("Envio APPEARED pokemon: %s\n", newpok->pokemon);
 
 			break;
@@ -396,9 +396,10 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 				sleep(TIEMPO_RETARDO_OPERACION);
 
-				cerrarArchivo(archivo);
+
 
 				enviarCaught(id_correlativo, true);
+				cerrarArchivo(archivo);
 				printf("el pokemon: %s existe en TALLGRASS\n", catchpok->pokemon);
 
 			}else
@@ -419,8 +420,10 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 
 			if (archivo != NULL){
 
-				cerrarArchivo(archivo);
+
 				enviarLocalized(archivo,id_correlativo);
+				cerrarArchivo(archivo);
+
 				printf("el pokemon: %s existe en TALLGRASS\n", getpok->pokemon);
 
 			}else
@@ -433,10 +436,11 @@ static void procesar_mensaje(int cod_op, int id_correlativo, void* mensaje, int 
 			break;
 
 	}
+
 }
 
 
-existePosicionesNew(t_newPokemon *newpok,t_File *archivo){
+int existePosicionesNew(t_newPokemon *newpok,t_File *archivo){
 
 	t_posiciones * pos;
 
@@ -460,12 +464,12 @@ existePosicionesNew(t_newPokemon *newpok,t_File *archivo){
 
 	bajarPosiciones(archivo);
 
-	return;
+	return 1;
 }
 
 void bajarPosiciones(t_File *archivo){
 
-	struct stat st = {0};
+
 	char* auxFile = malloc(strlen(PUNTO_MONTAJE_TALLGRASS)+strlen(BLOCKSDIR)+10);
 
 
@@ -501,7 +505,7 @@ void bajarPosiciones(t_File *archivo){
 		if ((list_size(archivo->blocks) - 1) < blockIndex){
 			block = elegirBloqueLibre();
 			marcarBloqueUsado(block);
-			list_add(archivo->blocks,block);
+			list_add(archivo->blocks,(void*) block);
 		}
 
 		sprintf(auxFile,"%s%s/%d.bin",PUNTO_MONTAJE_TALLGRASS,BLOCKSDIR,block);
@@ -535,22 +539,25 @@ void bajarPosiciones(t_File *archivo){
 
 	actualizarBloquesMetadata(archivo);
 
+	free(auxFile);
+	free(linea);
+	free(buffer);
 }
 
-actualizarBloquesMetadata(t_File *archivo){
+void actualizarBloquesMetadata(t_File *archivo){
 
 	char* charBlocks = calloc(1,100);
+	int block;
 
 	if (list_is_empty(archivo->blocks)){
 
-		char* charBlock = malloc(3);
-
 		strcat(charBlocks,"[");
 		strcat(charBlocks,"]");
+
 	}
 
 	if (list_size(archivo->blocks) == 1){
-		int block = (int)list_get(archivo->blocks, 0);
+		block = (int)list_get(archivo->blocks, 0);
 		char* charBlock = malloc(10);
 		sprintf(charBlock,"%d",block);
 
@@ -562,7 +569,7 @@ actualizarBloquesMetadata(t_File *archivo){
 
 		for(int a=0; a < list_size(archivo->blocks); a++){
 
-			int block = (int)list_get(archivo->blocks, a);
+			block = (int)list_get(archivo->blocks, a);
 			char* charBlock = malloc(10);
 			sprintf(charBlock,"%d",block);
 
@@ -583,8 +590,12 @@ actualizarBloquesMetadata(t_File *archivo){
 
 	t_config* metadata = config_create(archivo->path);
 
-	if (metadata == NULL)
+	if (metadata == NULL){
+
+		//free(charBlocks);
 		return ;
+	}
+
 	char* charSize = malloc(10);
 	sprintf(charSize,"%d",archivo->size);
 
@@ -593,6 +604,9 @@ actualizarBloquesMetadata(t_File *archivo){
 
 	config_save(metadata);
 
+	config_destroy(metadata);
+
+	//free(charBlocks);
 }
 
 
@@ -619,7 +633,7 @@ int existePosicionesCatch(t_catchPokemon *catchpok,t_File *archivo){
 
 	bajarPosiciones(archivo);
 
-	return 0;
+	return ;
 }
 
 //=============================================================================
@@ -671,6 +685,7 @@ void enviarAppeared(t_File* archivo, int id_correlativo){
 		//log_info(logger,"Fallo el envio del localized al Broker");
 	}
 }
+	free(stream);
 
 }
 
@@ -718,6 +733,7 @@ void enviarCaught(int id_correlativo, bool loAtrapo){
 	printf("Se envio un caught con valor %d\n", loAtrapo);
 
 	}
+	free(stream);
 }
 
 void enviarLocalizeVacio(char* pokemon, int id_correlativo){
@@ -764,6 +780,7 @@ void enviarLocalizeVacio(char* pokemon, int id_correlativo){
 		//log_info(logger,"Fallo el envio del localized al Broker");
 	}
 }
+	free(stream);
 }
 
 void enviarLocalized(t_File* archivo, int id_correlativo){
@@ -802,6 +819,12 @@ void enviarLocalized(t_File* archivo, int id_correlativo){
 			offset += sizeof(uint32_t);
 		}
 
+		printf("SE ENVIA LOCALIZED CON %s, %d, %d, %d\n",
+				archivo -> nombre,
+				archivo->posiciones->elements_count,
+				((t_posiciones*)list_get(archivo->posiciones,0))->posx,
+				((t_posiciones*)list_get(archivo->posiciones,0))->posy);
+
 		//enviamos el mensaje
 		int socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 		if(socket>0){
@@ -818,7 +841,7 @@ void enviarLocalized(t_File* archivo, int id_correlativo){
 		}
 
 	}
-
+	free(stream);
 }
 
 void crearArchivoPokemon(char* pokemon){
