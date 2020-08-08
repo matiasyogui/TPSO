@@ -523,6 +523,9 @@ void* planificarEntrenadoresAExec(){
 
 void enviarCatch(void* elemento, int posx, int posy, t_entrenador* ent){
 
+	sleep(1);
+	rafagasCPUTotales++;
+
 	int cod_op = CATCH_POKEMON;
 	char* pokemon = string_substring_until((char*) elemento,strlen((char*) elemento));
 	int len = strlen(pokemon);
@@ -1091,8 +1094,6 @@ void agregarMensajeLista(int socket, int cod_op){
 
 	enviar_confirmacion(socket, true);
 
-	char* localized = string_new();
-
 	t_mensajeTeam* mensajeAGuardar = malloc(sizeof(t_mensajeTeam));
 	mensajeAGuardar -> buffer = malloc(sizeof(t_buffer));
 	mensajeAGuardar -> buffer -> size = size;
@@ -1144,12 +1145,6 @@ void agregarMensajeLista(int socket, int cod_op){
 				memcpy(&posy, stream + offset, sizeof(int));
 				offset += sizeof(int);
 
-				string_append(&localized, string_itoa(posx));
-				string_append(&localized, " ");
-
-				string_append(&localized, string_itoa(posy));
-				string_append(&localized, " ");
-
 				nuevoMensajeAGuardar -> cod_op = APPEARED_POKEMON;
 
 				char* stream[3] = {pokemon, (void*) posx, (void*) posy};
@@ -1168,7 +1163,7 @@ void agregarMensajeLista(int socket, int cod_op){
 				pthread_mutex_unlock(&mListaGlobal);
 			}
 
-			log_info(logger, "Llego el mensaje %s del pokemon %s con la cantidad de %d y los datos de %s", cod_opToString(cod_op), pokemon, cantidad, localized);
+
 		}
 	}else{
 
@@ -1212,6 +1207,9 @@ void enviar_mensaje(t_paquete* paquete, int socket_cliente){
 
 void enviarGet(void* elemento){
 
+	sleep(1);
+	rafagasCPUTotales++;
+
 	int cod_op = GET_POKEMON;
 	char* pokemon = (char*) elemento;
 	int len = strlen(pokemon);
@@ -1247,8 +1245,6 @@ void enviarGet(void* elemento){
 	if(s>=0){
 		printf("[CONFIRMACION DE RECEPCION DE MENSAJE] mi id del mensaje = %d \n", id_mensaje);
 		list_add(lista_id_correlativos, (void*) id_mensaje);
-		//sleep(1);
-		//rafagasCPUTotales++;
 	}else{
 		log_info(logger, "Fallo conexión con el BROKER se procedera a realizar la funcion DEFAULT del Get.");
 	}

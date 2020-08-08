@@ -10,7 +10,7 @@ sem_t sem_suscripciones;
 void leer_archivo_configuracion(char *config_utilizar){
 
 	char* direccion = string_new();
-	string_append(&direccion, "/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/");
+	string_append(&direccion, "/home/utnso/tp-2020-1c-Bomberman-2.0/Procesos/Team/");
 	string_append(&direccion, config_utilizar);
 	printf("direccion = %s", direccion);
 
@@ -125,7 +125,7 @@ int conectarse(void){
 
 	int socket, s;
 	do{
-		s = socket = crear_conexion("127.0.0.1", "4444");
+		s = socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 		if(s < 0){
 			log_info(logger, "Inicio del proceso de reintento de comunicación.");
 			sleep(TIEMPO_RECONEXION);
@@ -256,6 +256,8 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 	printf(".....cod_op = %s\n", cod_opToString(msg->cod_op));
 	fflush(stdout);
 	bool valor;
+	char* localized = string_new();
+
 	switch(msg -> cod_op){
 
 		case APPEARED_POKEMON:
@@ -296,8 +298,9 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			for(int i = 0; i< list_size(pokemonAPedirSinRepetidos); i++){
 				printf("POKEMON A PEDIR = %s\n", (char*)list_get(pokemonAPedirSinRepetidos, i));
 			}
-			pthread_mutex_unlock(&mPokemonesAPedirSinRepetidos);
 
+
+			pthread_mutex_unlock(&mPokemonesAPedirSinRepetidos);
 			return valor;
 
 		case LOCALIZED_POKEMON:
@@ -306,8 +309,6 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			pthread_mutex_unlock(&mIdsCorrelativos);
 
 			if(!estaEnLista){
-				printf("-...............ASDASDASD");
-				printf("ID = %d", msg -> id);
 				return false;
 			}
 
@@ -329,6 +330,25 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 			memcpy(&cantidad, stream + offset, sizeof(int));
 
+			for(int j = 0; j < cantidad; j++){
+
+				int posx;
+				memcpy(&posx, stream + offset, sizeof(int));
+				offset += sizeof(int);
+
+				int posy;
+				memcpy(&posy, stream + offset, sizeof(int));
+				offset += sizeof(int);
+
+				string_append(&localized, string_itoa(posx));
+				string_append(&localized, " ");
+
+				string_append(&localized, string_itoa(posy));
+				string_append(&localized, " ");
+			}
+
+			log_info(logger, "Llego el mensaje %s del pokemon %s con la cantidad de %d y los datos de %s", cod_opToString(msg->cod_op), (char*) pokemon, cantidad, localized);
+
 			pthread_mutex_lock(&mPokemonesAPedirSinRepetidos);
 			valor = list_any_satisfy(pokemonAPedirSinRepetidos, _buscarPokemon);
 
@@ -339,11 +359,14 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			}
 			pthread_mutex_unlock(&mPokemonesAPedirSinRepetidos);
 
-			pthread_mutex_lock(&mPokemonesAPedir);
-			for(int j = 0; j < cantidad; j++){
-				list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
+			if(valor){
+				pthread_mutex_lock(&mPokemonesAPedir);
+				for(int j = 0; j < cantidad; j++){
+					list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
+				}
+				pthread_mutex_unlock(&mPokemonesAPedir);
 			}
-			pthread_mutex_unlock(&mPokemonesAPedir);
+
 
 			return valor;
 
