@@ -194,9 +194,6 @@ void* serializar_nodo_mensaje(t_mensaje* mensaje_enviar, int* size){
 		memcpy(stream + offset, &(mensaje_enviar->id), sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
-
-	pthread_mutex_lock(&MUTEX_PARTICIONES);
-
 	t_particion* particion = buscar_particion(mensaje_enviar->id);
 
 	if (particion != NULL) {
@@ -213,8 +210,6 @@ void* serializar_nodo_mensaje(t_mensaje* mensaje_enviar, int* size){
 		stream = NULL;
 		mensaje_enviar -> estado = ELIMINADO;
 	}
-
-	pthread_mutex_unlock(&MUTEX_PARTICIONES);
 
 	if(stream != NULL)
 		printf("-Se envio un mensaje %s con id %d\n", cod_opToString(mensaje_enviar->cod_op), mensaje_enviar->id);

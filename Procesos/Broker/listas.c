@@ -229,6 +229,8 @@ void* serializar_mensaje(int cod_op, int id, int* size){
 
 	t_list* sublista = list_get(LISTA_MENSAJES, cod_op);
 
+	pthread_mutex_lock(&MUTEX_PARTICIONES);
+
 	pthread_rwlock_rdlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
 
 	t_mensaje* mensaje = buscar_por_id(sublista, id, _obtener_id_mensaje);
@@ -236,6 +238,8 @@ void* serializar_mensaje(int cod_op, int id, int* size){
 	void* stream = (mensaje == NULL) ? NULL : (_verificar_mensaje_valido(mensaje) ? serializar_nodo_mensaje(mensaje, size) : NULL);
 
 	pthread_rwlock_unlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
+
+	pthread_mutex_unlock(&MUTEX_PARTICIONES);
 
 	return stream;
 }
@@ -253,15 +257,17 @@ void agregar_notificacion(int cod_op, int id_mensaje, int id_suscriptor){
 
 	t_mensaje* mensaje = buscar_por_id(sublista, id_mensaje, _obtener_id_mensaje);
 
-	if (!list_any_satisfy(mensaje->notificiones_envio, _existe_notificacion) && mensaje != NULL) {
+	if (mensaje != NULL){
 
-		t_notificacion* notificacion = crear_nodo_notificacion(id_suscriptor, false);
+		if (!list_any_satisfy(mensaje->notificiones_envio, _existe_notificacion)) {
 
-		list_add(mensaje->notificiones_envio, notificacion);
+			t_notificacion* notificacion = crear_nodo_notificacion(id_suscriptor, false);
+
+			list_add(mensaje->notificiones_envio, notificacion);
+		}
 	}
 
 	pthread_rwlock_unlock(&RWLOCK_SUBLISTA_MENSAJES[cod_op]);
-
 }
 
 
