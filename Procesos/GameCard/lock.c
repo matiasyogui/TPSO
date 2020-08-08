@@ -23,7 +23,7 @@ void abrirArchivoSinoEspero(char* ruta){
 	config_set_value(metadata, "OPEN", "Y");
 	config_save(metadata);
 
-	config_destroy(metadata);
+	//config_destroy(metadata);
 }
 
 
@@ -42,15 +42,14 @@ void cerrarArchivo(t_File* archivo){
 	config_save(metadata);
 	printf("\nvalor Despues de Cerrar: %s\n", config_get_string_value(metadata,"OPEN"));
 
-	config_destroy(metadata);
+	//config_destroy(metadata);
 
-	list_destroy(archivo -> blocks);
+/*	list_destroy(archivo -> blocks);
 	list_destroy_and_destroy_elements(archivo -> posiciones, _destruirPosiciones);
 
 
 	free(archivo -> path);
-	free(archivo);
-
+	free(archivo);*/
 }
 
 void _destruirPosiciones(void* elemento){

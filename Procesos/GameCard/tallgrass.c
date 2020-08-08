@@ -191,6 +191,7 @@ t_File * open_file(char * nombre){
 
 		retFile->posiciones = list_create();
 
+
 		return retFile;
 	}
 
@@ -215,10 +216,8 @@ t_File * open_file(char * nombre){
 
 	retFile->posiciones = leer_archivo_todos_bloques(retFile);
 
-	dictionary_destroy(arch -> datos);
-
-
-	free(arch);
+	//dictionary_destroy(arch -> datos);
+	//free(arch);
 
 	return retFile;
 }
