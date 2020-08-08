@@ -10,7 +10,7 @@ static int obtener_id(void);
 
 void iniciar_variables_globales(void){
 
-	CONFIG = leer_config("/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Broker/broker.config");
+	CONFIG = leer_config("/home/utnso/tp-2020-1c-Bomberman-2.0/Procesos/Broker/broker.config");
 
 	char* ruta_log = config_get_string_value(CONFIG, "LOG_FILE");
 	LOGGER = iniciar_logger(ruta_log, "broker", 0, LOG_LEVEL_INFO);
