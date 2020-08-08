@@ -39,9 +39,9 @@ void leer_archivo_configuracion(void){
 
 	strcpy(PUNTO_MONTAJE_TALLGRASS, auxPuntoMontaje);
 
-	IP_SERVER = config_get_char_value(CONFIG, "IP_SERVER");
+	IP_SERVER = config_get_string_value(CONFIG, "IP_SERVER");
 
-	PUERTO_SERVER = config_get_char_value(CONFIG, "PUERTO_SERVER");
+	PUERTO_SERVER = config_get_string_value(CONFIG, "PUERTO_SERVER");
 
 	LOG_FILE= config_get_string_value(CONFIG,"LOG_FILE");
 	logger = iniciar_logger(LOG_FILE, "GAMECARD", 0, LOG_LEVEL_INFO);
