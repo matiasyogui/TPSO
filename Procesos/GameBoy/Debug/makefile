@@ -25,13 +25,13 @@ endif
 all: gameboy
 
 dependents:
-	-cd /home/utnso/workspace/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug && $(MAKE) clean all
+	-cd /home/utnso/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug && $(MAKE) clean all
 
 # Tool invocations
-gameboy: $(OBJS) $(USER_OBJS) /home/utnso/workspace/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug/liblibreria-basica.so
+gameboy: $(OBJS) $(USER_OBJS) /home/utnso/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug/liblibreria-basica.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug" -o "gameboy" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug" -o "gameboy" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

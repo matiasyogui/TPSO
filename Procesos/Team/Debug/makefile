@@ -25,13 +25,13 @@ endif
 all: team
 
 dependents:
-	-cd /home/utnso/workspace/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug && $(MAKE) all
+	-cd /home/utnso/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug && $(MAKE) all
 
 # Tool invocations
-team: $(OBJS) $(USER_OBJS) /home/utnso/workspace/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug/liblibreria-basica.so
+team: $(OBJS) $(USER_OBJS) /home/utnso/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug/liblibreria-basica.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug" -o "team" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/tp-2020-1c-Bomberman-2.0/libreria-basica/Debug" -o "team" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
