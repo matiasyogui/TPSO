@@ -125,7 +125,7 @@ int conectarse(void){
 
 	int socket, s;
 	do{
-		s = socket = crear_conexion("127.0.0.1", "4444");
+		s = socket = crear_conexion(IP_BROKER, PUERTO_BROKER);
 		if(s < 0){
 			log_info(logger, "Inicio del proceso de reintento de comunicación.");
 			sleep(TIEMPO_RECONEXION);
