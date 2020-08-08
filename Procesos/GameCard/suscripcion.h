@@ -10,6 +10,8 @@
 
 #include "tallgrass.h"
 
+char* IP_SERVER;
+char* PUERTO_SERVER;
 
 typedef struct{
 	int id;
