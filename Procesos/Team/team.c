@@ -256,6 +256,8 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 	printf(".....cod_op = %s\n", cod_opToString(msg->cod_op));
 	fflush(stdout);
 	bool valor;
+	char* localized = string_new();
+
 	switch(msg -> cod_op){
 
 		case APPEARED_POKEMON:
@@ -285,18 +287,9 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 			log_info(logger, "Llego el mensaje %s con los datos %s %d %d", cod_opToString(msg->cod_op), (char*) pokemon, posx, posy);
 
 			pthread_mutex_lock(&mPokemonesAPedir);
-
-			for(int i = 0; i< list_size(pokemonesAPedir); i++){
-				printf("XXXXXXXXXXXXXXXXXXXXX POKEMON A PEDIR = %s\n", (char*)list_get(pokemonesAPedir, i));
-			}
-
 			valor = list_any_satisfy(pokemonesAPedir, _buscarPokemon);
 
 			list_remove_by_condition(pokemonesAPedir, _buscarPokemon);
-
-			for(int i = 0; i< list_size(pokemonesAPedir); i++){
-				printf("XXXXXXXXXXXXXXXXXXXXX POKEMON A PEDIR = %s\n", (char*)list_get(pokemonesAPedir, i));
-			}
 			pthread_mutex_unlock(&mPokemonesAPedir);
 
 			pthread_mutex_lock(&mPokemonesAPedirSinRepetidos);
@@ -337,6 +330,25 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 
 			memcpy(&cantidad, stream + offset, sizeof(int));
 
+			for(int j = 0; j < cantidad; j++){
+
+				int posx;
+				memcpy(&posx, stream + offset, sizeof(int));
+				offset += sizeof(int);
+
+				int posy;
+				memcpy(&posy, stream + offset, sizeof(int));
+				offset += sizeof(int);
+
+				string_append(&localized, string_itoa(posx));
+				string_append(&localized, " ");
+
+				string_append(&localized, string_itoa(posy));
+				string_append(&localized, " ");
+			}
+
+			log_info(logger, "Llego el mensaje %s del pokemon %s con la cantidad de %d y los datos de %s", cod_opToString(msg->cod_op), (char*) pokemon, cantidad, localized);
+
 			pthread_mutex_lock(&mPokemonesAPedirSinRepetidos);
 			valor = list_any_satisfy(pokemonAPedirSinRepetidos, _buscarPokemon);
 
@@ -354,6 +366,7 @@ bool nosInteresaMensaje(t_mensajeTeam* msg){
 				}
 				pthread_mutex_unlock(&mPokemonesAPedir);
 			}
+
 
 			return valor;
 
