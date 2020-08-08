@@ -15,7 +15,7 @@ int crear_conexion(char *ip, char* puerto){
 	int s, socket_cliente;
 
 	s = socket_cliente = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
-	if(s < 0){ /*perror("[cosas_comunes.c] SOCKET ERROR");*/ return s; }
+	if(s < 0){ /*perror("[cosas_comunes.c] SOCKET ERROR");*/freeaddrinfo(server_info); return s; }
 
 	s = connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen);
 	if(s < 0){ /*perror("[cosas_comunes.c] CONNECT ERROR");*/ return s; }
