@@ -55,7 +55,7 @@ void iniciar_servidor(void){
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
 
-    getaddrinfo(IP_SERVIDOR, PUERTO_SERVIDOR, &hints, &servinfo);
+    getaddrinfo(IP_SERVER, PUERTO_SERVER, &hints, &servinfo);
 
     for (p = servinfo; p != NULL; p = p->ai_next) {
 
