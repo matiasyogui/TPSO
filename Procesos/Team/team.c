@@ -10,7 +10,7 @@ sem_t sem_suscripciones;
 void leer_archivo_configuracion(char *config_utilizar){
 
 	char* direccion = string_new();
-	string_append(&direccion, "/home/utnso/workspace/tp-2020-1c-Bomberman-2.0/Procesos/Team/");
+	string_append(&direccion, "/home/utnso/tp-2020-1c-Bomberman-2.0/Procesos/Team/");
 	string_append(&direccion, config_utilizar);
 	printf("direccion = %s", direccion);
 
